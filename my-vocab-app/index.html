@@ -319,17 +319,19 @@
                             <h3 class="text-xl font-black">使用者活動與資料管理</h3>
                             <span class="text-[10px] text-slate-400">註：刪除活動紀錄會一併清空該使用者的雲端單字資料</span>
                         </div>
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
-                                <tr>
-                                    <th class="px-8 py-5">使用者</th>
-                                    <th class="px-8 py-5">Email</th> <!-- 新增：Email 欄位 -->
-                                    <th class="px-8 py-5">最後上線</th>
-                                    <th class="px-8 py-5">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
+                                    <tr>
+                                        <th class="px-8 py-5">使用者</th>
+                                        <th class="px-8 py-5">Email (Google)</th>
+                                        <th class="px-8 py-5">最後上線</th>
+                                        <th class="px-8 py-5">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -452,7 +454,7 @@
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user));
-                if (snap.exists() && snap.data().password === pass) { await signInAnonymously(auth); state.userLabel = user; sessionStorage.setItem('custom_user_session', user); showAppUI(user, false); startSyncing(user); logUserActivity(user, true); } 
+                if (snap.exists() && snap.data().password === pass) { await signInAnonymously(auth); state.userLabel = user; sessionStorage.setItem('custom_user_session', user); showAppUI(user, false); startSyncing(user); logUserActivity(user, true, { uid: user }); } 
                 else { showNotification("帳號或密碼錯誤", "alert"); }
             } catch (e) { showNotification("連線失敗", "alert"); }
             finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
@@ -470,11 +472,20 @@
             if (await checkUrlParams()) return;
             if (user) {
                 state.user = user;
-                if (state.isAdmin) { showAdminDashboard(); } 
-                else {
+                if (state.isAdmin) { 
+                    showAdminDashboard(); 
+                } else {
                     const customSession = sessionStorage.getItem('custom_user_session');
-                    if (customSession) { state.userLabel = customSession; showAppUI(customSession, false); startSyncing(customSession); } 
-                    else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); logUserActivity(user.uid, false); }
+                    if (customSession) { 
+                        state.userLabel = customSession; showAppUI(customSession, false); startSyncing(customSession); 
+                        // 不在此處呼叫 log，由登入按鈕處理一次即可
+                    } else if (!user.isAnonymous) { 
+                        state.userLabel = user.uid; 
+                        showAppUI(user.displayName, true, user.photoURL); 
+                        startSyncing(user.uid); 
+                        // 🌟 重要修正：直接傳入使用者物件，解決 Google 帳號顯示不出來的問題
+                        logUserActivity(user.uid, false, user); 
+                    }
                 }
             } else { document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('hidden'); }
             lucide.createIcons();
@@ -495,24 +506,28 @@
             }, (err) => console.error("Sync Error:", err));
         }
 
-        async function logUserActivity(id, isCustom) {
+        // 🌟 核心修正：接收 userObj 參數，確保資料精確度
+        async function logUserActivity(id, isCustom, userObj = null) {
             if (state.isStudentView) return;
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
-            const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', isCustom ? id : auth.currentUser.uid);
+            const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id);
             try {
-                // 🌟 新增：儲存 Google 帳號的 Email
                 const dataToSave = { 
-                    displayName: isCustom ? id : auth.currentUser.displayName, 
+                    displayName: isCustom ? id : (userObj?.displayName || "Google 使用者"), 
                     lastSeen: Date.now(), 
                     type: isCustom ? 'custom' : 'google' 
                 };
-                if (!isCustom && auth.currentUser.email) {
-                    dataToSave.email = auth.currentUser.email;
+                
+                // 儲存 Email 資訊供管理者查看
+                if (!isCustom && userObj && userObj.email) {
+                    dataToSave.email = userObj.email;
                 }
                 
                 await setDoc(recordRef, dataToSave, { merge: true });
                 await setDoc(statsRef, { loginCount: increment(1) }, { merge: true });
-            } catch (e) {}
+            } catch (e) {
+                console.error("Activity log failed:", e);
+            }
         }
 
         window.importWords = async () => {
@@ -608,7 +623,11 @@
         window.updateWordNote = async (wordId, val) => { const unit = state.units.find(u => u.id === state.activeUnitId); const word = unit.words.find(w => w.id === wordId); if (word && word.note !== val) { word.note = val; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: unit.words }); } };
         window.updateRating = async (wordId, n) => { const unit = state.units.find(u => u.id === state.activeUnitId); const word = unit.words.find(w => w.id === wordId); if (word) { word.rating = n; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: unit.words }); renderWords(); } };
         window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("確定刪除此單元嗎？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
-        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
+        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `
+            <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}">
+                <span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
+                ${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+            </div>`).join(''); lucide.createIcons(); };
         window.speak = (t) => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); };
         function showNotification(t, type="success") { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
         function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white', 2: 'bg-teal-400 text-white', 3: 'bg-amber-400 text-white', 4: 'bg-orange-500 text-white', 5: 'bg-rose-500 text-white' }[n]; }
