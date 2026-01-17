@@ -235,17 +235,23 @@
                                 </div>
 
                                 <div class="flex gap-2">
+                                    <!-- 播放 / 繼續按鈕 -->
                                     <button id="btnStartAudio" onclick="startAutoPlay()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-indigo-100 active:scale-95">
-                                        <i data-lucide="play" class="w-4 h-4"></i> 開始英聽
+                                        <i data-lucide="play" class="w-4 h-4"></i> <span id="btnStartText">開始英聽</span>
                                     </button>
+                                    <!-- 暫停按鈕 -->
+                                    <button id="btnPauseAudio" onclick="pauseAutoPlay()" class="hidden px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-amber-100 active:scale-95">
+                                        <i data-lucide="pause" class="w-4 h-4"></i> 暫停
+                                    </button>
+                                    <!-- 停止按鈕 -->
                                     <button id="btnStopAudio" onclick="stopAutoPlay()" class="hidden px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-rose-100 active:scale-95">
-                                        <i data-lucide="square" class="w-4 h-4"></i> 停止播放
+                                        <i data-lucide="square" class="w-4 h-4"></i> 停止
                                     </button>
                                 </div>
                             </div>
                             <div id="audioStatusText" class="text-[10px] font-bold text-indigo-400 hidden flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
-                                自動播放進行中，系統將依序朗讀當前單元所有單字
+                                <span id="audioStatusDot" class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
+                                <span id="audioStatusMsg">自動播放進行中，系統將依排序朗讀單字</span>
                             </div>
                         </div>
                     </div>
@@ -299,12 +305,12 @@
 
     <!-- 詳情 Modal -->
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-            <div class="p-8 border-b flex justify-between items-center">
-                <h4 id="detailUserTitle" class="font-black text-2xl">使用者詳情</h4>
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50/50">
+                <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800">使用者詳情</h4>
                 <button onclick="closeAdminDetail()"><i data-lucide="x"></i></button>
             </div>
-            <div id="detailContent" class="p-8 overflow-y-auto space-y-6"></div>
+            <div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white"></div>
         </div>
     </div>
 
@@ -345,7 +351,9 @@
             activeUnitId: null, 
             globalMode: 'both',
             userLabel: null,
-            isAudioPlaying: false
+            isAudioPlaying: false,
+            isAudioPaused: false, // 暫停狀態
+            currentAudioIndex: 0 // 當前播放位置
         };
 
         // --- UI ---
@@ -490,16 +498,29 @@
             } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        // --- 🚀 英聽系統 ---
+        // --- 🚀 英聽系統升級版 ---
         window.startAutoPlay = async () => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (!unit || unit.words.length === 0) return showNotification("請先選擇單元", "alert");
+
+            // 如果是從暫停中恢復
+            if (state.isAudioPaused) {
+                state.isAudioPaused = false;
+                document.getElementById('btnStartText').innerText = "開始英聽";
+                document.getElementById('btnStartAudio').classList.add('hidden');
+                document.getElementById('btnPauseAudio').classList.remove('hidden');
+                document.getElementById('audioStatusMsg').innerText = "自動播放恢復中...";
+                document.getElementById('audioStatusDot').classList.add('animate-ping');
+                return;
+            }
+
             if (state.isAudioPlaying) return;
 
             state.isAudioPlaying = true;
-            document.getElementById('btnStartAudio').classList.add('hidden');
-            document.getElementById('btnStopAudio').classList.remove('hidden');
-            document.getElementById('audioStatusText').classList.remove('hidden');
+            state.isAudioPaused = false;
+            state.currentAudioIndex = 0; // 重置起點
+            
+            updateAudioUI(true);
 
             const isBlindMode = document.getElementById('audioBlindMode').checked;
             const isVisualSync = document.getElementById('audioVisualSync').checked;
@@ -508,9 +529,25 @@
 
             if (isBlindMode) grid.classList.add('blind-mode');
 
-            const words = [...unit.words];
+            // 🌟 核心：根據 UI 排序選項取得單字列表
+            const sortVal = document.getElementById('sortSelect').value;
+            let words = [...unit.words];
+            if (sortVal === 'az') words.sort((a,b) => a.en.localeCompare(b.en));
+            else if (sortVal === 'random') words.sort(() => Math.random() - 0.5);
+            else if (sortVal === 'rating') words.sort((a,b) => b.rating - a.rating);
+
             for (let i = 0; i < words.length; i++) {
+                state.currentAudioIndex = i;
+
+                // 檢查是否停止
                 if (!state.isAudioPlaying) break;
+
+                // 🌟 檢查是否暫停：如果是暫停狀態，就停在這裡等待
+                while (state.isAudioPaused && state.isAudioPlaying) {
+                    await sleep(200);
+                }
+                if (!state.isAudioPlaying) break;
+
                 const word = words[i];
 
                 if (isVisualSync && !isBlindMode) {
@@ -519,24 +556,68 @@
 
                 for (let r = 0; r < repeats; r++) {
                     if (!state.isAudioPlaying) break;
+                    // 同樣要檢查朗讀中途是否有暫停
+                    while (state.isAudioPaused && state.isAudioPlaying) {
+                        await sleep(200);
+                    }
+                    if (!state.isAudioPlaying) break;
+
                     await speakAsync(word.en);
                     if (r < repeats - 1) await sleep(400);
                 }
                 await sleep(800);
             }
-            stopAutoPlay();
-            showNotification("朗讀結束");
+            
+            if (state.isAudioPlaying) {
+                stopAutoPlay();
+                showNotification("朗讀結束");
+            }
+        };
+
+        window.pauseAutoPlay = () => {
+            state.isAudioPaused = true;
+            window.speechSynthesis.cancel(); // 停止目前正在念的聲音
+            document.getElementById('btnStartAudio').classList.remove('hidden');
+            document.getElementById('btnPauseAudio').classList.add('hidden');
+            document.getElementById('btnStartText').innerText = "繼續播放";
+            document.getElementById('audioStatusMsg').innerText = "英聽已暫停";
+            document.getElementById('audioStatusDot').classList.remove('animate-ping');
         };
 
         window.stopAutoPlay = () => {
             state.isAudioPlaying = false;
+            state.isAudioPaused = false;
+            state.currentAudioIndex = 0;
             window.speechSynthesis.cancel();
-            document.getElementById('btnStartAudio')?.classList.remove('hidden');
-            document.getElementById('btnStopAudio')?.classList.add('hidden');
-            document.getElementById('audioStatusText')?.classList.add('hidden');
+            updateAudioUI(false);
             document.getElementById('wordGrid')?.classList.remove('blind-mode');
             removeHighlights();
         };
+
+        function updateAudioUI(isPlaying) {
+            const startBtn = document.getElementById('btnStartAudio');
+            const pauseBtn = document.getElementById('btnPauseAudio');
+            const stopBtn = document.getElementById('btnStopAudio');
+            const status = document.getElementById('audioStatusText');
+            const startText = document.getElementById('btnStartText');
+
+            if (isPlaying) {
+                startBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+                stopBtn.classList.remove('hidden');
+                status.classList.remove('hidden');
+                startText.innerText = "開始英聽";
+                document.getElementById('audioStatusMsg').innerText = "自動播放進行中，系統將依排序朗讀單字";
+                document.getElementById('audioStatusDot').classList.add('animate-ping');
+            } else {
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                stopBtn.classList.add('hidden');
+                status.classList.add('hidden');
+                startText.innerText = "開始英聽";
+            }
+            lucide.createIcons();
+        }
 
         function speakAsync(text) {
             return new Promise((resolve) => {
