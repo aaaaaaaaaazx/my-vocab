@@ -12,16 +12,20 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        /* 單字卡片顯示邏輯 */
+        /* --- 單字卡片顯示邏輯 --- */
+        
+        /* 1. 中英顯示模式 */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
         .card-both .word-note { display: block; }
         
+        /* 2. 僅英文顯示模式 */
         .card-en .word-en { display: block; }
-        .card-en .word-zh { display: none; }
-        .card-en .word-note { display: none; } /* 僅英文顯示時隱藏記憶技巧 */
+        .card-en .word-zh { display: none !important; }
+        .card-en .word-note { display: none !important; } 
         
-        .card-zh .word-en { display: none; }
+        /* 3. 僅中文顯示模式 */
+        .card-zh .word-en { display: none !important; }
         .card-zh .word-zh { display: block; }
         .card-zh .word-note { display: block; }
         .card-zh .voice-btn { visibility: hidden; }
@@ -61,7 +65,6 @@
     <div id="authScreen" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 text-center transition-all">
             
-            <!-- 登入選擇頁 -->
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
@@ -95,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- 學生帳密登入區 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -108,16 +110,15 @@
                 </div>
             </div>
 
-            <!-- 管理者登入區 -->
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
                 </button>
                 <h2 class="text-2xl font-bold mb-2">管理員驗證</h2>
                 <div class="space-y-4 mt-6">
-                    <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button onclick="adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">進入後台</button>
+                    <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="adminLoginBtn" onclick="adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">進入後台</button>
                 </div>
             </div>
 
@@ -144,14 +145,13 @@
                         <div id="userIcon" class="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-[10px] hidden"><i data-lucide="user" class="w-3 h-3"></i></div>
                         <span id="userNameDisplay" class="text-sm font-bold text-slate-700"></span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl">登出</button>
+                    <button onclick="logout()" class="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl transition-all">登出</button>
                 </div>
             </div>
         </nav>
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <!-- 左側：單元清單 -->
                 <div class="lg:col-span-4 space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800">
@@ -166,7 +166,7 @@
                         </div>
                     </div>
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
-                        <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800">
                             <i data-lucide="book-open" class="text-indigo-600"></i> 我的單字本
                         </h2>
                         <div id="unitList" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
@@ -174,13 +174,13 @@
                         </div>
                     </div>
                 </div>
-                <!-- 右側：練習區域 -->
+                
                 <div class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
                         <div class="flex bg-slate-100 p-1.5 rounded-2xl">
                             <button onclick="setGlobalMode('both')" id="btn-mode-both" class="px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600">中英顯示</button>
-                            <button onclick="setGlobalMode('en-only')" id="btn-mode-en-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500">僅英文</button>
-                            <button onclick="setGlobalMode('zh-only')" id="btn-mode-zh-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500">僅中文</button>
+                            <button onclick="setGlobalMode('en-only')" id="btn-mode-en-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800">僅英文</button>
+                            <button onclick="setGlobalMode('zh-only')" id="btn-mode-zh-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800">僅中文</button>
                         </div>
                         <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
                             <i data-lucide="arrow-up-down" class="w-4 h-4 text-slate-400"></i>
@@ -210,17 +210,14 @@
 
     <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
-            <span class="font-black tracking-widest uppercase">系統管理中心</span>
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+            <span class="font-black tracking-widest uppercase text-xl">系統管理中心</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
         <main class="max-w-7xl mx-auto px-8 py-10">
-            <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <!-- 統計卡片 -->
-            </div>
-            <!-- 帳號管理與活動監測 -->
+            <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-[2rem] border shadow-sm">
+                <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
                     <h3 class="text-xl font-black mb-6">建立帳號</h3>
                     <div class="space-y-4">
                         <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
@@ -228,9 +225,9 @@
                         <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">新增帳號</button>
                     </div>
                 </div>
-                <div class="lg:col-span-2 bg-white rounded-[2rem] border overflow-hidden shadow-sm">
+                <div class="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50 text-xs font-black uppercase">
+                        <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
                             <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
                         </thead>
                         <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
@@ -242,18 +239,18 @@
 
     <!-- 詳情 Modal -->
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-            <div class="p-8 border-b flex justify-between items-center">
-                <h4 id="detailUserTitle" class="font-black text-2xl">使用者詳情</h4>
-                <button onclick="closeAdminDetail()"><i data-lucide="x"></i></button>
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50/50">
+                <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800">使用者詳情</h4>
+                <button onclick="closeAdminDetail()" class="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all text-slate-400 shadow-sm"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
-            <div id="detailContent" class="p-8 overflow-y-auto space-y-6"></div>
+            <div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white"></div>
         </div>
     </div>
 
-    <!-- 通知 -->
+    <!-- 通知元件 -->
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 z-50">
-        <i data-lucide="bell" id="notifIcon" class="w-5 h-5"></i>
+        <i data-lucide="bell" id="notifIcon" class="w-5 h-5 text-indigo-400"></i>
         <span id="notificationText" class="font-bold"></span>
     </div>
 
@@ -262,9 +259,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // =========================================================================
-        // 🚀 FIREBASE 配置
-        // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ",
             authDomain: "my-vocab-app-852b4.firebaseapp.com",
@@ -274,7 +268,6 @@
             appId: "1:79896462245:web:1ece173ddc5a6d05781e4c",
             measurementId: "G-HSMRF8W6SW"
         };
-        // =========================================================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -290,17 +283,14 @@
             userLabel: null 
         };
 
-        // --- 全域導覽 ---
         window.toggleAuthView = (mode) => {
             const views = ['loginMainView', 'customLoginView', 'adminLoginView'];
             views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            if (mode === 'main') document.getElementById('loginMainView').classList.remove('hidden');
-            if (mode === 'custom') document.getElementById('customLoginView').classList.remove('hidden');
-            if (mode === 'admin') document.getElementById('adminLoginView').classList.remove('hidden');
+            const target = document.getElementById(mode + 'LoginView') || document.getElementById('loginMainView');
+            if (target) target.classList.remove('hidden');
             lucide.createIcons();
         };
 
-        // --- 登入邏輯 ---
         window.loginWithGoogle = async () => {
             const provider = new GoogleAuthProvider();
             try {
@@ -316,12 +306,10 @@
             const user = document.getElementById('customUser').value.trim();
             const pass = document.getElementById('customPass').value.trim();
             if (!user || !pass) return showNotification("請輸入帳號密碼", "alert");
-
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
-
                 if (snap.exists() && snap.data().password === pass) {
                     await signInAnonymously(auth);
                     state.userLabel = user;
@@ -329,12 +317,11 @@
                     showAppUI(user, false);
                     startSyncing(user);
                     logUserActivity(user, true);
-                    showNotification(`歡迎回來, ${user} !`);
                 } else {
                     showNotification("帳號或密碼錯誤", "alert");
                 }
             } catch (e) {
-                showNotification("連線失敗，請檢查設定", "alert");
+                showNotification("連線失敗", "alert");
             } finally {
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
@@ -348,14 +335,12 @@
                     await signInAnonymously(auth);
                     state.isAdmin = true;
                     showAdminDashboard();
-                    showNotification("進入管理中心");
                 } catch (e) { showNotification("登入失敗", "alert"); }
             } else { showNotification("帳號密碼錯誤", "alert"); }
         };
 
         window.logout = () => { signOut(auth); sessionStorage.removeItem('custom_user_session'); location.reload(); };
 
-        // --- Auth 監聽與 UI 切換 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 state.user = user;
@@ -396,21 +381,14 @@
             }
         }
 
-        // --- 核心：資料同步 (修正點) ---
         function startSyncing(id) {
             if (!id) return;
             const unitsRef = collection(db, 'artifacts', appId, 'users', id, 'units');
             onSnapshot(unitsRef, (snap) => {
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderUnitList();
-                // 只有當前沒選單元，且清單有單元時才預選第一個
-                if (!state.activeUnitId && state.units.length > 0) {
-                    state.activeUnitId = state.units[0].id;
-                    renderWords();
-                } else {
-                    renderWords(); // 確保單字內容同步
-                }
-            }, (err) => console.error("Sync Error:", err));
+                renderWords();
+            }, (err) => console.error("Sync error:", err));
         }
 
         async function logUserActivity(id, isCustom) {
@@ -426,11 +404,9 @@
             } catch (e) {}
         }
 
-        // --- 核心：匯入功能 (修復 UI 即時出現問題) ---
         window.importWords = async () => {
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
-            
             if (!state.userLabel) return showNotification("請先登入", "alert");
             if (!name || !text) return showNotification("請填寫單元與單字內容", "alert");
 
@@ -441,7 +417,7 @@
                     en: parts[0].trim(),
                     zh: parts[1].trim(),
                     rating: 5,
-                    localMode: 'both',
+                    localMode: state.globalMode, // 使用當前全域模式
                     note: '', 
                     createdAt: Date.now() + idx
                 } : null;
@@ -455,41 +431,37 @@
 
             try {
                 const newUnit = { name, words: wordList, createdAt: Date.now() };
-                
-                // 為了讓 UI 立刻反應，我們先把資料加進本地陣列 (模擬即時感)
                 state.units.push({ id: unitId, ...newUnit });
                 state.activeUnitId = unitId;
                 renderUnitList();
                 renderWords();
-
-                // 同步至雲端
                 await setDoc(unitRef, newUnit);
                 await setDoc(statsRef, { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
-
                 document.getElementById('unitNameInput').value = '';
                 document.getElementById('wordsInput').value = '';
-                showNotification("已成功同步至雲端！");
-            } catch (e) { 
-                showNotification("儲存失敗：請檢查網路或權限", "alert"); 
-            }
+                showNotification("已同步至雲端！");
+            } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        window.renderUnitList = () => {
-            const el = document.getElementById('unitList');
-            if (state.units.length === 0) {
-                el.innerHTML = '<p class="text-slate-300 text-sm italic">尚無單元</p>';
-                return;
+        // --- 全域模式切換 (核心修正) ---
+        window.setGlobalMode = (m) => {
+            state.globalMode = m;
+            const unit = state.units.find(u => u.id === state.activeUnitId);
+            if (unit) {
+                unit.words.forEach(w => w.localMode = (m === 'both' ? 'both' : (m === 'en-only' ? 'en' : 'zh')));
             }
-            // 依建立時間排序，讓最新的出現在下面（或上方）
-            const sortedUnits = [...state.units].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-            
-            el.innerHTML = sortedUnits.map(u => `
-                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'}">
-                    <span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
-            `).join('');
-            lucide.createIcons();
+            // 更新 UI 選取按鈕狀態
+            ['both', 'en-only', 'zh-only'].forEach(b => {
+                const el = document.getElementById(`btn-mode-${b}`);
+                if (el) {
+                    if (b === m) {
+                        el.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600";
+                    } else {
+                        el.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800";
+                    }
+                }
+            });
+            renderWords();
         };
 
         window.renderWords = () => {
@@ -513,18 +485,19 @@
             else if (sort === 'random') list.sort(() => Math.random() - 0.5);
             else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
             
-            grid.innerHTML = list.map(word => `
-                <div onclick="window.cycleMode('${word.id}')" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:border-indigo-200 hover:shadow-xl card-${word.localMode || 'both'}">
+            grid.innerHTML = list.map(word => {
+                const displayModeClass = `card-${word.localMode || 'both'}`;
+                return `
+                <div onclick="window.cycleMode('${word.id}')" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:border-indigo-200 hover:shadow-xl ${displayModeClass}">
                     <div class="flex justify-between items-start mb-4">
                         <div class="space-y-1 text-left">
                             <h4 class="word-en text-2xl font-black text-slate-800 tracking-tight">${word.en}</h4>
                             <p class="word-zh text-indigo-600 font-bold text-lg">${word.zh}</p>
                         </div>
-                        <button onclick="event.stopPropagation(); window.speak('${word.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all voice-btn">
+                        <button onclick="event.stopPropagation(); window.speak('${word.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all voice-btn shadow-sm">
                             <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
-                    <!-- 記憶技巧編輯區 wrapper 加上的 word-note class 配合 CSS 顯示控制 -->
                     <div class="word-note mt-2 mb-4" onclick="event.stopPropagation()">
                         <textarea 
                             class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/50 resize-none transition-all placeholder:text-slate-300 font-medium"
@@ -534,17 +507,16 @@
                         >${word.note || ''}</textarea>
                     </div>
                     <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
-                        <span class="text-[10px] font-black text-slate-300 uppercase">熟練度</span>
+                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">熟練度</span>
                         <div class="flex gap-1">
                             ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${word.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
         };
 
-        // --- 其他工具 ---
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -579,11 +551,19 @@
             await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
             if (state.activeUnitId === id) state.activeUnitId = null;
         };
-        window.setGlobalMode = (m) => {
-            const unit = state.units.find(u => u.id === state.activeUnitId);
-            if (unit) unit.words.forEach(w => w.localMode = m === 'both' ? 'both' : m === 'en-only' ? 'en' : 'zh');
-            renderWords();
+        window.renderUnitList = () => {
+            const el = document.getElementById('unitList');
+            if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic">尚無單元</p>'; return; }
+            const sortedUnits = [...state.units].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            el.innerHTML = sortedUnits.map(u => `
+                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}">
+                    <span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+            lucide.createIcons();
         };
+
         window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; window.speechSynthesis.speak(u); };
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
@@ -593,7 +573,6 @@
         }
         function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white shadow-lg', 2: 'bg-teal-400 text-white shadow-md', 3: 'bg-amber-400 text-white shadow-md', 4: 'bg-orange-500 text-white shadow-md', 5: 'bg-rose-500 text-white shadow-lg' }[n]; }
 
-        // 管理者功能
         window.createAccount = async () => {
             const u = document.getElementById('newAccountUser').value.trim();
             const p = document.getElementById('newAccountPass').value.trim();
@@ -606,18 +585,33 @@
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (doc) => {
+                if (doc.exists()) {
+                    const d = doc.data();
+                    document.getElementById('adminStats').innerHTML = `
+                        <div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-slate-400 text-xs font-black mb-1 uppercase">註冊人數</p><h4 class="text-3xl font-black">${d.userCount || 0}</h4></div>
+                        <div class="admin-stat-card border-l-4 border-blue-500"><p class="text-slate-400 text-xs font-black mb-1 uppercase">登入次數</p><h4 class="text-3xl font-black">${d.loginCount || 0}</h4></div>
+                        <div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-slate-400 text-xs font-black mb-1 uppercase">單元總數</p><h4 class="text-3xl font-black">${d.totalUnits || 0}</h4></div>
+                        <div class="admin-stat-card border-l-4 border-amber-500"><p class="text-slate-400 text-xs font-black mb-1 uppercase">單字量</p><h4 class="text-3xl font-black">${d.totalWords || 0}</h4></div>
+                    `;
+                }
+            });
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => {
                 const table = document.getElementById('adminUserTable');
                 table.innerHTML = snap.docs.map(docSnap => {
                     const d = docSnap.data();
                     return `
-                        <tr class="border-b hover:bg-slate-50">
-                            <td class="px-8 py-5 font-bold">${d.displayName} <span class="text-[10px] text-slate-300 uppercase ml-2">${d.type}</span></td>
-                            <td class="px-8 py-5 text-slate-400">${new Date(d.lastSeen).toLocaleString()}</td>
-                            <td class="px-8 py-5"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold">查看內容</button></td>
+                        <tr class="border-b hover:bg-slate-50 transition-all">
+                            <td class="px-8 py-5 font-bold flex items-center gap-3">
+                                ${d.photo ? `<img src="${d.photo}" class="w-8 h-8 rounded-lg">` : `<div class="w-8 h-8 bg-slate-100 flex items-center justify-center rounded-lg text-slate-400"><i data-lucide="user" class="w-4 h-4"></i></div>`}
+                                <div><p>${d.displayName}</p><p class="text-[9px] text-slate-300 uppercase">${d.type || 'custom'}</p></div>
+                            </td>
+                            <td class="px-8 py-5 text-slate-400 font-bold">${new Date(d.lastSeen).toLocaleString()}</td>
+                            <td class="px-8 py-5"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-black transition-all hover:bg-indigo-700">查看紀錄</button></td>
                         </tr>
                     `;
                 }).join('');
+                lucide.createIcons();
             });
         }
 
@@ -628,11 +622,12 @@
             const snap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
             document.getElementById('detailContent').innerHTML = snap.docs.map(uDoc => {
                 const u = uDoc.data();
-                return `<div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <h5 class="font-black text-indigo-600 mb-4">${u.name}</h5>
-                    <div class="grid grid-cols-2 gap-2">${u.words.map(w => `<div class="bg-white p-2 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> / ${w.zh}</div>`).join('')}</div>
+                return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                    <h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5>
+                    <div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> / ${w.zh} ${w.note ? `<p class="mt-2 text-slate-400 font-medium italic border-l-2 border-indigo-200 pl-2">💡 ${w.note}</p>` : ''}</div>`).join('')}</div>
                 </div>`;
             }).join('') || '<p class="text-center py-10">尚無單元</p>';
+            lucide.createIcons();
         };
 
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
