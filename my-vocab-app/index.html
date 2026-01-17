@@ -312,7 +312,7 @@
                     </div>
                 </div>
 
-                <!-- 活動監測 (新增：刪除活動紀錄功能) -->
+                <!-- 使用者活動管理 -->
                 <div class="lg:col-span-2 space-y-8">
                     <div class="bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200">
                         <div class="px-8 py-6 border-b bg-slate-50/50 flex justify-between items-center">
@@ -321,7 +321,12 @@
                         </div>
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
-                                <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
+                                <tr>
+                                    <th class="px-8 py-5">使用者</th>
+                                    <th class="px-8 py-5">Email</th> <!-- 新增：Email 欄位 -->
+                                    <th class="px-8 py-5">最後上線</th>
+                                    <th class="px-8 py-5">操作</th>
+                                </tr>
                             </thead>
                             <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
                         </table>
@@ -469,7 +474,7 @@
                 else {
                     const customSession = sessionStorage.getItem('custom_user_session');
                     if (customSession) { state.userLabel = customSession; showAppUI(customSession, false); startSyncing(customSession); } 
-                    else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); }
+                    else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); logUserActivity(user.uid, false); }
                 }
             } else { document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('hidden'); }
             lucide.createIcons();
@@ -495,7 +500,17 @@
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
             const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', isCustom ? id : auth.currentUser.uid);
             try {
-                await setDoc(recordRef, { displayName: isCustom ? id : auth.currentUser.displayName, lastSeen: Date.now(), type: isCustom ? 'custom' : 'google' }, { merge: true });
+                // 🌟 新增：儲存 Google 帳號的 Email
+                const dataToSave = { 
+                    displayName: isCustom ? id : auth.currentUser.displayName, 
+                    lastSeen: Date.now(), 
+                    type: isCustom ? 'custom' : 'google' 
+                };
+                if (!isCustom && auth.currentUser.email) {
+                    dataToSave.email = auth.currentUser.email;
+                }
+                
+                await setDoc(recordRef, dataToSave, { merge: true });
                 await setDoc(statsRef, { loginCount: increment(1) }, { merge: true });
             } catch (e) {}
         }
@@ -604,7 +619,6 @@
             if (u && p) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() }); showNotification(`帳號 ${u} 已建立`); document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = ''; }
         };
 
-        // 新增：管理者刪除帳號紀錄 & 清空該帳號資料
         window.openDeleteConfirm = (uid, type) => {
             const modal = document.getElementById('deleteConfirmModal');
             document.getElementById('delConfirmTitle').innerText = type === 'account' ? '刪除帳密帳號？' : '刪除使用者資料？';
@@ -612,16 +626,9 @@
             const btn = document.getElementById('btnConfirmDelete');
             btn.onclick = async () => {
                 try {
-                    if (type === 'account') {
-                        // 刪除自定義帳密的「登入資訊」
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', uid));
-                    }
-                    // 統一刪除活動紀錄 (user_records)
+                    if (type === 'account') await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', uid));
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', uid));
-                    
-                    // 額外提示：Google 登入 identity 需到 Firebase Console 刪除
-                    showNotification(type === 'google' ? "資料已刪除！如要永久禁用此 Google 帳號，請至控制台操作。" : "帳號與資料已成功刪除");
-                    closeDeleteConfirm();
+                    showNotification("帳號與資料已成功刪除"); closeDeleteConfirm();
                 } catch (e) { showNotification("刪除失敗", "alert"); }
             };
             modal.classList.remove('hidden');
@@ -662,6 +669,7 @@
                     const d = docSnap.data();
                     return `<tr class="border-b hover:bg-slate-50 transition-all">
                         <td class="px-8 py-5 font-bold flex items-center gap-3"><div><p>${d.displayName}</p><p class="text-[9px] text-indigo-400 uppercase font-black">${d.type || 'custom'}</p></div></td>
+                        <td class="px-8 py-5 text-slate-500 text-xs font-medium">${d.email || '<span class="text-slate-300 italic">無 (帳密帳號)</span>'}</td>
                         <td class="px-8 py-5 text-slate-400 font-bold">${new Date(d.lastSeen).toLocaleString()}</td>
                         <td class="px-8 py-5 flex gap-2">
                             <button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-black transition-all hover:bg-indigo-700">查看數據</button>
