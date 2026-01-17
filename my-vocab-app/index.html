@@ -12,27 +12,41 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
+        /* 單字卡片顯示邏輯 */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
+        
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none; }
+        
         .card-zh .word-en { display: none; }
         .card-zh .word-zh { display: block; }
         .card-zh .voice-btn { visibility: hidden; }
 
-        .word-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .word-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
         .hidden { display: none; }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* Admin specific styles */
-        .admin-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; }
+        /* 管理者統計卡片 */
+        .admin-stat-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1.5rem; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900">
+<body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
 
-    <!-- 1. 登入畫面 (包含 Google 與 管理者) -->
+    <!-- 1. 登入畫面 -->
     <div id="authScreen" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 text-center">
             <div id="loginMainView">
@@ -59,27 +73,27 @@
                 </button>
             </div>
 
-            <!-- 管理者輸入區 -->
+            <!-- 管理者登入區 -->
             <div id="adminLoginView" class="hidden text-left">
-                <button onclick="toggleAdminView(false)" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold">
+                <button onclick="toggleAdminView(false)" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
                 </button>
                 <h2 class="text-xl font-bold mb-4">系統管理登入</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-4 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-4 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button onclick="adminLogin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-black transition-all">驗證登入</button>
+                    <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <button id="adminLoginBtn" onclick="adminLogin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-black transition-all active:scale-95">驗證登入</button>
                 </div>
             </div>
 
             <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2">
                 <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                正在連線至雲端資料庫...
+                <span id="loadingText">正在同步雲端資料...</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. 使用者主程式畫面 -->
+    <!-- 2. 使用者畫面 -->
     <div id="appScreen" class="hidden">
         <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -91,7 +105,7 @@
                 </div>
                 <div class="flex items-center gap-6">
                     <div class="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-full border border-slate-200">
-                        <img id="userPhoto" class="w-6 h-6 rounded-full" src="" alt="">
+                        <img id="userPhoto" class="w-6 h-6 rounded-full border border-white" src="" alt="">
                         <span id="userNameDisplay" class="text-sm font-bold text-slate-700"></span>
                     </div>
                     <button onclick="logout()" class="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl transition-all">登出</button>
@@ -101,6 +115,7 @@
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <!-- 左側：單元管理 -->
                 <div class="lg:col-span-4 space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800">
@@ -119,12 +134,13 @@
                             <i data-lucide="book-open" class="text-indigo-600"></i> 我的單字本
                         </h2>
                         <div id="unitList" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                            <div class="animate-pulse flex space-y-4 text-slate-400">正在同步雲端資料...</div>
+                            <div class="animate-pulse flex space-y-4 text-slate-400">正在讀取資料...</div>
                         </div>
                     </div>
                 </div>
+                <!-- 右側：練習區 -->
                 <div class="lg:col-span-8">
-                    <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
+                    <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
                         <div class="flex bg-slate-100 p-1.5 rounded-2xl">
                             <button onclick="setGlobalMode('both')" id="btn-mode-both" class="px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600">中英顯示</button>
                             <button onclick="setGlobalMode('en-only')" id="btn-mode-en-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500">僅英文</button>
@@ -136,74 +152,81 @@
                                 <option value="original">原始順序</option>
                                 <option value="random">隨機亂數</option>
                                 <option value="az">A-Z 排序</option>
-                                <option value="rating">熟練度排序 (5級優先)</option>
+                                <option value="rating">不熟度優先 (5級)</option>
                             </select>
                         </div>
                     </div>
                     <div id="unitHeader" class="mb-6 px-2 flex justify-between items-end">
                         <div>
-                            <h3 id="activeUnitTitle" class="text-3xl font-black text-slate-800">請選擇單元</h3>
+                            <h3 id="activeUnitTitle" class="text-3xl font-black text-slate-800 italic">請選擇單元</h3>
                             <p id="unitStats" class="text-slate-400 font-medium mt-1"></p>
                         </div>
+                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest hidden md:block">
+                            提示：點選卡片可單獨切換顯示模式
+                        </span>
                     </div>
                     <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                     <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300">
                         <i data-lucide="cloud-off" class="w-16 h-16 mb-4"></i>
-                        <p class="text-xl font-bold">點選單元開始練習</p>
+                        <p class="text-xl font-bold">目前無單字資料</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 3. 管理者後台畫面 (Admin Dashboard) -->
-    <div id="adminScreen" class="hidden bg-slate-100 min-h-screen pb-10">
-        <nav class="bg-slate-800 text-white h-16 flex items-center justify-between px-8 sticky top-0 z-50">
-            <div class="flex items-center gap-2 font-black tracking-widest uppercase">
-                <i data-lucide="settings" class="w-5 h-5 text-indigo-400"></i>
+    <!-- 3. 管理者後台 -->
+    <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center gap-3 font-black tracking-widest uppercase text-xl">
+                <div class="p-2 bg-indigo-500 rounded-xl">
+                    <i data-lucide="settings" class="w-6 h-6 text-white"></i>
+                </div>
                 系統後台中心
             </div>
-            <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all">結束管理模式</button>
+            <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
         
         <main class="max-w-7xl mx-auto px-8 py-10">
-            <!-- 統計數據卡片 -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div class="admin-stat-card">
-                    <p class="text-slate-400 text-sm font-bold mb-1">註冊使用者</p>
-                    <h4 id="statUsers" class="text-3xl font-black text-slate-800">0</h4>
+                <div class="admin-stat-card border-l-4 border-indigo-500">
+                    <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">註冊人數</p>
+                    <h4 id="statUsers" class="text-4xl font-black text-slate-800">0</h4>
                 </div>
-                <div class="admin-stat-card">
-                    <p class="text-slate-400 text-sm font-bold mb-1">總登入次數</p>
-                    <h4 id="statLogins" class="text-3xl font-black text-indigo-600">0</h4>
+                <div class="admin-stat-card border-l-4 border-blue-500">
+                    <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">總登入次數</p>
+                    <h4 id="statLogins" class="text-4xl font-black text-blue-600">0</h4>
                 </div>
-                <div class="admin-stat-card">
-                    <p class="text-slate-400 text-sm font-bold mb-1">匯入單元總數</p>
-                    <h4 id="statUnits" class="text-3xl font-black text-emerald-600">0</h4>
+                <div class="admin-stat-card border-l-4 border-emerald-500">
+                    <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">匯入單元數</p>
+                    <h4 id="statUnits" class="text-4xl font-black text-emerald-600">0</h4>
                 </div>
-                <div class="admin-stat-card">
-                    <p class="text-slate-400 text-sm font-bold mb-1">系統單字總計</p>
-                    <h4 id="statWords" class="text-3xl font-black text-amber-600">0</h4>
+                <div class="admin-stat-card border-l-4 border-amber-500">
+                    <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">單字總量</p>
+                    <h4 id="statWords" class="text-4xl font-black text-amber-600">0</h4>
                 </div>
             </div>
 
-            <div class="bg-white rounded-[2rem] shadow-sm border overflow-hidden">
-                <div class="p-8 border-b border-slate-100 flex justify-between items-center">
-                    <h3 class="text-xl font-bold">使用者活動列表</h3>
-                    <p class="text-xs text-slate-400 italic">資料每 30 秒自動同步一次</p>
+            <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white">
+                    <h3 class="text-2xl font-black text-slate-800">使用者活動監測</h3>
+                    <span class="flex items-center gap-2 text-xs font-bold text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        即時同步中
+                    </span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
                             <tr>
-                                <th class="px-8 py-4">使用者名稱</th>
-                                <th class="px-8 py-4">最後活動時間</th>
-                                <th class="px-8 py-4">單元數量</th>
-                                <th class="px-8 py-4">操作詳情</th>
+                                <th class="px-8 py-5">使用者名稱</th>
+                                <th class="px-8 py-5">最後上線</th>
+                                <th class="px-8 py-5">狀態</th>
+                                <th class="px-8 py-5">管理操作</th>
                             </tr>
                         </thead>
-                        <tbody id="adminUserTable" class="text-sm">
-                            <!-- User rows will go here -->
+                        <tbody id="adminUserTable" class="text-sm font-medium">
+                            <!-- User rows -->
                         </tbody>
                     </table>
                 </div>
@@ -212,31 +235,37 @@
     </div>
 
     <!-- 管理者詳情 Modal -->
-    <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                <h4 id="detailUserTitle" class="font-bold text-lg">使用者單字詳情</h4>
-                <button onclick="closeAdminDetail()" class="p-2 hover:bg-white rounded-full transition-all text-slate-400">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+    <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50/50">
+                <div>
+                    <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800">學習紀錄詳情</h4>
+                    <p class="text-slate-400 text-sm font-bold mt-1">查看使用者匯入的所有單字單元</p>
+                </div>
+                <button onclick="closeAdminDetail()" class="p-3 bg-white hover:bg-slate-100 rounded-2xl transition-all text-slate-400 shadow-sm">
+                    <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            <div id="detailContent" class="p-6 overflow-y-auto space-y-6">
-                <!-- Word lists here -->
+            <div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white">
+                <!-- Word content -->
             </div>
         </div>
     </div>
 
-    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 z-50">
-        <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+    <!-- 通知元件 -->
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 z-50 border border-white/10">
+        <div id="notifIconCircle" class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
+            <i data-lucide="bell" class="w-4 h-4 text-white"></i>
+        </div>
         <span id="notificationText" class="font-bold"></span>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase Config ---
+        // --- Firebase 初始化 ---
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -251,7 +280,7 @@
             globalMode: 'both'
         };
 
-        // --- 管理者登入邏輯 ---
+        // --- 管理者登入驗證 ---
         window.toggleAdminView = (show) => {
             document.getElementById('loginMainView').classList.toggle('hidden', show);
             document.getElementById('adminLoginView').classList.toggle('hidden', !show);
@@ -263,16 +292,28 @@
             const pass = document.getElementById('adminPass').value.trim();
             
             if (user === 'yljh' && pass === 'yljh8320873') {
-                state.isAdmin = true;
-                if (!auth.currentUser) await signInAnonymously(auth);
-                showAdminDashboard();
-                showNotification("管理者權限驗證成功");
+                const loader = document.getElementById('loadingIndicator');
+                loader.classList.remove('hidden');
+                document.getElementById('loadingText').innerText = "正在驗證管理者權限...";
+                
+                try {
+                    // 若尚未認證則使用匿名登入
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    state.isAdmin = true;
+                    showAdminDashboard();
+                    showNotification("系統管理模式已啟動");
+                } catch (error) {
+                    console.error("Admin Login Error:", error);
+                    showNotification("驗證失敗，請確保 Firebase 已開啟「匿名登入」", "alert");
+                } finally {
+                    loader.classList.add('hidden');
+                }
             } else {
-                showNotification("管理帳號或密碼錯誤", "alert");
+                showNotification("管理者帳號或密碼錯誤", "alert");
             }
         };
 
-        // --- 登入流程 ---
+        // --- Google 登入 ---
         window.loginWithGoogle = async () => {
             const provider = new GoogleAuthProvider();
             try {
@@ -280,7 +321,7 @@
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login Error", error);
-                showNotification("登入失敗", "alert");
+                showNotification("Google 登入失敗", "alert");
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
         };
@@ -290,22 +331,21 @@
             location.reload();
         };
 
-        // --- 身份監聽 ---
+        // --- Auth 狀態監聽 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 state.user = user;
                 if (state.isAdmin) {
                     showAdminDashboard();
                 } else if (!user.isAnonymous) {
-                    // 一般使用者流程
+                    // 使用者介面
                     document.getElementById('authScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('userNameDisplay').innerText = user.displayName;
                     document.getElementById('userPhoto').src = user.photoURL;
                     
-                    // 更新全局統計 (Rule 1: /artifacts/{appId}/public/data/global_stats)
-                    logUserStats(user);
-                    startUserSync(user.uid);
+                    logUserActivity(user);
+                    startSyncing(user.uid);
                 }
             } else {
                 document.getElementById('authScreen').classList.remove('hidden');
@@ -315,15 +355,24 @@
             lucide.createIcons();
         });
 
-        // --- 數據統計邏輯 ---
-        async function logUserStats(user) {
+        // --- 雲端數據同步 (使用者) ---
+        function startSyncing(uid) {
+            const unitsRef = collection(db, 'artifacts', appId, 'users', uid, 'units');
+            onSnapshot(unitsRef, (snapshot) => {
+                state.units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
+                renderUnitList();
+                renderWords();
+            }, (err) => console.error("Sync Error:", err));
+        }
+
+        async function logUserActivity(user) {
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', user.uid);
+            const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', user.uid);
             
             try {
-                // 檢查是否為新使用者
-                const userSnap = await getDoc(userRef);
-                const isNew = !userSnap.exists();
+                const recordSnap = await getDoc(recordRef);
+                const isFirstTime = !recordSnap.exists();
 
                 await runTransaction(db, async (transaction) => {
                     const statsSnap = await transaction.get(statsRef);
@@ -332,60 +381,52 @@
                     } else {
                         transaction.update(statsRef, { 
                             loginCount: increment(1),
-                            userCount: isNew ? increment(1) : increment(0)
+                            userCount: isFirstTime ? increment(1) : increment(0)
                         });
                     }
-                    transaction.set(userRef, {
+                    transaction.set(recordRef, {
                         displayName: user.displayName,
-                        lastLogin: Date.now(),
+                        lastSeen: Date.now(),
                         photo: user.photoURL
                     }, { merge: true });
                 });
-            } catch (e) { console.error("Stats logging failed", e); }
+            } catch (e) { console.error("Activity logging error", e); }
         }
 
-        async function incrementUnitStats(wordCount) {
-            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
-            try {
-                await updateDoc(statsRef, {
-                    totalUnits: increment(1),
-                    totalWords: increment(wordCount)
-                });
-            } catch(e) {}
-        }
-
-        // --- 管理者功能 ---
+        // --- 管理者後台邏輯 ---
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
             
-            // 監聽全局數據
+            // 監聽全域統計
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'global_stats'), (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data();
-                    document.getElementById('statUsers').innerText = data.userCount || 0;
-                    document.getElementById('statLogins').innerText = data.loginCount || 0;
-                    document.getElementById('statUnits').innerText = data.totalUnits || 0;
-                    document.getElementById('statWords').innerText = data.totalWords || 0;
+                    const d = doc.data();
+                    document.getElementById('statUsers').innerText = d.userCount || 0;
+                    document.getElementById('statLogins').innerText = d.loginCount || 0;
+                    document.getElementById('statUnits').innerText = d.totalUnits || 0;
+                    document.getElementById('statWords').innerText = d.totalWords || 0;
                 }
             });
 
-            // 監聽使用者列表 (Rule 2: Fetch all then filter in memory)
+            // 監聽使用者列表
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snapshot) => {
                 const table = document.getElementById('adminUserTable');
                 table.innerHTML = snapshot.docs.map(docSnap => {
-                    const data = docSnap.data();
-                    const date = new Date(data.lastLogin).toLocaleString();
+                    const d = docSnap.data();
+                    const lastActive = new Date(d.lastSeen).toLocaleString();
                     return `
-                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
-                            <td class="px-8 py-5 flex items-center gap-3">
-                                <img src="${data.photo || ''}" class="w-8 h-8 rounded-full border">
-                                <span class="font-bold">${data.displayName}</span>
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
+                            <td class="px-8 py-6 flex items-center gap-4">
+                                <img src="${d.photo || ''}" class="w-10 h-10 rounded-2xl border-2 border-white shadow-sm">
+                                <span class="font-black text-slate-700">${d.displayName}</span>
                             </td>
-                            <td class="px-8 py-5 text-slate-500">${date}</td>
-                            <td class="px-8 py-5 font-mono text-indigo-600">偵測中...</td>
-                            <td class="px-8 py-5">
-                                <button onclick="window.viewUserDetail('${docSnap.id}', '${data.displayName}')" class="bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 px-4 py-1.5 rounded-lg font-bold transition-all">查看匯入內容</button>
+                            <td class="px-8 py-6 text-slate-400 font-bold">${lastActive}</td>
+                            <td class="px-8 py-6">
+                                <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase">Active</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <button onclick="window.adminViewUserDetail('${docSnap.id}', '${d.displayName}')" class="bg-slate-900 text-white px-5 py-2 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200">查看內容</button>
                             </td>
                         </tr>
                     `;
@@ -394,54 +435,47 @@
             });
         }
 
-        window.viewUserDetail = async (uid, name) => {
+        window.adminViewUserDetail = async (uid, name) => {
             const modal = document.getElementById('adminDetailModal');
             const content = document.getElementById('detailContent');
-            document.getElementById('detailUserTitle').innerText = `${name} 的學習單元`;
-            content.innerHTML = '<p class="text-center py-10 text-slate-400">正在讀取雲端單元...</p>';
+            document.getElementById('detailUserTitle').innerText = `${name} 的單字庫`;
+            content.innerHTML = '<div class="flex justify-center py-12"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
             modal.classList.remove('hidden');
 
-            const unitsRef = collection(db, 'artifacts', appId, 'users', uid, 'units');
-            const snap = await getDocs(unitsRef);
-            
-            if (snap.empty) {
-                content.innerHTML = '<p class="text-center py-10 text-slate-400">此使用者尚未建立單元</p>';
-            } else {
-                content.innerHTML = snap.docs.map(uDoc => {
-                    const uData = uDoc.data();
-                    return `
-                        <div class="bg-slate-50 p-6 rounded-2xl">
-                            <h5 class="font-black text-indigo-600 mb-3">${uData.name} (${uData.words.length} 個單字)</h5>
-                            <div class="flex flex-wrap gap-2">
-                                ${uData.words.map(w => `<span class="bg-white px-2 py-1 rounded border text-xs">${w.en} : ${w.zh}</span>`).join('')}
+            try {
+                const unitsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
+                if (unitsSnap.empty) {
+                    content.innerHTML = '<p class="text-center py-10 text-slate-300 font-bold">此使用者尚未上傳單元</p>';
+                } else {
+                    content.innerHTML = unitsSnap.docs.map(uDoc => {
+                        const u = uDoc.data();
+                        return `
+                            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                                <h5 class="font-black text-indigo-600 text-lg mb-4 flex items-center gap-2">
+                                    <i data-lucide="folder" class="w-5 h-5"></i> ${u.name}
+                                    <span class="text-xs bg-indigo-100 px-2 py-0.5 rounded-full ml-auto">${u.words.length} 字</span>
+                                </h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    ${u.words.map(w => `<div class="bg-white p-2 rounded-xl border text-[11px] font-bold"><span class="text-slate-800">${w.en}</span> <span class="text-slate-300 mx-1">/</span> <span class="text-slate-400">${w.zh}</span></div>`).join('')}
+                                </div>
                             </div>
-                        </div>
-                    `;
-                }).join('');
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                content.innerHTML = '<p class="text-red-500 text-center py-10">資料讀取失敗，請確認資料庫權限</p>';
             }
             lucide.createIcons();
         };
 
-        window.closeAdminDetail = () => {
-            document.getElementById('adminDetailModal').classList.add('hidden');
-        };
+        window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
 
-        // --- 使用者同步與功能 ---
-        function startUserSync(uid) {
-            const unitsRef = collection(db, 'artifacts', appId, 'users', uid, 'units');
-            onSnapshot(unitsRef, (snapshot) => {
-                state.units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
-                renderUnitList();
-                renderWords();
-            });
-        }
-
+        // --- 一般功能邏輯 ---
         window.importWords = async () => {
             if (!state.user) return;
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
-            if (!name || !text) return showNotification("請填寫單元與內容", "alert");
+            if (!name || !text) return showNotification("請填寫單元與單字", "alert");
 
             const words = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
@@ -455,38 +489,43 @@
                 } : null;
             }).filter(w => w);
 
-            const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', 'u' + Date.now());
+            if (words.length === 0) return showNotification("格式不正確", "alert");
+
+            const unitId = 'u' + Date.now();
+            const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
+            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
+
             try {
                 await setDoc(unitRef, { name, words, createdAt: Date.now() });
-                incrementUnitStats(words.length); // 更新全域統計
+                await updateDoc(statsRef, { totalUnits: increment(1), totalWords: increment(words.length) });
                 document.getElementById('unitNameInput').value = '';
                 document.getElementById('wordsInput').value = '';
-                showNotification("單元已同步至雲端庫");
-            } catch (e) { showNotification("雲端儲存失敗", "alert"); }
+                showNotification("已儲存並同步至雲端");
+            } catch (e) { showNotification("存檔失敗", "alert"); }
         };
 
         window.deleteUnit = async (id) => {
             const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', id);
             await deleteDoc(unitRef);
             if (state.activeUnitId === id) state.activeUnitId = null;
-            showNotification("單元已刪除");
+            showNotification("單元已從雲端移除");
         };
 
-        window.updateWordRating = async (wordId, newRating) => {
+        window.updateRating = async (wordId, n) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
-            const updatedWords = unit.words.map(w => w.id === wordId ? { ...w, rating: newRating } : w);
+            const updatedWords = unit.words.map(w => w.id === wordId ? { ...w, rating: n } : w);
             const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', state.activeUnitId);
             await updateDoc(unitRef, { words: updatedWords });
         };
 
-        // --- UI 工具 ---
-        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
-        window.cycleCardMode = (wordId) => {
+        window.setActiveUnit = (id) => { state.activeUnitId = id; renderUnitList(); renderWords(); };
+
+        window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const word = unit.words.find(w => w.id === wordId);
             if (word) {
-                const next = { 'both': 'en', 'en': 'zh', 'zh': 'both' };
-                word.localMode = next[word.localMode || 'both'];
+                const map = { 'both': 'en', 'en': 'zh', 'zh': 'both' };
+                word.localMode = map[word.localMode || 'both'];
                 renderWords();
             }
         };
@@ -496,27 +535,31 @@
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (!unit) { grid.innerHTML = ''; return; }
             document.getElementById('activeUnitTitle').innerText = unit.name;
-            document.getElementById('unitStats').innerText = `雲端加密同步中 | ${unit.words.length} 個單字`;
-            const sortVal = document.getElementById('sortSelect').value;
+            document.getElementById('unitStats').innerText = `資料已連線 | ${unit.words.length} 個單字`;
+
+            const sort = document.getElementById('sortSelect').value;
             let list = [...unit.words];
-            if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
-            else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
-            else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
+            if (sort === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
+            else if (sort === 'random') list.sort(() => Math.random() - 0.5);
+            else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+            
             grid.innerHTML = list.map(word => `
-                <div onclick="window.cycleCardMode('${word.id}')" class="word-card bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col justify-between hover:border-indigo-300 hover:shadow-xl card-${word.localMode || 'both'}">
+                <div onclick="window.cycleMode('${word.id}')" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:border-indigo-200 hover:shadow-xl card-${word.localMode || 'both'}">
                     <div class="flex justify-between items-start mb-4">
                         <div class="space-y-1">
-                            <h4 class="word-en text-2xl font-black text-slate-800">${word.en}</h4>
-                            <p class="word-zh text-indigo-600 font-bold">${word.zh}</p>
+                            <h4 class="word-en text-2xl font-black text-slate-800 tracking-tight">${word.en}</h4>
+                            <p class="word-zh text-indigo-600 font-bold text-lg">${word.zh}</p>
                         </div>
-                        <button onclick="event.stopPropagation(); window.speak('${word.en}')" class="voice-btn p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all">
-                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        <button onclick="event.stopPropagation(); window.speak('${word.en}')" class="voice-btn p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                            <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
-                    <div class="pt-4 border-t flex items-center justify-between">
-                        <span class="text-[10px] font-black text-slate-300 tracking-widest">熟練度</span>
-                        <div class="flex gap-1">
-                            ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateWordRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black ${word.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
+                    <div class="pt-6 border-t border-slate-50 flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-black text-slate-300 tracking-widest uppercase">熟練度</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${word.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -527,9 +570,9 @@
         window.renderUnitList = () => {
             const el = document.getElementById('unitList');
             el.innerHTML = state.units.map(u => `
-                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'}">
+                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'}">
                     <span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `).join('');
             lucide.createIcons();
@@ -538,20 +581,32 @@
         window.setGlobalMode = (m) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (unit) unit.words.forEach(w => w.localMode = m === 'both' ? 'both' : m === 'en-only' ? 'en' : 'zh');
+            ['both', 'en-only', 'zh-only'].forEach(b => {
+                const el = document.getElementById(`btn-mode-${b}`);
+                el.className = `px-5 py-2 text-sm font-bold rounded-xl transition-all ${b === m ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`;
+            });
             renderWords();
         };
 
-        window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; window.speechSynthesis.speak(u); };
+        window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
 
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
+            const circle = document.getElementById('notifIconCircle');
             document.getElementById('notificationText').innerText = t;
+            circle.className = `w-8 h-8 rounded-full flex items-center justify-center ${type === 'alert' ? 'bg-rose-500' : 'bg-indigo-500'}`;
             el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100');
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 3000);
         }
 
-        function getRatingColor(n) { return {1:'bg-emerald-500 text-white',2:'bg-teal-400 text-white',3:'bg-amber-400 text-white',4:'bg-orange-500 text-white',5:'bg-rose-500 text-white'}[n]; }
+        function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white shadow-lg', 2: 'bg-teal-400 text-white shadow-md', 3: 'bg-amber-400 text-white shadow-md', 4: 'bg-orange-500 text-white shadow-md', 5: 'bg-rose-500 text-white shadow-lg' }[n]; }
 
+        // 初次啟動認證
+        (async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
+            }
+        })();
     </script>
 </body>
 </html>
