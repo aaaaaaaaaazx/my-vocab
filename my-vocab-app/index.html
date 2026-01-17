@@ -64,7 +64,7 @@
             display: none;
         }
 
-        /* 盲聽模式過渡 */
+        /* 聽力挑戰模式 (模糊背景) */
         #wordGrid.blind-mode {
             opacity: 0.1;
             filter: blur(12px);
@@ -84,8 +84,8 @@
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
                         <i data-lucide="shield-check" class="text-white w-12 h-12 -rotate-3"></i>
                     </div>
-                    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Vocab Master</h1>
-                    <p class="text-slate-400 mt-2 font-medium">同步您的英文學習進度</p>
+                    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">單字大師</h1>
+                    <p class="text-slate-400 mt-2 font-medium">葉彥麟製作</p>
                 </div>
                 
                 <div class="space-y-4">
@@ -112,12 +112,12 @@
                 </div>
             </div>
 
-            <!-- 學生登入區 -->
+            <!-- 使用者登入區 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
                 </button>
-                <h2 class="text-2xl font-bold mb-6">學生登入</h2>
+                <h2 class="text-2xl font-bold mb-6">使用者登入</h2>
                 <div class="space-y-4">
                     <input type="text" id="customUser" placeholder="您的帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
                     <input type="password" id="customPass" placeholder="您的密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
@@ -125,7 +125,7 @@
                 </div>
             </div>
 
-            <!-- 管理員登入區 -->
+            <!-- 管理者登入區 -->
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -153,7 +153,7 @@
                     <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100">
                         <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
                     </div>
-                    <span class="text-xl font-black text-slate-800 tracking-tighter uppercase">Vocab Master</span>
+                    <span class="text-xl font-black text-slate-800 tracking-tighter uppercase">單字大師</span>
                 </div>
                 <div class="flex items-center gap-6">
                     <div id="userBadge" class="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-full border border-slate-200">
@@ -176,8 +176,8 @@
                         </h2>
                         <div class="space-y-4">
                             <input type="text" id="unitNameInput" placeholder="單元名稱" class="w-full px-5 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                            <textarea id="wordsInput" placeholder="格式範例:&#10;apple,蘋果&#10;banana,香蕉" rows="5" class="w-full px-5 py-3 bg-slate-50 border rounded-xl outline-none text-sm"></textarea>
-                            <button onclick="importWords()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
+                            <textarea id="wordsInput" placeholder="格式範例:&#10;apple,蘋果&#10;banana,香蕉" rows="5" class="w-full px-5 py-3 bg-slate-50 border rounded-xl outline-none text-sm leading-relaxed"></textarea>
+                            <button onclick="importWords()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all active:scale-95">
                                 <i data-lucide="cloud-upload" class="w-5 h-5"></i> 儲存至雲端
                             </button>
                         </div>
@@ -214,25 +214,25 @@
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <!-- 次數選擇 -->
+                                    <!-- 次數選擇：預設改為 1 次 -->
                                     <div class="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
                                         <span class="text-[10px] font-black text-indigo-400 uppercase">朗讀</span>
                                         <select id="audioRepeatCount" class="bg-transparent font-bold text-sm outline-none text-indigo-700">
-                                            <option value="1">1 次</option>
+                                            <option value="1" selected>1 次</option>
                                             <option value="2">2 次</option>
-                                            <option value="3" selected>3 次</option>
+                                            <option value="3">3 次</option>
                                             <option value="4">4 次</option>
                                             <option value="5">5 次</option>
                                         </select>
                                     </div>
 
-                                    <!-- 單詞停頓時間 -->
+                                    <!-- 單詞停頓時間：預設改為 無停頓 -->
                                     <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
                                         <span class="text-[10px] font-black text-slate-400 uppercase">間隔停頓</span>
                                         <select id="audioIntervalPause" class="bg-transparent font-bold text-sm outline-none text-slate-600">
-                                            <option value="0">無停頓</option>
+                                            <option value="0" selected>無停頓</option>
                                             <option value="1">1 秒</option>
-                                            <option value="2" selected>2 秒</option>
+                                            <option value="2">2 秒</option>
                                             <option value="3">3 秒</option>
                                             <option value="4">4 秒</option>
                                             <option value="5">5 秒</option>
@@ -242,7 +242,7 @@
                                     <!-- 視覺開關 -->
                                     <label class="flex items-center gap-2 cursor-pointer group px-2">
                                         <input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
-                                        <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-600">視覺高亮</span>
+                                        <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-600">卡片模式</span>
                                     </label>
 
                                     <!-- 盲聽開關 -->
@@ -253,21 +253,18 @@
                                 </div>
 
                                 <div class="flex gap-2">
-                                    <!-- 播放 / 繼續按鈕 -->
+                                    <!-- 控制按鈕 -->
                                     <button id="btnStartAudio" onclick="startAutoPlay()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-indigo-100 active:scale-95">
                                         <i data-lucide="play" class="w-4 h-4"></i> <span id="btnStartText">開始英聽</span>
                                     </button>
-                                    <!-- 暫停按鈕 -->
                                     <button id="btnPauseAudio" onclick="pauseAutoPlay()" class="hidden px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-amber-100 active:scale-95">
                                         <i data-lucide="pause" class="w-4 h-4"></i> 暫停
                                     </button>
-                                    <!-- 停止按鈕 -->
                                     <button id="btnStopAudio" onclick="stopAutoPlay()" class="hidden px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-rose-100 active:scale-95">
                                         <i data-lucide="square" class="w-4 h-4"></i> 停止
                                     </button>
                                 </div>
                             </div>
-                            <!-- 播放狀態顯示 -->
                             <div id="audioStatusText" class="text-[10px] font-bold text-indigo-400 hidden flex items-center gap-2">
                                 <span id="audioStatusDot" class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
                                 <span id="audioStatusMsg">正依據排序規則進行連續朗讀...</span>
@@ -307,7 +304,7 @@
                     <div class="space-y-4">
                         <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
                         <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
-                        <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">發布帳號</button>
+                        <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold transition-all active:scale-95">發布帳號</button>
                     </div>
                 </div>
                 <div class="lg:col-span-2 bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200">
@@ -372,13 +369,14 @@
             userLabel: null,
             isAudioPlaying: false,
             isAudioPaused: false,
-            displayedWords: [] // 儲存目前 UI 上顯示的正確順序
+            displayedWords: []
         };
 
         // --- UI 控制 ---
         window.toggleAuthView = (mode) => {
-            ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden'));
-            const targetId = mode === 'main' ? 'loginMainView' : mode + 'LoginView';
+            const views = ['loginMainView', 'customLoginView', 'adminLoginView'];
+            views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
+            const targetId = mode === 'main' ? 'loginMainView' : (mode + 'LoginView');
             document.getElementById(targetId)?.classList.remove('hidden');
             lucide.createIcons();
         };
@@ -518,66 +516,44 @@
             } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        // --- 🚀 英聽系統 (含停頓間隔) ---
+        // --- 🚀 英聽系統 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) {
                 state.isAudioPaused = false;
                 updateAudioUI(true);
                 return;
             }
-
             if (state.isAudioPlaying) return;
-
-            // 🌟 關鍵：英聽順序必須與當前 UI 顯示的單字順序 (state.displayedWords) 完全同步
             const wordsToPlay = [...state.displayedWords];
             if (wordsToPlay.length === 0) return showNotification("請先選擇含有單字的單元", "alert");
-
             state.isAudioPlaying = true;
             state.isAudioPaused = false;
             updateAudioUI(true);
-
             const isBlindMode = document.getElementById('audioBlindMode').checked;
             const isVisualSync = document.getElementById('audioVisualSync').checked;
             const repeats = parseInt(document.getElementById('audioRepeatCount').value);
-            const intervalPause = parseInt(document.getElementById('audioIntervalPause').value); // 停頓時間
+            const intervalPause = parseInt(document.getElementById('audioIntervalPause').value);
             const grid = document.getElementById('wordGrid');
-
             if (isBlindMode) grid.classList.add('blind-mode');
-
+            
             for (let i = 0; i < wordsToPlay.length; i++) {
                 if (!state.isAudioPlaying) break;
-                
-                // 暫停等待邏輯
                 while (state.isAudioPaused && state.isAudioPlaying) { await sleep(200); }
                 if (!state.isAudioPlaying) break;
-
                 const word = wordsToPlay[i];
-
-                // 高亮並捲動
-                if (isVisualSync && !isBlindMode) {
-                    highlightWordCard(word.id);
-                }
-
-                // 朗讀指定次數
+                if (isVisualSync && !isBlindMode) { highlightWordCard(word.id); }
                 for (let r = 0; r < repeats; r++) {
                     if (!state.isAudioPlaying) break;
                     while (state.isAudioPaused && state.isAudioPlaying) { await sleep(200); }
                     if (!state.isAudioPlaying) break;
-
                     await speakAsync(word.en);
-                    if (r < repeats - 1) await sleep(400); // 朗讀中途停頓
+                    if (r < repeats - 1) await sleep(400);
                 }
-
-                // 🌟 單詞切換時的額外停頓
                 if (state.isAudioPlaying && i < wordsToPlay.length - 1) {
                     await sleep(intervalPause * 1000 + 800); 
                 }
             }
-            
-            if (state.isAudioPlaying) {
-                stopAutoPlay();
-                showNotification("英聽朗讀單元結束");
-            }
+            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("英聽朗讀單元結束"); }
         };
 
         window.pauseAutoPlay = () => {
@@ -605,7 +581,6 @@
             const stopBtn = document.getElementById('btnStopAudio');
             const status = document.getElementById('audioStatusText');
             const startText = document.getElementById('btnStartText');
-
             if (isPlaying) {
                 startBtn.classList.add('hidden');
                 pauseBtn.classList.remove('hidden');
@@ -623,18 +598,13 @@
             lucide.createIcons();
         }
 
-        // 🌟 排序輔助函式 (修正隨機排序穩定性)
         function getSortedWordsList(unit) {
             const sortVal = document.getElementById('sortSelect').value;
             let list = [...unit.words];
-            
-            // 先按建立時間排序，建立一個基準
             list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-
             if (sortVal === 'az') {
                 list.sort((a, b) => a.en.localeCompare(b.en));
             } else if (sortVal === 'random') {
-                // Fisher-Yates Shuffle 演算法
                 for (let i = list.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [list[i], list[j]] = [list[j], list[i]];
@@ -670,7 +640,6 @@
             document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing'));
         }
 
-        // --- UI 渲染 ---
         window.renderWords = () => {
             const grid = document.getElementById('wordGrid');
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -684,11 +653,8 @@
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('activeUnitTitle').innerText = unit.name;
             document.getElementById('unitStats').innerText = `${unit.words.length} 個單字`;
-            
-            // 🌟 進行排序並存入 state。英聽功能會直接拿這組順序。
             const words = getSortedWordsList(unit);
             state.displayedWords = words;
-            
             grid.innerHTML = words.map(word => {
                 const displayModeClass = `card-${word.localMode || 'both'}`;
                 return `
@@ -800,7 +766,6 @@
         
         function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white shadow-lg', 2: 'bg-teal-400 text-white shadow-md', 3: 'bg-amber-400 text-white shadow-md', 4: 'bg-orange-500 text-white shadow-md', 5: 'bg-rose-500 text-white shadow-lg' }[n]; }
 
-        // --- 管理者功能 ---
         window.createAccount = async () => {
             const u = document.getElementById('newAccountUser').value.trim();
             const p = document.getElementById('newAccountPass').value.trim();
