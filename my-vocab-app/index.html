@@ -15,10 +15,15 @@
         /* 單字卡片顯示邏輯 */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
+        .card-both .word-note { display: block; }
+        
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none; }
+        .card-en .word-note { display: none; } /* 僅英文顯示時隱藏記憶技巧 */
+        
         .card-zh .word-en { display: none; }
         .card-zh .word-zh { display: block; }
+        .card-zh .word-note { display: block; }
         .card-zh .voice-btn { visibility: hidden; }
 
         .word-card { 
@@ -205,7 +210,7 @@
 
     <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase">系統管理中心</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
@@ -519,7 +524,8 @@
                             <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
-                    <div class="mt-2 mb-4" onclick="event.stopPropagation()">
+                    <!-- 記憶技巧編輯區 wrapper 加上的 word-note class 配合 CSS 顯示控制 -->
+                    <div class="word-note mt-2 mb-4" onclick="event.stopPropagation()">
                         <textarea 
                             class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/50 resize-none transition-all placeholder:text-slate-300 font-medium"
                             placeholder="記憶筆記..."
