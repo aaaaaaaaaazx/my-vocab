@@ -154,8 +154,8 @@
                             <i data-lucide="file-plus-2" class="text-indigo-600"></i> 新增學習單元
                         </h2>
                         <div class="space-y-4">
-                            <input type="text" id="unitNameInput" placeholder="單元名稱 (如: 第1課)" class="w-full px-5 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                            <textarea id="wordsInput" placeholder="格式範例:&#10;hello,你好&#10;world,世界" rows="5" class="w-full px-5 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed"></textarea>
+                            <input type="text" id="unitNameInput" placeholder="單元名稱 (如: 第1課)" class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                            <textarea id="wordsInput" placeholder="格式範例:&#10;hello,你好&#10;world,世界" rows="5" class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed"></textarea>
                             <button onclick="importWords()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
                                 <i data-lucide="cloud-upload" class="w-5 h-5"></i> 儲存至雲端
                             </button>
@@ -327,7 +327,7 @@
             };
             Object.values(views).forEach(v => v.classList.add('hidden'));
             if (views[mode]) views[mode].classList.remove('hidden');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         // --- 登入邏輯 ---
@@ -419,7 +419,7 @@
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
             }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
         function showAppUI(displayName, isGoogle, photoUrl = null) {
@@ -449,6 +449,9 @@
                 if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
                 renderUnitList();
                 renderWords();
+            }, (err) => {
+                console.error("Sync error:", err);
+                showNotification("雲端連線失敗", "alert");
             });
         }
 
@@ -476,13 +479,16 @@
             } catch (e) { console.error("Logging error", e); }
         }
 
-        // --- 核心功能：匯入 ---
+        // --- 核心功能：匯入 (修復版) ---
         window.importWords = async () => {
+            if (!auth.currentUser || !state.userLabel) {
+                return showNotification("請先登入後再進行儲存操作", "alert");
+            }
+
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
             
-            if (!state.userLabel) return showNotification("請登入後再操作", "alert");
-            if (!name || !text) return showNotification("請填寫內容", "alert");
+            if (!name || !text) return showNotification("請填寫單元名稱與單字內容", "alert");
 
             const wordList = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
@@ -492,31 +498,40 @@
                     zh: parts[1].trim(),
                     rating: 5,
                     localMode: 'both',
-                    note: '', // 初始化記憶技巧
+                    note: '', 
                     createdAt: Date.now() + idx
                 } : null;
             }).filter(w => w);
 
-            if (wordList.length === 0) return showNotification("格式錯誤", "alert");
+            if (wordList.length === 0) return showNotification("單字格式不正確 (英文,中文)", "alert");
 
             const unitId = 'u' + Date.now();
             const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', unitId);
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
 
             try {
+                // 儲存單元資料
                 await setDoc(unitRef, { name, words: wordList, createdAt: Date.now() });
-                await setDoc(statsRef, { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
+                
+                // 更新全局統計
+                await setDoc(statsRef, { 
+                    totalUnits: increment(1), 
+                    totalWords: increment(wordList.length) 
+                }, { merge: true });
+
                 document.getElementById('unitNameInput').value = '';
                 document.getElementById('wordsInput').value = '';
-                showNotification("已成功上傳雲端！");
+                showNotification("已成功同步至雲端！");
                 state.activeUnitId = unitId;
                 renderWords();
-            } catch (e) { showNotification("雲端連線失敗", "alert"); }
+            } catch (e) { 
+                console.error("Firestore Error:", e);
+                showNotification("儲存失敗：請檢查網路連線或資料庫權限", "alert"); 
+            }
         };
 
-        // --- 記憶技巧更新功能 ---
         window.updateWordNote = async (wordId, newNote) => {
-            if (!state.activeUnitId || !state.userLabel) return;
+            if (!state.activeUnitId || !state.userLabel || !auth.currentUser) return;
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (!unit) return;
             
@@ -533,15 +548,21 @@
         window.deleteUnit = async (id) => {
             if (!confirm("確定要刪除嗎？")) return;
             const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id);
-            await deleteDoc(unitRef);
-            if (state.activeUnitId === id) state.activeUnitId = null;
+            try {
+                await deleteDoc(unitRef);
+                if (state.activeUnitId === id) state.activeUnitId = null;
+                showNotification("單元已移除");
+            } catch (e) { showNotification("刪除失敗", "alert"); }
         };
 
         window.updateRating = async (wordId, n) => {
+            if (!state.activeUnitId || !auth.currentUser) return;
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const updatedWords = unit.words.map(w => w.id === wordId ? { ...w, rating: n } : w);
             const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId);
-            await updateDoc(unitRef, { words: updatedWords });
+            try {
+                await updateDoc(unitRef, { words: updatedWords });
+            } catch (e) { console.error("Rating update failed", e); }
         };
 
         // --- 管理者功能 ---
@@ -579,7 +600,7 @@
                     document.getElementById('statUnits').innerText = d.totalUnits || 0;
                     document.getElementById('statWords').innerText = d.totalWords || 0;
                 }
-            });
+            }, (err) => console.error("Stats watch error:", err));
 
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (snap) => {
                 const table = document.getElementById('customAccountTable');
@@ -595,8 +616,8 @@
                         </tr>
                     `;
                 }).join('');
-                lucide.createIcons();
-            });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, (err) => console.error("Accounts watch error:", err));
 
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => {
                 const table = document.getElementById('adminUserTable');
@@ -618,8 +639,8 @@
                         </tr>
                     `;
                 }).join('');
-                lucide.createIcons();
-            });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, (err) => console.error("Records watch error:", err));
         }
 
         window.adminViewUserDetail = async (uid, name) => {
@@ -649,13 +670,13 @@
             } catch (e) {
                 content.innerHTML = `<p class="text-center py-10 text-rose-500 font-bold">讀取失敗：權限限制</p>`;
             }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
 
         // --- UI 工具 ---
-        window.setActiveUnit = (id) => { state.activeUnitId = id; renderUnitList(); renderWords(); };
+        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         
         window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -711,7 +732,7 @@
                     </div>
                 </div>
             `).join('');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         window.renderUnitList = () => {
@@ -722,7 +743,7 @@
                     <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `).join('');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         window.setGlobalMode = (m) => {
@@ -731,14 +752,27 @@
             renderWords();
         };
 
-        window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
+        window.speak = (t) => { 
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); 
+            const u = new SpeechSynthesisUtterance(t); 
+            u.lang = 'en-US'; 
+            u.rate = 0.9; 
+            window.speechSynthesis.speak(u); 
+        };
 
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
-            const circle = document.getElementById('notifIconCircle');
-            document.getElementById('notificationText').innerText = t;
-            el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000);
+            const icon = document.getElementById('notifIcon');
+            const text = document.getElementById('notificationText');
+            if (!el || !text) return;
+            text.innerText = t;
+            el.classList.replace('translate-y-20', 'translate-y-0'); 
+            el.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => { 
+                el.classList.replace('translate-y-0', 'translate-y-20'); 
+                el.classList.replace('opacity-100', 'opacity-0'); 
+            }, 4000);
         }
         function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white shadow-lg', 2: 'bg-teal-400 text-white shadow-md', 3: 'bg-amber-400 text-white shadow-md', 4: 'bg-orange-500 text-white shadow-md', 5: 'bg-rose-500 text-white shadow-lg' }[n]; }
     </script>
