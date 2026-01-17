@@ -19,7 +19,7 @@
         .card-both .word-zh { display: block; }
         .card-both .word-note { display: block; }
         
-        /* 2. 僅英文顯示模式 */
+        /* 2. 僅英文顯示模式 (在此模式下隱藏中文與記憶筆記) */
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none !important; }
         .card-en .word-note { display: none !important; } 
@@ -98,6 +98,7 @@
                 </div>
             </div>
 
+            <!-- 自定義登入 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -110,6 +111,7 @@
                 </div>
             </div>
 
+            <!-- 管理員登入 -->
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600 transition-all">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -178,6 +180,7 @@
                 <div class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
                         <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+                            <!-- 模式切換按鈕，透過 JS 更新 active 狀態 -->
                             <button onclick="setGlobalMode('both')" id="btn-mode-both" class="px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600">中英顯示</button>
                             <button onclick="setGlobalMode('en-only')" id="btn-mode-en-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800">僅英文</button>
                             <button onclick="setGlobalMode('zh-only')" id="btn-mode-zh-only" class="px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800">僅中文</button>
@@ -225,7 +228,7 @@
                         <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">新增帳號</button>
                     </div>
                 </div>
-                <div class="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+                <div class="lg:col-span-2 bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
                             <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
@@ -285,8 +288,12 @@
 
         window.toggleAuthView = (mode) => {
             const views = ['loginMainView', 'customLoginView', 'adminLoginView'];
-            views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            const target = document.getElementById(mode + 'LoginView') || document.getElementById('loginMainView');
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+            const targetId = mode === 'main' ? 'loginMainView' : (mode + 'LoginView');
+            const target = document.getElementById(targetId);
             if (target) target.classList.remove('hidden');
             lucide.createIcons();
         };
@@ -306,10 +313,12 @@
             const user = document.getElementById('customUser').value.trim();
             const pass = document.getElementById('customPass').value.trim();
             if (!user || !pass) return showNotification("請輸入帳號密碼", "alert");
+
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
+
                 if (snap.exists() && snap.data().password === pass) {
                     await signInAnonymously(auth);
                     state.userLabel = user;
@@ -317,11 +326,12 @@
                     showAppUI(user, false);
                     startSyncing(user);
                     logUserActivity(user, true);
+                    showNotification(`歡迎回來, ${user} !`);
                 } else {
                     showNotification("帳號或密碼錯誤", "alert");
                 }
             } catch (e) {
-                showNotification("連線失敗", "alert");
+                showNotification("連線失敗，請檢查網路", "alert");
             } finally {
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
@@ -372,8 +382,9 @@
             const badge = document.getElementById('userBadge');
             badge.classList.remove('hidden');
             if (isGoogle && photo) {
-                document.getElementById('userPhoto').src = photo;
-                document.getElementById('userPhoto').classList.remove('hidden');
+                const photoEl = document.getElementById('userPhoto');
+                photoEl.src = photo;
+                photoEl.classList.remove('hidden');
                 document.getElementById('userIcon').classList.add('hidden');
             } else {
                 document.getElementById('userPhoto').classList.add('hidden');
@@ -388,7 +399,7 @@
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderUnitList();
                 renderWords();
-            }, (err) => console.error("Sync error:", err));
+            }, (err) => console.error("Sync Error:", err));
         }
 
         async function logUserActivity(id, isCustom) {
@@ -408,7 +419,7 @@
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
             if (!state.userLabel) return showNotification("請先登入", "alert");
-            if (!name || !text) return showNotification("請填寫單元與單字內容", "alert");
+            if (!name || !text) return showNotification("請填寫單元與內容", "alert");
 
             const wordList = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
@@ -417,13 +428,13 @@
                     en: parts[0].trim(),
                     zh: parts[1].trim(),
                     rating: 5,
-                    localMode: state.globalMode, // 使用當前全域模式
+                    localMode: state.globalMode, 
                     note: '', 
                     createdAt: Date.now() + idx
                 } : null;
             }).filter(w => w);
 
-            if (wordList.length === 0) return showNotification("單字格式錯誤 (英文,中文)", "alert");
+            if (wordList.length === 0) return showNotification("格式不正確 (英文,中文)", "alert");
 
             const unitId = 'u' + Date.now();
             const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', unitId);
@@ -435,32 +446,42 @@
                 state.activeUnitId = unitId;
                 renderUnitList();
                 renderWords();
+
                 await setDoc(unitRef, newUnit);
                 await setDoc(statsRef, { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
+
                 document.getElementById('unitNameInput').value = '';
                 document.getElementById('wordsInput').value = '';
                 showNotification("已同步至雲端！");
             } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        // --- 全域模式切換 (核心修正) ---
+        // --- 全域模式切換 (加強 UI 視覺切換) ---
         window.setGlobalMode = (m) => {
             state.globalMode = m;
+            
+            // 1. 同步當前單元中所有單字的模式
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (unit) {
                 unit.words.forEach(w => w.localMode = (m === 'both' ? 'both' : (m === 'en-only' ? 'en' : 'zh')));
             }
-            // 更新 UI 選取按鈕狀態
-            ['both', 'en-only', 'zh-only'].forEach(b => {
-                const el = document.getElementById(`btn-mode-${b}`);
-                if (el) {
-                    if (b === m) {
-                        el.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600";
+
+            // 2. 更新頂部按鈕的 UI 選取狀態 (修正點)
+            const modes = ['both', 'en-only', 'zh-only'];
+            modes.forEach(modeId => {
+                const btn = document.getElementById(`btn-mode-${modeId}`);
+                if (btn) {
+                    if (modeId === m) {
+                        // 選取中的樣式：白底、陰影、深藍字
+                        btn.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all bg-white shadow-sm text-indigo-600";
                     } else {
-                        el.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800";
+                        // 未選取的樣式：透明底、灰字
+                        btn.className = "px-5 py-2 text-sm font-bold rounded-xl transition-all text-slate-500 hover:text-slate-800";
                     }
                 }
             });
+
+            // 3. 重新渲染單字卡
             renderWords();
         };
 
@@ -498,6 +519,8 @@
                             <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
+
+                    <!-- 記憶技巧：在 card-en 類別下會自動隱藏 -->
                     <div class="word-note mt-2 mb-4" onclick="event.stopPropagation()">
                         <textarea 
                             class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/50 resize-none transition-all placeholder:text-slate-300 font-medium"
@@ -506,6 +529,7 @@
                             onblur="window.updateWordNote('${word.id}', this.value)"
                         >${word.note || ''}</textarea>
                     </div>
+
                     <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
                         <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">熟練度</span>
                         <div class="flex gap-1">
@@ -517,7 +541,17 @@
             lucide.createIcons();
         };
 
-        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
+        window.setActiveUnit = (id) => { 
+            state.activeUnitId = id; 
+            // 當選取新單元時，強制應用當前全域模式給該單元的所有單字
+            const unit = state.units.find(u => u.id === id);
+            if (unit) {
+                unit.words.forEach(w => w.localMode = (state.globalMode === 'both' ? 'both' : (state.globalMode === 'en-only' ? 'en' : 'zh')));
+            }
+            renderWords(); 
+            renderUnitList(); 
+        };
+
         window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const word = unit.words.find(w => w.id === wordId);
@@ -527,6 +561,7 @@
                 renderWords();
             }
         };
+
         window.updateWordNote = async (wordId, val) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const word = unit.words.find(w => w.id === wordId);
@@ -536,6 +571,7 @@
                 await updateDoc(unitRef, { words: unit.words });
             }
         };
+
         window.updateRating = async (wordId, n) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const word = unit.words.find(w => w.id === wordId);
@@ -546,11 +582,13 @@
                 renderWords();
             }
         };
+
         window.deleteUnit = async (id) => {
             if (!confirm("確定刪除此單元？")) return;
             await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
             if (state.activeUnitId === id) state.activeUnitId = null;
         };
+
         window.renderUnitList = () => {
             const el = document.getElementById('unitList');
             if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic">尚無單元</p>'; return; }
