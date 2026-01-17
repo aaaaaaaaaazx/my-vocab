@@ -40,6 +40,14 @@
             padding: 1.5rem; 
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
         }
+        
+        /* 記憶技巧編輯區樣式 */
+        .note-area {
+            scrollbar-width: none;
+        }
+        .note-area::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
@@ -307,7 +315,7 @@
             units: [], 
             activeUnitId: null, 
             globalMode: 'both',
-            userLabel: null // 用於標識自定義帳號名稱
+            userLabel: null 
         };
 
         // --- UI 導覽 ---
@@ -345,12 +353,10 @@
             document.getElementById('loadingText').innerText = "驗證帳號中...";
 
             try {
-                // 先比對資料庫中的自定義帳號 (Rule 1: /artifacts/{appId}/public/data/custom_accounts/{user})
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
 
                 if (snap.exists() && snap.data().password === pass) {
-                    // 登入成功，使用匿名驗證獲取訪問權限
                     if (!auth.currentUser) await signInAnonymously(auth);
                     state.userLabel = user;
                     sessionStorage.setItem('custom_user_session', user);
@@ -390,7 +396,6 @@
 
         window.logout = () => { signOut(auth); sessionStorage.removeItem('custom_user_session'); location.reload(); };
 
-        // --- Auth 狀態監聽 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 state.user = user;
@@ -399,13 +404,11 @@
                 } else {
                     const customSession = sessionStorage.getItem('custom_user_session');
                     if (customSession) {
-                        // 自定義帳號登入
                         state.userLabel = customSession;
                         showAppUI(customSession, false);
                         logUserActivity(customSession, true);
                         startSyncing(customSession);
                     } else if (!user.isAnonymous) {
-                        // Google 登入
                         state.userLabel = user.uid;
                         showAppUI(user.displayName, true, user.photoURL);
                         logUserActivity(user, false);
@@ -439,7 +442,6 @@
             }
         }
 
-        // --- 同步邏輯 (使用 userLabel 做為數據隔離鍵) ---
         function startSyncing(id) {
             const unitsRef = collection(db, 'artifacts', appId, 'users', id, 'units');
             onSnapshot(unitsRef, (snap) => {
@@ -474,7 +476,7 @@
             } catch (e) { console.error("Logging error", e); }
         }
 
-        // --- 匯入與管理功能 ---
+        // --- 核心功能：匯入 ---
         window.importWords = async () => {
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
@@ -490,6 +492,7 @@
                     zh: parts[1].trim(),
                     rating: 5,
                     localMode: 'both',
+                    note: '', // 初始化記憶技巧
                     createdAt: Date.now() + idx
                 } : null;
             }).filter(w => w);
@@ -511,6 +514,22 @@
             } catch (e) { showNotification("雲端連線失敗", "alert"); }
         };
 
+        // --- 記憶技巧更新功能 ---
+        window.updateWordNote = async (wordId, newNote) => {
+            if (!state.activeUnitId || !state.userLabel) return;
+            const unit = state.units.find(u => u.id === state.activeUnitId);
+            if (!unit) return;
+            
+            const word = unit.words.find(w => w.id === wordId);
+            if (word && word.note !== newNote) {
+                word.note = newNote;
+                const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId);
+                try {
+                    await updateDoc(unitRef, { words: unit.words });
+                } catch (e) { console.error("Note update failed", e); }
+            }
+        };
+
         window.deleteUnit = async (id) => {
             if (!confirm("確定要刪除嗎？")) return;
             const unitRef = doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id);
@@ -525,7 +544,7 @@
             await updateDoc(unitRef, { words: updatedWords });
         };
 
-        // --- 管理者專屬：建立帳號 ---
+        // --- 管理者功能 ---
         window.createAccount = async () => {
             const user = document.getElementById('newAccountUser').value.trim();
             const pass = document.getElementById('newAccountPass').value.trim();
@@ -536,26 +555,22 @@
                 await setDoc(accRef, { password: pass, createdAt: Date.now() });
                 document.getElementById('newAccountUser').value = '';
                 document.getElementById('newAccountPass').value = '';
-                showNotification(`帳號 ${user} 已建立完成！`);
-            } catch (e) {
-                showNotification("建立失敗，請檢查管理權限", "alert");
-            }
+                showNotification(`帳號 ${user} 已建立！`);
+            } catch (e) { showNotification("建立失敗", "alert"); }
         };
 
         window.deleteCustomAccount = async (id) => {
-            if (!confirm(`確定要刪除帳號 ${id} 嗎？此動作無法撤銷。`)) return;
+            if (!confirm(`確定要刪除帳號 ${id} 嗎？`)) return;
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id));
                 showNotification("帳號已移除");
             } catch (e) { showNotification("操作失敗", "alert"); }
         };
 
-        // --- 管理者後台展示 ---
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
             
-            // 監聽全域統計
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (doc) => {
                 if (doc.exists()) {
                     const d = doc.data();
@@ -566,7 +581,6 @@
                 }
             });
 
-            // 監聽帳號列表
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (snap) => {
                 const table = document.getElementById('customAccountTable');
                 table.innerHTML = snap.docs.map(docSnap => {
@@ -584,7 +598,6 @@
                 lucide.createIcons();
             });
 
-            // 監聽活動監測
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => {
                 const table = document.getElementById('adminUserTable');
                 table.innerHTML = snap.docs.map(docSnap => {
@@ -621,7 +634,16 @@
                     const u = uDoc.data();
                     return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
                         <h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5>
-                        <div class="grid grid-cols-2 gap-2">${u.words.map(w => `<div class="bg-white p-2 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> <span class="text-slate-300 mx-1">/</span> ${w.zh}</div>`).join('')}</div>
+                        <div class="grid grid-cols-1 gap-2">
+                            ${u.words.map(w => `
+                                <div class="bg-white p-3 rounded-xl border text-[11px] font-bold">
+                                    <div class="flex justify-between">
+                                        <span><b>${w.en}</b> <span class="text-slate-300 mx-1">/</span> ${w.zh}</span>
+                                    </div>
+                                    ${w.note ? `<p class="mt-2 text-slate-400 italic bg-slate-50 p-2 rounded-lg border-l-2 border-indigo-200">💡 ${w.note}</p>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>`;
                 }).join('') || '<p class="text-center py-10 text-slate-300 font-bold">尚無學習單元</p>';
             } catch (e) {
@@ -632,8 +654,9 @@
 
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
 
-        // --- UI 功能輔助 ---
+        // --- UI 工具 ---
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderUnitList(); renderWords(); };
+        
         window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const word = unit.words.find(w => w.id === wordId);
@@ -643,6 +666,7 @@
                 renderWords();
             }
         };
+
         window.renderWords = () => {
             const grid = document.getElementById('wordGrid');
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -650,11 +674,13 @@
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('activeUnitTitle').innerText = unit.name;
             document.getElementById('unitStats').innerText = `已同步 | ${unit.words.length} 個單字`;
+            
             const sort = document.getElementById('sortSelect').value;
             let list = [...unit.words];
             if (sort === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
             else if (sort === 'random') list.sort(() => Math.random() - 0.5);
             else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+            
             grid.innerHTML = list.map(word => `
                 <div onclick="window.cycleMode('${word.id}')" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:border-indigo-200 hover:shadow-xl card-${word.localMode || 'both'}">
                     <div class="flex justify-between items-start mb-4">
@@ -666,6 +692,17 @@
                             <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
+
+                    <!-- 記憶技巧編輯區 -->
+                    <div class="mt-2 mb-4" onclick="event.stopPropagation()">
+                        <textarea 
+                            class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/50 resize-none transition-all placeholder:text-slate-300 font-medium"
+                            placeholder="在這裡寫下你的記憶技巧..."
+                            rows="2"
+                            onblur="window.updateWordNote('${word.id}', this.value)"
+                        >${word.note || ''}</textarea>
+                    </div>
+
                     <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
                         <span class="text-[10px] font-black text-slate-300 tracking-widest uppercase">熟練度</span>
                         <div class="flex gap-1">
@@ -676,6 +713,7 @@
             `).join('');
             lucide.createIcons();
         };
+
         window.renderUnitList = () => {
             const el = document.getElementById('unitList');
             el.innerHTML = state.units.map(u => `
@@ -686,14 +724,18 @@
             `).join('');
             lucide.createIcons();
         };
+
         window.setGlobalMode = (m) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (unit) unit.words.forEach(w => w.localMode = m === 'both' ? 'both' : m === 'en-only' ? 'en' : 'zh');
             renderWords();
         };
+
         window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
+
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
+            const circle = document.getElementById('notifIconCircle');
             document.getElementById('notificationText').innerText = t;
             el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100');
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000);
