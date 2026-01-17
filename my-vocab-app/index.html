@@ -213,7 +213,7 @@
                         <!-- 🚀 英聽功能控制列 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
-                                <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <!-- 次數選擇 -->
                                     <div class="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
                                         <span class="text-[10px] font-black text-indigo-400 uppercase">朗讀</span>
@@ -223,6 +223,19 @@
                                             <option value="3" selected>3 次</option>
                                             <option value="4">4 次</option>
                                             <option value="5">5 次</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 單詞停頓時間 -->
+                                    <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase">間隔停頓</span>
+                                        <select id="audioIntervalPause" class="bg-transparent font-bold text-sm outline-none text-slate-600">
+                                            <option value="0">無停頓</option>
+                                            <option value="1">1 秒</option>
+                                            <option value="2" selected>2 秒</option>
+                                            <option value="3">3 秒</option>
+                                            <option value="4">4 秒</option>
+                                            <option value="5">5 秒</option>
                                         </select>
                                     </div>
 
@@ -257,7 +270,7 @@
                             <!-- 播放狀態顯示 -->
                             <div id="audioStatusText" class="text-[10px] font-bold text-indigo-400 hidden flex items-center gap-2">
                                 <span id="audioStatusDot" class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
-                                <span id="audioStatusMsg">英聽播放中...</span>
+                                <span id="audioStatusMsg">正依據排序規則進行連續朗讀...</span>
                             </div>
                         </div>
                     </div>
@@ -282,7 +295,7 @@
 
     <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
@@ -505,7 +518,7 @@
             } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        // --- 🚀 英聽系統 ---
+        // --- 🚀 英聽系統 (含停頓間隔) ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) {
                 state.isAudioPaused = false;
@@ -526,6 +539,7 @@
             const isBlindMode = document.getElementById('audioBlindMode').checked;
             const isVisualSync = document.getElementById('audioVisualSync').checked;
             const repeats = parseInt(document.getElementById('audioRepeatCount').value);
+            const intervalPause = parseInt(document.getElementById('audioIntervalPause').value); // 停頓時間
             const grid = document.getElementById('wordGrid');
 
             if (isBlindMode) grid.classList.add('blind-mode');
@@ -539,20 +553,25 @@
 
                 const word = wordsToPlay[i];
 
-                // 如果開啟視覺同步且不是盲聽模式，高亮並捲動到該卡片
+                // 高亮並捲動
                 if (isVisualSync && !isBlindMode) {
                     highlightWordCard(word.id);
                 }
 
+                // 朗讀指定次數
                 for (let r = 0; r < repeats; r++) {
                     if (!state.isAudioPlaying) break;
                     while (state.isAudioPaused && state.isAudioPlaying) { await sleep(200); }
                     if (!state.isAudioPlaying) break;
 
                     await speakAsync(word.en);
-                    if (r < repeats - 1) await sleep(400);
+                    if (r < repeats - 1) await sleep(400); // 朗讀中途停頓
                 }
-                await sleep(800);
+
+                // 🌟 單詞切換時的額外停頓
+                if (state.isAudioPlaying && i < wordsToPlay.length - 1) {
+                    await sleep(intervalPause * 1000 + 800); 
+                }
             }
             
             if (state.isAudioPlaying) {
@@ -604,18 +623,18 @@
             lucide.createIcons();
         }
 
-        // 🌟 排序輔助函式 (確保渲染與英聽都呼叫同一個邏輯)
+        // 🌟 排序輔助函式 (修正隨機排序穩定性)
         function getSortedWordsList(unit) {
             const sortVal = document.getElementById('sortSelect').value;
             let list = [...unit.words];
             
-            // 排序前先建立基礎順序 (Original Order)
+            // 先按建立時間排序，建立一個基準
             list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
             if (sortVal === 'az') {
                 list.sort((a, b) => a.en.localeCompare(b.en));
             } else if (sortVal === 'random') {
-                // Fisher-Yates Shuffle 演算法，比之前的 sort 隨機更均勻穩定
+                // Fisher-Yates Shuffle 演算法
                 for (let i = list.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [list[i], list[j]] = [list[j], list[i]];
@@ -666,7 +685,7 @@
             document.getElementById('activeUnitTitle').innerText = unit.name;
             document.getElementById('unitStats').innerText = `${unit.words.length} 個單字`;
             
-            // 🌟 進行排序並存入 state
+            // 🌟 進行排序並存入 state。英聽功能會直接拿這組順序。
             const words = getSortedWordsList(unit);
             state.displayedWords = words;
             
