@@ -88,7 +88,7 @@
 
             <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2">
                 <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <span id="loadingText">正在同步雲端資料...</span>
+                <span id="loadingText">正在連線雲端資料庫...</span>
             </div>
         </div>
     </div>
@@ -265,14 +265,20 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase 初始化 ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- 全域 UI 函式 (確保在點擊時已定義) ---
+        window.toggleAdminView = (show) => {
+            const loginMain = document.getElementById('loginMainView');
+            const adminLogin = document.getElementById('adminLoginView');
+            if (loginMain && adminLogin) {
+                loginMain.classList.toggle('hidden', show);
+                adminLogin.classList.toggle('hidden', !show);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        };
 
-        let state = {
+        // --- Firebase 初始化與狀態 ---
+        let auth, db, appId;
+        const state = {
             user: null,
             isAdmin: false,
             units: [],
@@ -280,33 +286,39 @@
             globalMode: 'both'
         };
 
-        // --- 管理者登入驗證 ---
-        window.toggleAdminView = (show) => {
-            document.getElementById('loginMainView').classList.toggle('hidden', show);
-            document.getElementById('adminLoginView').classList.toggle('hidden', !show);
-            lucide.createIcons();
-        };
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            if (firebaseConfig) {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+            }
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        } catch (e) {
+            console.error("Firebase Initialization Failed", e);
+        }
 
+        // --- 管理者登入邏輯 ---
         window.adminLogin = async () => {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value.trim();
             
             if (user === 'yljh' && pass === 'yljh8320873') {
                 const loader = document.getElementById('loadingIndicator');
-                loader.classList.remove('hidden');
-                document.getElementById('loadingText').innerText = "正在驗證管理者權限...";
+                if (loader) loader.classList.remove('hidden');
+                const loadingText = document.getElementById('loadingText');
+                if (loadingText) loadingText.innerText = "正在驗證管理者權限...";
                 
                 try {
-                    // 若尚未認證則使用匿名登入
-                    if (!auth.currentUser) await signInAnonymously(auth);
+                    if (auth && !auth.currentUser) await signInAnonymously(auth);
                     state.isAdmin = true;
                     showAdminDashboard();
                     showNotification("系統管理模式已啟動");
                 } catch (error) {
                     console.error("Admin Login Error:", error);
-                    showNotification("驗證失敗，請確保 Firebase 已開啟「匿名登入」", "alert");
+                    showNotification("權限驗證失敗，請確保已開啟「匿名登入」", "alert");
                 } finally {
-                    loader.classList.add('hidden');
+                    if (loader) loader.classList.add('hidden');
                 }
             } else {
                 showNotification("管理者帳號或密碼錯誤", "alert");
@@ -315,47 +327,51 @@
 
         // --- Google 登入 ---
         window.loginWithGoogle = async () => {
+            if (!auth) return showNotification("資料庫未設定", "alert");
             const provider = new GoogleAuthProvider();
             try {
-                document.getElementById('loadingIndicator').classList.remove('hidden');
+                const loader = document.getElementById('loadingIndicator');
+                if (loader) loader.classList.remove('hidden');
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login Error", error);
                 showNotification("Google 登入失敗", "alert");
-                document.getElementById('loadingIndicator').classList.add('hidden');
+                const loader = document.getElementById('loadingIndicator');
+                if (loader) loader.classList.add('hidden');
             }
         };
 
         window.logout = () => {
-            signOut(auth);
+            if (auth) signOut(auth);
             location.reload();
         };
 
         // --- Auth 狀態監聽 ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                state.user = user;
-                if (state.isAdmin) {
-                    showAdminDashboard();
-                } else if (!user.isAnonymous) {
-                    // 使用者介面
-                    document.getElementById('authScreen').classList.add('hidden');
-                    document.getElementById('appScreen').classList.remove('hidden');
-                    document.getElementById('userNameDisplay').innerText = user.displayName;
-                    document.getElementById('userPhoto').src = user.photoURL;
-                    
-                    logUserActivity(user);
-                    startSyncing(user.uid);
+        if (auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    state.user = user;
+                    if (state.isAdmin) {
+                        showAdminDashboard();
+                    } else if (!user.isAnonymous) {
+                        document.getElementById('authScreen').classList.add('hidden');
+                        document.getElementById('appScreen').classList.remove('hidden');
+                        document.getElementById('userNameDisplay').innerText = user.displayName;
+                        document.getElementById('userPhoto').src = user.photoURL;
+                        
+                        logUserActivity(user);
+                        startSyncing(user.uid);
+                    }
+                } else {
+                    document.getElementById('authScreen').classList.remove('hidden');
+                    document.getElementById('appScreen').classList.add('hidden');
+                    document.getElementById('adminScreen').classList.add('hidden');
                 }
-            } else {
-                document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('appScreen').classList.add('hidden');
-                document.getElementById('adminScreen').classList.add('hidden');
-            }
-            lucide.createIcons();
-        });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+        }
 
-        // --- 雲端數據同步 (使用者) ---
+        // --- 雲端數據同步 ---
         function startSyncing(uid) {
             const unitsRef = collection(db, 'artifacts', appId, 'users', uid, 'units');
             onSnapshot(unitsRef, (snapshot) => {
@@ -363,7 +379,7 @@
                 if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
                 renderUnitList();
                 renderWords();
-            }, (err) => console.error("Sync Error:", err));
+            });
         }
 
         async function logUserActivity(user) {
@@ -393,12 +409,11 @@
             } catch (e) { console.error("Activity logging error", e); }
         }
 
-        // --- 管理者後台邏輯 ---
+        // --- 管理者後台 ---
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
             
-            // 監聽全域統計
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'global_stats'), (doc) => {
                 if (doc.exists()) {
                     const d = doc.data();
@@ -409,9 +424,9 @@
                 }
             });
 
-            // 監聽使用者列表
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snapshot) => {
                 const table = document.getElementById('adminUserTable');
+                if (!table) return;
                 table.innerHTML = snapshot.docs.map(docSnap => {
                     const d = docSnap.data();
                     const lastActive = new Date(d.lastSeen).toLocaleString();
@@ -431,16 +446,17 @@
                         </tr>
                     `;
                 }).join('');
-                lucide.createIcons();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             });
         }
 
         window.adminViewUserDetail = async (uid, name) => {
             const modal = document.getElementById('adminDetailModal');
             const content = document.getElementById('detailContent');
-            document.getElementById('detailUserTitle').innerText = `${name} 的單字庫`;
-            content.innerHTML = '<div class="flex justify-center py-12"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
-            modal.classList.remove('hidden');
+            const title = document.getElementById('detailUserTitle');
+            if (title) title.innerText = `${name} 的單字庫`;
+            if (content) content.innerHTML = '<div class="flex justify-center py-12"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
+            if (modal) modal.classList.remove('hidden');
 
             try {
                 const unitsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
@@ -465,12 +481,15 @@
             } catch (e) {
                 content.innerHTML = '<p class="text-red-500 text-center py-10">資料讀取失敗，請確認資料庫權限</p>';
             }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
+        window.closeAdminDetail = () => {
+            const modal = document.getElementById('adminDetailModal');
+            if (modal) modal.classList.add('hidden');
+        };
 
-        // --- 一般功能邏輯 ---
+        // --- 單字功能 ---
         window.importWords = async () => {
             if (!state.user) return;
             const name = document.getElementById('unitNameInput').value.trim();
@@ -489,10 +508,7 @@
                 } : null;
             }).filter(w => w);
 
-            if (words.length === 0) return showNotification("格式不正確", "alert");
-
-            const unitId = 'u' + Date.now();
-            const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
+            const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', 'u' + Date.now());
             const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
 
             try {
@@ -533,7 +549,7 @@
         window.renderWords = () => {
             const grid = document.getElementById('wordGrid');
             const unit = state.units.find(u => u.id === state.activeUnitId);
-            if (!unit) { grid.innerHTML = ''; return; }
+            if (!unit) { if (grid) grid.innerHTML = ''; return; }
             document.getElementById('activeUnitTitle').innerText = unit.name;
             document.getElementById('unitStats').innerText = `資料已連線 | ${unit.words.length} 個單字`;
 
@@ -564,27 +580,24 @@
                     </div>
                 </div>
             `).join('');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         window.renderUnitList = () => {
             const el = document.getElementById('unitList');
+            if (!el) return;
             el.innerHTML = state.units.map(u => `
                 <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'}">
                     <span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
                     <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `).join('');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
         window.setGlobalMode = (m) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (unit) unit.words.forEach(w => w.localMode = m === 'both' ? 'both' : m === 'en-only' ? 'en' : 'zh');
-            ['both', 'en-only', 'zh-only'].forEach(b => {
-                const el = document.getElementById(`btn-mode-${b}`);
-                el.className = `px-5 py-2 text-sm font-bold rounded-xl transition-all ${b === m ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`;
-            });
             renderWords();
         };
 
@@ -593,8 +606,10 @@
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
             const circle = document.getElementById('notifIconCircle');
-            document.getElementById('notificationText').innerText = t;
-            circle.className = `w-8 h-8 rounded-full flex items-center justify-center ${type === 'alert' ? 'bg-rose-500' : 'bg-indigo-500'}`;
+            const text = document.getElementById('notificationText');
+            if (!el || !text) return;
+            text.innerText = t;
+            if (circle) circle.className = `w-8 h-8 rounded-full flex items-center justify-center ${type === 'alert' ? 'bg-rose-500' : 'bg-indigo-500'}`;
             el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100');
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 3000);
         }
@@ -603,8 +618,10 @@
 
         // 初次啟動認證
         (async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
+            if (auth) {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
+                }
             }
         })();
     </script>
