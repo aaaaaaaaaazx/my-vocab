@@ -210,13 +210,13 @@
                             </div>
                         </div>
 
-                        <!-- 🚀 英聽功能控制列 (全新升級) -->
+                        <!-- 🚀 英聽功能控制列 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
                                 <div class="flex flex-wrap items-center gap-3">
                                     <!-- 次數選擇 -->
                                     <div class="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
-                                        <span class="text-[10px] font-black text-indigo-400 uppercase">單字朗讀</span>
+                                        <span class="text-[10px] font-black text-indigo-400 uppercase">朗讀</span>
                                         <select id="audioRepeatCount" class="bg-transparent font-bold text-sm outline-none text-indigo-700">
                                             <option value="1">1 次</option>
                                             <option value="2">2 次</option>
@@ -235,14 +235,14 @@
                                     <!-- 盲聽開關 -->
                                     <label class="flex items-center gap-2 cursor-pointer group px-2">
                                         <input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300">
-                                        <span class="text-xs font-bold text-slate-500 group-hover:text-rose-600">聽力挑戰模式</span>
+                                        <span class="text-xs font-bold text-slate-500 group-hover:text-rose-600">盲聽挑戰</span>
                                     </label>
                                 </div>
 
                                 <div class="flex gap-2">
                                     <!-- 播放 / 繼續按鈕 -->
                                     <button id="btnStartAudio" onclick="startAutoPlay()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-indigo-100 active:scale-95">
-                                        <i data-lucide="play" class="w-4 h-4"></i> <span id="btnStartText">開始播放</span>
+                                        <i data-lucide="play" class="w-4 h-4"></i> <span id="btnStartText">開始英聽</span>
                                     </button>
                                     <!-- 暫停按鈕 -->
                                     <button id="btnPauseAudio" onclick="pauseAutoPlay()" class="hidden px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-amber-100 active:scale-95">
@@ -257,7 +257,7 @@
                             <!-- 播放狀態顯示 -->
                             <div id="audioStatusText" class="text-[10px] font-bold text-indigo-400 hidden flex items-center gap-2">
                                 <span id="audioStatusDot" class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
-                                <span id="audioStatusMsg">正依據排序規則進行連續朗讀...</span>
+                                <span id="audioStatusMsg">英聽播放中...</span>
                             </div>
                         </div>
                     </div>
@@ -359,13 +359,12 @@
             userLabel: null,
             isAudioPlaying: false,
             isAudioPaused: false,
-            currentAudioIndex: 0
+            displayedWords: [] // 儲存目前 UI 上顯示的正確順序
         };
 
         // --- UI 控制 ---
         window.toggleAuthView = (mode) => {
-            const views = ['loginMainView', 'customLoginView', 'adminLoginView'];
-            views.forEach(v => document.getElementById(v)?.classList.add('hidden'));
+            ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden'));
             const targetId = mode === 'main' ? 'loginMainView' : mode + 'LoginView';
             document.getElementById(targetId)?.classList.remove('hidden');
             lucide.createIcons();
@@ -508,9 +507,6 @@
 
         // --- 🚀 英聽系統 ---
         window.startAutoPlay = async () => {
-            const unit = state.units.find(u => u.id === state.activeUnitId);
-            if (!unit || unit.words.length === 0) return showNotification("請先選擇含有單字的單元", "alert");
-
             if (state.isAudioPaused) {
                 state.isAudioPaused = false;
                 updateAudioUI(true);
@@ -518,6 +514,10 @@
             }
 
             if (state.isAudioPlaying) return;
+
+            // 🌟 關鍵：英聽順序必須與當前 UI 顯示的單字順序 (state.displayedWords) 完全同步
+            const wordsToPlay = [...state.displayedWords];
+            if (wordsToPlay.length === 0) return showNotification("請先選擇含有單字的單元", "alert");
 
             state.isAudioPlaying = true;
             state.isAudioPaused = false;
@@ -530,18 +530,16 @@
 
             if (isBlindMode) grid.classList.add('blind-mode');
 
-            // 抓取當前 UI 排序後的單字順序
-            const words = getSortedWordsList(unit);
-
-            for (let i = 0; i < words.length; i++) {
+            for (let i = 0; i < wordsToPlay.length; i++) {
                 if (!state.isAudioPlaying) break;
                 
-                // 暫停等待
+                // 暫停等待邏輯
                 while (state.isAudioPaused && state.isAudioPlaying) { await sleep(200); }
                 if (!state.isAudioPlaying) break;
 
-                const word = words[i];
+                const word = wordsToPlay[i];
 
+                // 如果開啟視覺同步且不是盲聽模式，高亮並捲動到該卡片
                 if (isVisualSync && !isBlindMode) {
                     highlightWordCard(word.id);
                 }
@@ -559,7 +557,7 @@
             
             if (state.isAudioPlaying) {
                 stopAutoPlay();
-                showNotification("朗讀單元結束");
+                showNotification("英聽朗讀單元結束");
             }
         };
 
@@ -569,7 +567,7 @@
             document.getElementById('btnStartAudio').classList.remove('hidden');
             document.getElementById('btnPauseAudio').classList.add('hidden');
             document.getElementById('btnStartText').innerText = "繼續播放";
-            document.getElementById('audioStatusMsg').innerText = "英聽播放暫停中";
+            document.getElementById('audioStatusMsg').innerText = "英聽暫停中";
             document.getElementById('audioStatusDot').classList.remove('animate-ping');
         };
 
@@ -594,24 +592,37 @@
                 pauseBtn.classList.remove('hidden');
                 stopBtn.classList.remove('hidden');
                 status.classList.remove('hidden');
-                document.getElementById('audioStatusMsg').innerText = "正依據排序規則進行連續朗讀...";
+                document.getElementById('audioStatusMsg').innerText = "英聽連續朗讀中 (依據選定排序)...";
                 document.getElementById('audioStatusDot').classList.add('animate-ping');
             } else {
                 startBtn.classList.remove('hidden');
                 pauseBtn.classList.add('hidden');
                 stopBtn.classList.add('hidden');
                 status.classList.add('hidden');
-                startText.innerText = "開始播放";
+                startText.innerText = "開始英聽";
             }
             lucide.createIcons();
         }
 
+        // 🌟 排序輔助函式 (確保渲染與英聽都呼叫同一個邏輯)
         function getSortedWordsList(unit) {
             const sortVal = document.getElementById('sortSelect').value;
             let list = [...unit.words];
-            if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
-            else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
-            else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
+            
+            // 排序前先建立基礎順序 (Original Order)
+            list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+            if (sortVal === 'az') {
+                list.sort((a, b) => a.en.localeCompare(b.en));
+            } else if (sortVal === 'random') {
+                // Fisher-Yates Shuffle 演算法，比之前的 sort 隨機更均勻穩定
+                for (let i = list.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [list[i], list[j]] = [list[j], list[i]];
+                }
+            } else if (sortVal === 'rating') {
+                list.sort((a, b) => b.rating - a.rating);
+            }
             return list;
         }
 
@@ -648,13 +659,16 @@
                 grid.innerHTML = ''; 
                 document.getElementById('emptyState').classList.remove('hidden'); 
                 document.getElementById('activeUnitTitle').innerText = "請選擇單元";
+                state.displayedWords = [];
                 return; 
             }
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('activeUnitTitle').innerText = unit.name;
             document.getElementById('unitStats').innerText = `${unit.words.length} 個單字`;
             
+            // 🌟 進行排序並存入 state
             const words = getSortedWordsList(unit);
+            state.displayedWords = words;
             
             grid.innerHTML = words.map(word => {
                 const displayModeClass = `card-${word.localMode || 'both'}`;
@@ -672,7 +686,7 @@
                     <div class="word-note mt-2 mb-4" onclick="event.stopPropagation()">
                         <textarea 
                             class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/50 resize-none transition-all placeholder:text-slate-300 font-medium"
-                            placeholder="在這裡寫下你的記憶筆記..." rows="2"
+                            placeholder="記憶筆記..." rows="2"
                             onblur="window.updateWordNote('${word.id}', this.value)"
                         >${word.note || ''}</textarea>
                     </div>
@@ -738,7 +752,7 @@
         };
 
         window.deleteUnit = async (id) => {
-            if (!confirm("確定刪除此單元與雲端同步資料嗎？")) return;
+            if (!confirm("確定要永久刪除此單元嗎？")) return;
             await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
             if (state.activeUnitId === id) state.activeUnitId = null;
         };
