@@ -15,10 +15,8 @@
         /* 單字卡片顯示邏輯 */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
-        
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none; }
-        
         .card-zh .word-en { display: none; }
         .card-zh .word-zh { display: block; }
         .card-zh .voice-btn { visibility: hidden; }
@@ -87,7 +85,7 @@
 
             <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2">
                 <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <span id="loadingText">正在同步雲端資料...</span>
+                <span id="loadingText">正在處理中...</span>
             </div>
         </div>
     </div>
@@ -122,7 +120,7 @@
                         <div class="space-y-4">
                             <input type="text" id="unitNameInput" placeholder="單元名稱" class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
                             <textarea id="wordsInput" placeholder="格式範例:&#10;hello,你好&#10;world,世界" rows="5" class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm leading-relaxed"></textarea>
-                            <button onclick="importWords()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                            <button onclick="importWords()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
                                 <i data-lucide="cloud-upload" class="w-5 h-5"></i> 儲存至雲端
                             </button>
                         </div>
@@ -191,7 +189,7 @@
                     <h4 id="statWords" class="text-4xl font-black text-amber-600">0</h4>
                 </div>
             </div>
-            <div class="bg-white rounded-[2.5rem] border overflow-hidden shadow-sm">
+            <div class="bg-white rounded-[2.5rem] border overflow-hidden shadow-sm border-slate-200">
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
                         <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
@@ -322,7 +320,7 @@
         }
 
         async function logUserActivity(user) {
-            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
+            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
             const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', user.uid);
             try {
                 const recordSnap = await getDoc(recordRef);
@@ -336,14 +334,16 @@
                     }
                     t.set(recordRef, { displayName: user.displayName, lastSeen: Date.now(), photo: user.photoURL }, { merge: true });
                 });
-            } catch (e) {}
+            } catch (e) { console.error("Logging error", e); }
         }
 
-        // --- 匯入功能 (修復重點) ---
+        // --- 匯入功能 (修復路徑與邏輯) ---
         window.importWords = async () => {
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
-            if (!name || !text || !state.user) return showNotification("請填寫單元與單字", "alert");
+            
+            if (!state.user) return showNotification("請先登入 Google 帳號！", "alert");
+            if (!name || !text) return showNotification("請填寫單元名稱與單字內容", "alert");
 
             const wordList = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
@@ -357,41 +357,55 @@
                 } : null;
             }).filter(w => w);
 
-            if (wordList.length === 0) return showNotification("內容格式不正確", "alert");
+            if (wordList.length === 0) return showNotification("內容格式不正確 (格式: 英文,中文)", "alert");
 
             const unitId = 'u' + Date.now();
             const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
-            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
+            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
 
             try {
+                // 儲存單元
                 await setDoc(unitRef, { name, words: wordList, createdAt: Date.now() });
-                await updateDoc(statsRef, { totalUnits: increment(1), totalWords: increment(wordList.length) });
+                
+                // 更新全局統計資料 (使用 setDoc merge 以防文件不存在)
+                await setDoc(statsRef, { 
+                    totalUnits: increment(1), 
+                    totalWords: increment(wordList.length) 
+                }, { merge: true });
+
                 document.getElementById('unitNameInput').value = '';
                 document.getElementById('wordsInput').value = '';
-                showNotification("已成功上傳雲端");
+                showNotification("已成功儲存並上傳雲端！");
+                state.activeUnitId = unitId; // 切換到新匯入的單元
+                renderWords();
             } catch (e) { 
-                console.error(e);
-                showNotification("儲存失敗：請確認 Firestore 權限", "alert"); 
+                console.error("Firestore Error:", e);
+                showNotification("儲存失敗：請確認資料庫權限或網路連線", "alert"); 
             }
         };
 
         window.deleteUnit = async (id) => {
-            if (!confirm("確定要刪除此單元嗎？")) return;
+            if (!confirm("確定要從雲端刪除此單元嗎？")) return;
             const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', id);
-            await deleteDoc(unitRef);
-            if (state.activeUnitId === id) state.activeUnitId = null;
-            showNotification("單元已刪除");
+            try {
+                await deleteDoc(unitRef);
+                if (state.activeUnitId === id) state.activeUnitId = null;
+                showNotification("單元已從雲端刪除");
+            } catch (e) { showNotification("刪除失敗", "alert"); }
         };
 
         window.updateRating = async (wordId, n) => {
+            if (!state.activeUnitId) return;
             const unit = state.units.find(u => u.id === state.activeUnitId);
             const updatedWords = unit.words.map(w => w.id === wordId ? { ...w, rating: n } : w);
             const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', state.activeUnitId);
-            await updateDoc(unitRef, { words: updatedWords });
+            try {
+                await updateDoc(unitRef, { words: updatedWords });
+            } catch (e) { console.error("Rating update failed", e); }
         };
 
         // --- 渲染功能 ---
-        window.setActiveUnit = (id) => { state.activeUnitId = id; renderUnitList(); renderWords(); };
+        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
 
         window.cycleMode = (wordId) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -409,7 +423,7 @@
             if (!unit) { grid.innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden'); return; }
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('activeUnitTitle').innerText = unit.name;
-            document.getElementById('unitStats').innerText = `同步完成 | ${unit.words.length} 個單字`;
+            document.getElementById('unitStats').innerText = `雲端連線同步中 | ${unit.words.length} 個單字`;
 
             const sort = document.getElementById('sortSelect').value;
             let list = [...unit.words];
@@ -428,10 +442,12 @@
                             <i data-lucide="volume-2" class="w-6 h-6"></i>
                         </button>
                     </div>
-                    <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
-                        <span class="text-[10px] font-black text-slate-300 tracking-widest uppercase">熟練度</span>
-                        <div class="flex gap-1">
-                            ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${word.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
+                    <div class="pt-6 border-t border-slate-50 flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-black text-slate-300 tracking-widest uppercase">熟練度</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${word.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -460,7 +476,9 @@
 
         function showNotification(t, type="success") {
             const el = document.getElementById('notification');
+            const circle = document.getElementById('notifIconCircle');
             document.getElementById('notificationText').innerText = t;
+            if (circle) circle.className = `w-8 h-8 rounded-full flex items-center justify-center ${type === 'alert' ? 'bg-rose-500' : 'bg-indigo-500'}`;
             el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100');
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000);
         }
@@ -471,7 +489,7 @@
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('adminScreen').classList.remove('hidden');
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'global_stats'), (doc) => {
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (doc) => {
                 if (doc.exists()) {
                     const d = doc.data();
                     document.getElementById('statUsers').innerText = d.userCount || 0;
@@ -506,14 +524,18 @@
             document.getElementById('detailUserTitle').innerText = `${name} 的單字庫`;
             content.innerHTML = '<div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>';
             modal.classList.remove('hidden');
-            const unitsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
-            content.innerHTML = unitsSnap.docs.map(uDoc => {
-                const u = uDoc.data();
-                return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                    <h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5>
-                    <div class="grid grid-cols-2 gap-2">${u.words.map(w => `<div class="bg-white p-2 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> <span class="text-slate-300 mx-1">/</span> ${w.zh}</div>`).join('')}</div>
-                </div>`;
-            }).join('') || '<p class="text-center py-10 text-slate-300 font-bold">尚無學習單元</p>';
+            try {
+                const unitsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
+                content.innerHTML = unitsSnap.docs.map(uDoc => {
+                    const u = uDoc.data();
+                    return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                        <h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5>
+                        <div class="grid grid-cols-2 gap-2">${u.words.map(w => `<div class="bg-white p-2 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> <span class="text-slate-300 mx-1">/</span> ${w.zh}</div>`).join('')}</div>
+                    </div>`;
+                }).join('') || '<p class="text-center py-10 text-slate-300 font-bold">尚無學習單元</p>';
+            } catch (e) {
+                content.innerHTML = `<p class="text-center py-10 text-rose-500 font-bold">讀取失敗：權限限制</p>`;
+            }
             lucide.createIcons();
         };
 
