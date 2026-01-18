@@ -88,8 +88,8 @@
         </div>
         <div class="flex gap-2">
             <button onclick="pauseAutoPlay()" id="floatPauseBtn" class="p-3 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-100 active:scale-90 transition-all"><i data-lucide="pause" class="w-5 h-5"></i></button>
-            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100 active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
-            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg shadow-rose-100 active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
+            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
+            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
         </div>
     </div>
 
@@ -108,10 +108,7 @@
                 </div>
                 
                 <div class="space-y-4">
-                    <button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-indigo-500 hover:bg-slate-50 text-slate-700 font-bold py-4 rounded-2xl transition-all shadow-sm active:scale-95">
-                        <svg class="w-6 h-6" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.13-.45-4.63H24v9.3h12.98c-.56 2.85-2.18 5.27-4.59 6.89l7.45 5.77C44.22 37.53 46.98 31.74 46.98 24.55z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.45-5.77c-2.22 1.5-5.06 2.38-8.44 2.38-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
-                        使用 Google 帳號登入
-                    </button>
+                    <!-- Google 登入已暫時移除 -->
                     <button onclick="toggleAuthView('custom')" class="w-full flex items-center justify-center gap-3 bg-slate-800 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-95">
                         <i data-lucide="user" class="w-5 h-5"></i> 使用帳號密碼登入
                     </button>
@@ -478,10 +475,18 @@
                 if (isAdminSession === 'true') {
                     state.isAdmin = true; showAdminDashboard(); showAdminUI();
                 } else if (!user.isAnonymous) {
-                    state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); logUserActivity(user.uid, false, user);
+                    // Google 帳號登入
+                    state.userLabel = user.uid;
+                    showAppUI(user.displayName, true, user.photoURL);
+                    startSyncing(user.uid);
+                    logUserActivity(user.uid, false, user);
                 } else if (customSession) {
-                    state.userLabel = customSession; showAppUI(customSession, false); startSyncing(customSession);
-                } else if (!state.isStudentView) {
+                    // 自定義帳號
+                    state.userLabel = customSession;
+                    showAppUI(customSession, false);
+                    startSyncing(customSession);
+                } else {
+                    // 背景匿名但無 Session，保持在登入頁面
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
                     document.getElementById('adminScreen').classList.add('hidden');
@@ -566,7 +571,6 @@
             lucide.createIcons();
         }
 
-        // --- 工具函式 ---
         function speakAsync(t) { return new Promise(r => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.9; u.onend = r; u.onerror = r; window.speechSynthesis.speak(u); }); }
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
         function highlightWordCard(id) { removeHighlights(); const c = document.querySelector(`[data-word-id="${id}"]`); if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
@@ -583,16 +587,16 @@
             else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
             
-            // 🌟 修正點：確保按鈕綁定正確的 ID 變數 (w.id)
+            // 🌟 修正點：將內層 map 中的 word 改為 w，確保 ID 與 Rating 綁定正確
             g.innerHTML = list.map(w => {
                 const displayModeClass = `card-${w.localMode || 'both'}`;
                 return `<div onclick="window.cycleMode('${w.id}')" data-word-id="${w.id}" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-xl ${displayModeClass}">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="space-y-1 text-left"><h4 class="word-en text-2xl font-black text-slate-800 tracking-tight">${w.en}</h4><p class="word-zh text-indigo-600 font-bold">${w.zh}</p></div>
+                        <div class="space-y-1 text-left"><h4 class="word-en text-2xl font-black">${w.en}</h4><p class="word-zh text-indigo-600 font-bold">${w.zh}</p></div>
                         <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl voice-btn"><i data-lucide="volume-2"></i></button>
                     </div>
                     <div class="word-note mb-4"><textarea class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl resize-none" placeholder="記憶筆記..." rows="2" onblur="window.updateWordNote('${w.id}', this.value)">${w.note || ''}</textarea></div>
-                    <div class="pt-6 border-t border-slate-50 flex items-center justify-between"><span class="text-[10px] font-black text-slate-300">熟練度等級</span>
+                    <div class="pt-6 border-t border-slate-50 flex items-center justify-between"><span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">熟練度等級</span>
                     <div class="flex gap-1">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${w.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}</div></div></div>`;
             }).join('');
             lucide.createIcons();
@@ -603,7 +607,7 @@
         window.cycleMode = (id) => { const u = state.units.find(x => x.id === state.activeUnitId); const w = u.words.find(x => x.id === id); if (w) { w.localMode = { 'both': 'en', 'en': 'zh', 'zh': 'both' }[w.localMode || 'both']; renderWords(); } };
         window.updateWordNote = async (id, v) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w && w.note !== v) { w.note = v; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); } };
         window.updateRating = async (id, n) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w) { w.rating = n; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } };
-        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("確定刪除此單元？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
+        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("永久刪除此單元嗎？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
         window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate max-w-[150px] ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
 
         window.importWords = async () => {
