@@ -120,7 +120,7 @@
             <!-- 使用者登入入口 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">使用者登入</h2>
+                <h2 class="text-2xl font-bold mb-6">使用者登入</h2>
                 <div class="space-y-4">
                     <input type="text" id="customUser" placeholder="您的帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
                     <input type="password" id="customPass" placeholder="您的密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
@@ -326,7 +326,7 @@
         </div>
     </div>
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center">
             <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i>
             <h4 class="font-black text-lg mb-6 text-slate-800">確定刪除紀錄？</h4>
             <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
@@ -374,7 +374,7 @@
             }
         };
 
-        // --- UI 跳轉 ---
+        // --- 介面管理 ---
         function showAppUI(name, isGoogle, photo = null) {
             ['authScreen', 'adminScreen'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('appScreen').classList.remove('hidden');
@@ -587,6 +587,33 @@
         window.cycleMode = (id) => { const u = state.units.find(x => x.id == state.activeUnitId); const w = u.words.find(x => x.id == id); if (w) { w.localMode = { 'both': 'en', 'en': 'zh', 'zh': 'both' }[w.localMode || 'both']; renderWords(); } };
         window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("永久刪除此單元？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
         window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate max-w-[150px] ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
+
+        // 🌟 更新：點擊發佈網頁後直接開新分頁
+        window.publishLink = () => { 
+            if (!state.userLabel) return; 
+            const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; 
+            
+            // 直接開啟新分頁
+            window.open(url, '_blank');
+            
+            // 同時複製連結到剪貼簿以便分享
+            const dummy = document.createElement("input"); 
+            document.body.appendChild(dummy); 
+            dummy.value = url; 
+            dummy.select(); 
+            document.execCommand("copy"); 
+            document.body.removeChild(dummy); 
+            
+            showNotification("發佈連結已在新分頁開啟，並複製到剪貼簿！"); 
+        };
+
+        window.importWords = async () => {
+            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
+            if (!n || !t) return showNotification("內容不能為空", "alert");
+            const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 5, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
+            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u' + Date.now()), { name: n, words: list, createdAt: Date.now() });
+            showNotification("單元已儲存");
+        };
     </script>
 </body>
 </html>
