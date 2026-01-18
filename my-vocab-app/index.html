@@ -12,7 +12,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        /* --- 單字卡片顯示邏輯 --- */
+        /* --- 單字卡片顯示邏輯 (CSS 控制) --- */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
         .card-both .word-note { display: block; }
@@ -47,6 +47,7 @@
 
         .note-area::-webkit-scrollbar { display: none; }
 
+        /* 聽力挑戰模式 (模糊背景) */
         #wordGrid.blind-mode {
             opacity: 0.1;
             filter: blur(12px);
@@ -86,9 +87,9 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="pauseAutoPlay()" id="floatPauseBtn" class="p-3 bg-amber-500 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="pause" class="w-5 h-5"></i></button>
-            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
-            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
+            <button onclick="pauseAutoPlay()" id="floatPauseBtn" class="p-3 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-100 active:scale-90 transition-all"><i data-lucide="pause" class="w-5 h-5"></i></button>
+            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100 active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
+            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg shadow-rose-100 active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
         </div>
     </div>
 
@@ -96,6 +97,7 @@
     <div id="authScreen" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 text-center transition-all">
             
+            <!-- 主入口選單 -->
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
@@ -119,6 +121,7 @@
                 </div>
             </div>
 
+            <!-- 使用者登入入口 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6">使用者登入</h2>
@@ -129,13 +132,14 @@
                 </div>
             </div>
 
+            <!-- 管理者驗證入口 -->
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6 text-slate-800">管理員驗證</h2>
                 <div class="space-y-4">
                     <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                     <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    <button onclick="adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold">進入後台</button>
+                    <button onclick="adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold transition-all active:scale-95 shadow-lg">進入後台</button>
                 </div>
             </div>
 
@@ -151,7 +155,7 @@
         <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-indigo-600 rounded-xl shadow-lg">
+                    <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100">
                         <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
                     </div>
                     <span class="text-xl font-black text-slate-800 tracking-tighter uppercase">單字大師</span>
@@ -172,6 +176,7 @@
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <!-- 左側：單元管理 -->
                 <div id="sidebarSection" class="lg:col-span-4 space-y-8">
                     <div id="addUnitCard" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800"><i data-lucide="file-plus-2" class="text-indigo-600"></i> 新增學習單元</h2>
@@ -187,6 +192,7 @@
                     </div>
                 </div>
                 
+                <!-- 右側：練習區域 -->
                 <div id="exerciseSection" class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-5">
                         <div class="flex flex-wrap items-center justify-between gap-6">
@@ -206,6 +212,7 @@
                             </div>
                         </div>
 
+                        <!-- 英聽控制面板 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
                                 <div class="flex flex-wrap items-center gap-2">
@@ -252,7 +259,7 @@
                     <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 transition-all duration-500"></div>
                     <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300 text-center">
                         <i data-lucide="coffee" class="w-16 h-16 mb-4 mx-auto"></i>
-                        <p class="text-xl font-bold">點選單元開始練習</p>
+                        <p class="text-xl font-bold text-slate-400">目前沒有單字，請選擇左側單元</p>
                     </div>
                 </div>
             </div>
@@ -261,20 +268,22 @@
 
     <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
         <main class="max-w-7xl mx-auto px-8 py-10">
             <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 帳號管理 -->
                 <div class="space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
                         <h3 class="text-xl font-black mb-6 flex items-center gap-2"><i data-lucide="user-plus"></i> 建立帳號</h3>
                         <div class="space-y-4">
                             <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
                             <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
-                            <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">發布帳號</button>
+                            <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold transition-all active:scale-95 shadow-md">發布帳號</button>
                         </div>
                     </div>
                     <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
@@ -282,15 +291,22 @@
                         <div id="accountManagerList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div>
                     </div>
                 </div>
+
+                <!-- 使用者數據管理 -->
                 <div class="lg:col-span-2 space-y-8">
                     <div class="bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200">
                         <div class="px-8 py-6 border-b bg-slate-50/50 flex justify-between items-center">
-                            <h3 class="text-xl font-black">使用者管理</h3>
+                            <h3 class="text-xl font-black text-slate-800">使用者管理中心</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
-                                    <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">Email</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5 text-right">操作</th></tr>
+                                    <tr>
+                                        <th class="px-8 py-5">使用者</th>
+                                        <th class="px-8 py-5">Email (Google)</th>
+                                        <th class="px-8 py-5">最後上線</th>
+                                        <th class="px-8 py-5 text-right">操作</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
                             </table>
@@ -316,10 +332,10 @@
         </div>
     </div>
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100">
             <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i>
-            <h4 class="font-black text-lg mb-6">確定刪除？</h4>
-            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
+            <h4 class="font-black text-lg mb-6 text-slate-800">確定刪除資料與紀錄？</h4>
+            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
         </div>
     </div>
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
@@ -330,7 +346,7 @@
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
-        // 🚀 FIREBASE 核心配置
+        // 🚀 FIREBASE 核心配置與初始化
         // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ",
@@ -351,7 +367,7 @@
             isStudentView: false, editingPassUser: null 
         };
 
-        // --- 核心驗證與身分獲取 ---
+        // --- 核心驗證 (穩定權杖不匹配錯誤) ---
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -365,7 +381,7 @@
             }
         };
 
-        // --- 初始化狀態判定 ---
+        // --- 初始化頁面狀態與權限 ---
         async function handleInitialization() {
             const params = new URLSearchParams(window.location.search);
             const view = params.get('view'), ownerId = params.get('id');
@@ -381,9 +397,10 @@
             } return false;
         }
 
-        // --- UI 跳轉核心函式 ---
+        // --- UI 跳轉核心 ---
         function showAppUI(name, isGoogle, photo = null) {
             document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.add('hidden'); // 強制隱藏管理者後台
             document.getElementById('appScreen').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = name;
             const badge = document.getElementById('userBadge'); badge.classList.remove('hidden');
@@ -392,7 +409,20 @@
             lucide.createIcons();
         }
 
-        // --- 登入控制 ---
+        function showAdminUI() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // --- 登入控制邏輯 ---
+        window.toggleAuthView = (m) => {
+            ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden'));
+            document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView')?.classList.remove('hidden');
+            lucide.createIcons();
+        };
+
         window.loginWithGoogle = async () => {
             try { 
                 document.getElementById('loadingIndicator').classList.remove('hidden');
@@ -405,15 +435,13 @@
             if (!u || !p) return showNotification("請輸入帳號密碼", "alert");
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
-                // 1. 先取得權限讀取帳密庫
                 await initAuth();
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists()) {
                     if (snap.data().password === p) {
-                        // 2. 🌟 關鍵修正：先寫入工作階段，防止監聽器踢除
                         sessionStorage.setItem('custom_user_session', u);
+                        sessionStorage.removeItem('admin_session');
                         state.userLabel = u;
-                        // 3. 執行 UI 跳轉
                         showAppUI(u, false);
                         startSyncing(u);
                         logUserActivity(u, true, { displayName: u });
@@ -426,58 +454,61 @@
         window.adminLogin = async () => {
             const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value;
             if (u === 'yljh' && p === 'yljh8320873') {
-                await initAuth(); state.isAdmin = true; showAdminDashboard();
-            } else { showNotification("管理員帳密錯誤", "alert"); }
+                await initAuth();
+                sessionStorage.setItem('admin_session', 'true');
+                sessionStorage.removeItem('custom_user_session');
+                state.isAdmin = true;
+                showAdminDashboard();
+                showAdminUI();
+                showNotification("已登入管理者後台");
+            } else { showNotification("管理者帳密錯誤", "alert"); }
         };
 
-        window.logout = () => { stopAutoPlay(); signOut(auth); sessionStorage.removeItem('custom_user_session'); window.location.href = window.location.origin + window.location.pathname; };
+        window.logout = () => { stopAutoPlay(); signOut(auth); sessionStorage.clear(); window.location.href = window.location.origin + window.location.pathname; };
 
-        // --- 身分監聽器：修正自定義登入跳轉的核心邏輯 ---
+        // --- 身分變化監聽器 ---
         onAuthStateChanged(auth, async (user) => {
             if (await handleInitialization()) return;
 
             const customSession = sessionStorage.getItem('custom_user_session');
+            const isAdminSession = sessionStorage.getItem('admin_session');
 
             if (user) {
                 state.user = user;
-                if (state.isAdmin) {
-                    showAdminDashboard();
+                if (isAdminSession === 'true') {
+                    state.isAdmin = true; showAdminDashboard(); showAdminUI();
                 } else if (!user.isAnonymous) {
-                    // Google 帳號登入
-                    state.userLabel = user.uid;
-                    showAppUI(user.displayName, true, user.photoURL);
-                    startSyncing(user.uid);
-                    logUserActivity(user.uid, false, user);
+                    state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); logUserActivity(user.uid, false, user);
                 } else if (customSession) {
-                    // 🌟 修正點：若為匿名使用者但有 session，視為自定義帳號登入
-                    state.userLabel = customSession;
-                    showAppUI(customSession, false);
-                    startSyncing(customSession);
-                } else {
-                    // 純匿名且無 session (剛啟動或登出)，停留在登入頁
+                    state.userLabel = customSession; showAppUI(customSession, false); startSyncing(customSession);
+                } else if (!state.isStudentView) {
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
+                    document.getElementById('adminScreen').classList.add('hidden');
                 }
             } else {
                 if (!state.isStudentView) {
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
-                    initAuth(); // 嘗試背景靜態驗證
+                    document.getElementById('adminScreen').classList.add('hidden');
+                    initAuth();
                 }
             }
             lucide.createIcons();
         });
 
-        // --- 資料紀錄函式 ---
+        // --- 資料紀錄與同步 ---
         async function logUserActivity(id, isCustom, userObj = null) {
             if (state.isStudentView || !auth.currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id);
             const data = { displayName: isCustom ? id : (userObj?.displayName || "Google 使用者"), lastSeen: Date.now(), type: isCustom ? 'custom' : 'google' };
             if (!isCustom && userObj?.email) data.email = userObj.email;
-            try { await setDoc(ref, data, { merge: true }); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true }); } catch (e) {}
+            try { 
+                await setDoc(ref, data, { merge: true }); 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true });
+            } catch (e) {}
         }
 
-        // --- 其餘英聽與渲染功能保持優化狀態 ---
         function startSyncing(id) {
             if (!id) return;
             onSnapshot(collection(db, 'artifacts', appId, 'users', id, 'units'), (snap) => {
@@ -486,6 +517,7 @@
             });
         }
 
+        // --- 英聽系統 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
@@ -515,20 +547,26 @@
         function updateAudioUI(isPlaying) {
             const bar = document.getElementById('floatingAudioBar');
             if (isPlaying) {
-                bar.classList.add('active'); document.getElementById('btnStartAudio').classList.add('hidden');
+                bar.classList.add('active');
+                document.getElementById('btnStartAudio').classList.add('hidden');
                 document.getElementById('btnPauseAudio').classList.toggle('hidden', state.isAudioPaused);
                 if (state.isAudioPaused) document.getElementById('btnStartText').innerText = "繼續播放";
-                document.getElementById('btnStopAudio').classList.remove('hidden'); document.getElementById('audioStatusText').classList.remove('hidden');
+                document.getElementById('btnStopAudio').classList.remove('hidden');
+                document.getElementById('audioStatusText').classList.remove('hidden');
                 document.getElementById('floatPauseBtn').classList.toggle('hidden', state.isAudioPaused);
                 document.getElementById('floatResumeBtn').classList.toggle('hidden', !state.isAudioPaused);
             } else {
-                bar.classList.remove('active'); document.getElementById('btnStartAudio').classList.remove('hidden');
-                document.getElementById('btnPauseAudio').classList.add('hidden'); document.getElementById('btnStopAudio').classList.add('hidden');
-                document.getElementById('audioStatusText').classList.add('hidden'); document.getElementById('btnStartText').innerText = "開始英聽";
+                bar.classList.remove('active');
+                document.getElementById('btnStartAudio').classList.remove('hidden');
+                document.getElementById('btnPauseAudio').classList.add('hidden');
+                document.getElementById('btnStopAudio').classList.add('hidden');
+                document.getElementById('audioStatusText').classList.add('hidden');
+                document.getElementById('btnStartText').innerText = "開始英聽";
             }
             lucide.createIcons();
         }
 
+        // --- 工具函式 ---
         function speakAsync(t) { return new Promise(r => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.9; u.onend = r; u.onerror = r; window.speechSynthesis.speak(u); }); }
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
         function highlightWordCard(id) { removeHighlights(); const c = document.querySelector(`[data-word-id="${id}"]`); if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
@@ -544,7 +582,19 @@
             else if (sortVal === 'random') { for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; } }
             else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
-            g.innerHTML = list.map(w => `<div onclick="window.cycleMode('${w.id}')" data-word-id="${w.id}" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-xl card-${w.localMode || 'both'}"><div class="flex justify-between items-start mb-4"><div class="space-y-1"><h4 class="word-en text-2xl font-black">${w.en}</h4><p class="word-zh text-indigo-600 font-bold">${w.zh}</p></div><button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl voice-btn"><i data-lucide="volume-2"></i></button></div><div class="word-note mb-4"><textarea class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl resize-none" placeholder="記憶筆記..." rows="2" onblur="window.updateWordNote('${w.id}', this.value)">${w.note || ''}</textarea></div><div class="pt-6 border-t border-slate-50 flex items-center justify-between"><span class="text-[10px] font-black text-slate-300">熟練度</span><div class="flex gap-1">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black ${w.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}</div></div></div>`).join('');
+            
+            // 🌟 修正點：確保按鈕綁定正確的 ID 變數 (w.id)
+            g.innerHTML = list.map(w => {
+                const displayModeClass = `card-${w.localMode || 'both'}`;
+                return `<div onclick="window.cycleMode('${w.id}')" data-word-id="${w.id}" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-xl ${displayModeClass}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="space-y-1 text-left"><h4 class="word-en text-2xl font-black text-slate-800 tracking-tight">${w.en}</h4><p class="word-zh text-indigo-600 font-bold">${w.zh}</p></div>
+                        <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl voice-btn"><i data-lucide="volume-2"></i></button>
+                    </div>
+                    <div class="word-note mb-4"><textarea class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl resize-none" placeholder="記憶筆記..." rows="2" onblur="window.updateWordNote('${w.id}', this.value)">${w.note || ''}</textarea></div>
+                    <div class="pt-6 border-t border-slate-50 flex items-center justify-between"><span class="text-[10px] font-black text-slate-300">熟練度等級</span>
+                    <div class="flex gap-1">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${w.rating === n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}</div></div></div>`;
+            }).join('');
             lucide.createIcons();
         };
 
@@ -553,8 +603,8 @@
         window.cycleMode = (id) => { const u = state.units.find(x => x.id === state.activeUnitId); const w = u.words.find(x => x.id === id); if (w) { w.localMode = { 'both': 'en', 'en': 'zh', 'zh': 'both' }[w.localMode || 'both']; renderWords(); } };
         window.updateWordNote = async (id, v) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w && w.note !== v) { w.note = v; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); } };
         window.updateRating = async (id, n) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w) { w.rating = n; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } };
-        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("永久刪除此單元嗎？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
-        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
+        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("確定刪除此單元？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
+        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate max-w-[150px] ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
 
         window.importWords = async () => {
             const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
@@ -564,7 +614,9 @@
             showNotification("單元已儲存");
         };
 
-        // --- Admin 管理者邏輯 ---
+        window.publishLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; const dummy = document.createElement("input"); document.body.appendChild(dummy); dummy.value = url; dummy.select(); document.execCommand("copy"); document.body.removeChild(dummy); showNotification("發佈連結已複製！"); };
+
+        // --- 管理者功能 ---
         window.createAccount = async () => {
             const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim();
             if (u && p) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() }); showNotification(`帳號 ${u} 已建立`); document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = ''; }
@@ -576,12 +628,11 @@
         window.confirmUpdatePass = async () => { const p = document.getElementById('newPassInput').value.trim(); if (p) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', state.editingPassUser), { password: p }); closeEditPass(); } };
 
         function showAdminDashboard() {
-            document.getElementById('authScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.remove('hidden');
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (s) => { if (s.exists()) { const d = s.data(); document.getElementById('adminStats').innerHTML = `<div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-xs font-black uppercase">註冊人數</p><h4 class="text-3xl font-black">${d.userCount || 0}</h4></div><div class="admin-stat-card border-l-4 border-blue-500"><p class="text-xs font-black uppercase">登入次數</p><h4 class="text-3xl font-black">${d.loginCount || 0}</h4></div><div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-xs font-black uppercase">單元總數</p><h4 class="text-3xl font-black">${d.totalUnits || 0}</h4></div><div class="admin-stat-card border-l-4 border-amber-500"><p class="text-xs font-black uppercase">單字總量</p><h4 class="text-3xl font-black">${d.totalWords || 0}</h4></div>`; } });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (s) => { document.getElementById('accountManagerList').innerHTML = s.docs.map(d => `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border mb-2"><div><p class="font-bold">${d.id}</p><p class="text-[10px]">密碼: ${d.data().password}</p></div><div class="flex gap-2"><button onclick="window.openEditPass('${d.id}')" class="p-2 text-indigo-400 hover:bg-white rounded-lg transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.openDeleteConfirm('${d.id}', 'account')" class="p-2 text-rose-400 hover:bg-white rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join(''); lucide.createIcons(); });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (s) => { document.getElementById('adminUserTable').innerHTML = s.docs.map(d => { const x = d.data(); return `<tr class="border-b"><td class="px-8 py-5"><b>${x.displayName}</b><br><small>${x.type}</small></td><td class="px-8 py-5 text-xs text-indigo-600 font-mono">${x.email || '無 (帳密帳號)'}</td><td class="px-8 py-5 text-slate-400">${new Date(x.lastSeen).toLocaleString()}</td><td class="px-8 py-5 flex gap-2 justify-end"><button onclick="window.adminDetail('${d.id}', '${x.displayName}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">詳情</button><button onclick="window.openDeleteConfirm('${d.id}', '${x.type}')" class="bg-rose-50 text-rose-500 px-3 py-2 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (s) => { document.getElementById('accountManagerList').innerHTML = s.docs.map(d => `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border mb-2 group hover:border-indigo-400 transition-all"><div><p class="font-bold text-slate-700">${d.id}</p><p class="text-[10px] text-slate-400">密碼: ${d.data().password}</p></div><div class="flex gap-2"><button onclick="window.openEditPass('${d.id}')" class="p-2 text-indigo-400"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.openDeleteConfirm('${d.id}', 'account')" class="p-2 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join(''); lucide.createIcons(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (s) => { document.getElementById('adminUserTable').innerHTML = s.docs.map(d => { const x = d.data(); return `<tr class="border-b group hover:bg-slate-50 transition-all"><td class="px-8 py-5"><b>${x.displayName}</b><br><small class="text-indigo-400">${x.type}</small></td><td class="px-8 py-5 text-xs text-slate-600 font-mono">${x.email || 'N/A'}</td><td class="px-8 py-5 text-slate-400">${new Date(x.lastSeen).toLocaleString()}</td><td class="px-8 py-5 flex gap-2 justify-end"><button onclick="window.adminDetail('${d.id}', '${x.displayName}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">詳情</button><button onclick="window.openDeleteConfirm('${d.id}', '${x.type}')" class="bg-rose-50 text-rose-500 p-2 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
         }
-        window.adminDetail = async (id, n) => { document.getElementById('detailUserTitle').innerText = n; const m = document.getElementById('adminDetailModal'); m.classList.remove('hidden'); const s = await getDocs(collection(db, 'artifacts', appId, 'users', id, 'units')); document.getElementById('detailContent').innerHTML = s.docs.map(d => { const u = d.data(); return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-sm mb-4"><h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5><div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> / ${w.zh} ${w.note ? `<p class="mt-2 text-slate-400 italic">💡 ${w.note}</p>` : ''}</div>`).join('')}</div></div>`; }).join('') || '<p class="text-center py-10">尚無單元</p>'; lucide.createIcons(); };
+        window.adminDetail = async (id, n) => { document.getElementById('detailUserTitle').innerText = n; const m = document.getElementById('adminDetailModal'); m.classList.remove('hidden'); const s = await getDocs(collection(db, 'artifacts', appId, 'users', id, 'units')); document.getElementById('detailContent').innerHTML = s.docs.map(d => { const u = d.data(); return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-sm mb-4"><h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5><div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> / ${w.zh} ${w.note ? `<p class="mt-2 text-slate-400 italic">💡 ${w.note}</p>` : ''}</div>`).join('')}</div></div>`; }).join('') || '<p class="text-center py-10 font-bold text-slate-300">尚未上傳單元</p>'; lucide.createIcons(); };
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
     </script>
 </body>
