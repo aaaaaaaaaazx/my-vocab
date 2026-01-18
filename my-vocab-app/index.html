@@ -47,7 +47,6 @@
 
         .note-area::-webkit-scrollbar { display: none; }
 
-        /* 聽力挑戰模式 (模糊背景) */
         #wordGrid.blind-mode {
             opacity: 0.1;
             filter: blur(12px);
@@ -83,7 +82,7 @@
             </div>
             <div>
                 <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">英聽播放中</p>
-                <p id="floatingStatusText" class="text-xs font-bold text-slate-500 truncate max-w-[150px]">正在依序朗讀...</p>
+                <p id="floatingStatusText" class="text-xs font-bold text-slate-500 truncate max-w-[150px]">準備朗讀...</p>
             </div>
         </div>
         <div class="flex gap-2">
@@ -173,6 +172,7 @@
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <!-- 左側：單元管理 -->
                 <div id="sidebarSection" class="lg:col-span-4 space-y-8">
                     <div id="addUnitCard" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800"><i data-lucide="file-plus-2" class="text-indigo-600"></i> 新增學習單元</h2>
@@ -188,6 +188,7 @@
                     </div>
                 </div>
                 
+                <!-- 右側：練習區域 -->
                 <div id="exerciseSection" class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-5">
                         <div class="flex flex-wrap items-center justify-between gap-6">
@@ -207,6 +208,7 @@
                             </div>
                         </div>
 
+                        <!-- 🚀 英聽功能控制列 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
                                 <div class="flex flex-wrap items-center gap-2">
@@ -239,7 +241,7 @@
                             </div>
                             <div id="audioStatusText" class="text-[10px] font-bold text-indigo-400 hidden flex items-center gap-2">
                                 <span id="audioStatusDot" class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
-                                <span id="audioStatusMsg">正依據排序規則進行連續朗讀...</span>
+                                <span id="audioStatusMsg">英聽播放中...</span>
                             </div>
                         </div>
                     </div>
@@ -251,9 +253,9 @@
                         </div>
                     </div>
                     <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 transition-all duration-500"></div>
-                    <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300">
-                        <i data-lucide="coffee" class="w-16 h-16 mb-4"></i>
-                        <p class="text-xl font-bold text-center">點選單元開始練習</p>
+                    <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300 text-center">
+                        <i data-lucide="coffee" class="w-16 h-16 mb-4 mx-auto"></i>
+                        <p class="text-xl font-bold">點選單元開始練習</p>
                     </div>
                 </div>
             </div>
@@ -268,14 +270,16 @@
         </nav>
         <main class="max-w-7xl mx-auto px-8 py-10">
             <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 帳號管理 -->
                 <div class="space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
                         <h3 class="text-xl font-black mb-6 flex items-center gap-2"><i data-lucide="user-plus"></i> 建立帳號</h3>
                         <div class="space-y-4">
-                            <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
+                            <input type="text" id="newAccountUser" placeholder="使用者帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
                             <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none">
-                            <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">發布帳號</button>
+                            <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold transition-all active:scale-95">發布帳號</button>
                         </div>
                     </div>
                     <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
@@ -283,15 +287,22 @@
                         <div id="accountManagerList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div>
                     </div>
                 </div>
+
+                <!-- 使用者管理 -->
                 <div class="lg:col-span-2 space-y-8">
                     <div class="bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200">
                         <div class="px-8 py-6 border-b bg-slate-50/50 flex justify-between items-center">
-                            <h3 class="text-xl font-black">使用者管理</h3>
+                            <h3 class="text-xl font-black">使用者活動紀錄</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
-                                    <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">Email</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
+                                    <tr>
+                                        <th class="px-8 py-5">使用者</th>
+                                        <th class="px-8 py-5">Email (Google)</th>
+                                        <th class="px-8 py-5">最後上線</th>
+                                        <th class="px-8 py-5 text-right">操作</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
                             </table>
@@ -304,108 +315,202 @@
 
     <!-- Modals -->
     <div id="editPassModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 text-center">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 text-center border border-slate-100">
             <h4 class="font-black text-xl mb-6">修改密碼</h4>
-            <input type="text" id="newPassInput" placeholder="新密碼" class="w-full px-5 py-3 bg-slate-50 border rounded-xl mb-6 outline-none">
-            <div class="flex gap-3"><button onclick="closeEditPass()" class="flex-1 py-3 bg-slate-100 rounded-xl">取消</button><button onclick="confirmUpdatePass()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl">確定</button></div>
+            <input type="text" id="newPassInput" placeholder="新密碼" class="w-full px-5 py-3 bg-slate-50 border rounded-xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500">
+            <div class="flex gap-3"><button onclick="closeEditPass()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button onclick="confirmUpdatePass()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">確定</button></div>
         </div>
     </div>
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
-            <div class="p-8 border-b flex justify-between items-center"><h4 id="detailUserTitle" class="font-black text-2xl">單字紀錄</h4><button onclick="closeAdminDetail()"><i data-lucide="x"></i></button></div>
-            <div id="detailContent" class="p-8 overflow-y-auto space-y-6"></div>
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50/50"><h4 id="detailUserTitle" class="font-black text-2xl">單字紀錄</h4><button onclick="closeAdminDetail()" class="p-2 hover:bg-slate-200 rounded-full"><i data-lucide="x"></i></button></div>
+            <div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white"></div>
         </div>
     </div>
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100">
             <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i>
-            <h4 class="font-black text-lg mb-6">確定刪除？</h4>
-            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl">確定</button></div>
+            <h4 class="font-black text-lg mb-6">確定刪除紀錄？</h4>
+            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
         </div>
     </div>
-    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200]"><span id="notificationText" class="font-bold text-sm"></span></div>
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
+        // =========================================================================
+        // 🚀 FIREBASE 核心配置
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ",
+            authDomain: "my-vocab-app-852b4.firebaseapp.com",
+            projectId: "my-vocab-app-852b4",
+            storageBucket: "my-vocab-app-852b4.firebasestorage.app",
+            messagingSenderId: "79896462245",
+            appId: "1:79896462245:web:1ece173ddc5a6d05781e4c",
+            measurementId: "G-HSMRF8W6SW"
+        };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app), db = getFirestore(app), appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const auth = getAuth(app), db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        const state = { user: null, isAdmin: false, units: [], activeUnitId: null, globalMode: 'both', userLabel: null, isAudioPlaying: false, isAudioPaused: false, displayedWords: [], isStudentView: false, editingPassUser: null };
+        const state = { 
+            user: null, isAdmin: false, units: [], activeUnitId: null, globalMode: 'both',
+            userLabel: null, isAudioPlaying: false, isAudioPaused: false, displayedWords: [],
+            isStudentView: false, editingPassUser: null 
+        };
 
-        async function checkUrlParams() {
+        // 🌟 修正：強韌的 Auth 初始化與錯誤處理
+        const initAuth = async () => {
+            try {
+                // 如果環境有提供權杖
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                // 🚀 修復：如果發生 custom-token-mismatch，降級為匿名登入確保程式不崩潰
+                await signInAnonymously(auth);
+            }
+        };
+
+        // --- 初始化頁面身分 ---
+        async function handleInitialization() {
             const params = new URLSearchParams(window.location.search);
-            const view = params.get('view'), id = params.get('id');
-            if (view === 'student' && id) {
-                state.isStudentView = true; state.userLabel = id; document.getElementById('authScreen').classList.add('hidden');
-                try { await signInAnonymously(auth); startSyncing(id); showAppUI(`訪客練習`, false); document.getElementById('addUnitCard')?.classList.add('hidden'); document.getElementById('btnPublish').classList.add('hidden'); document.getElementById('btnLogout').innerText = "返回登入"; } catch (e) {}
+            const view = params.get('view'), ownerId = params.get('id');
+            
+            if (view === 'student' && ownerId) {
+                state.isStudentView = true;
+                state.userLabel = ownerId;
+                document.getElementById('authScreen').classList.add('hidden');
+                try {
+                    await initAuth();
+                    startSyncing(ownerId);
+                    showAppUI(`訪客練習`, false);
+                    document.getElementById('addUnitCard')?.classList.add('hidden');
+                    document.getElementById('btnPublish').classList.add('hidden');
+                    document.getElementById('btnLogout').innerText = "返回登入";
+                } catch (e) { showNotification("存取逾時", "alert"); }
                 return true;
-            } return false;
+            }
+            return false;
         }
 
-        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView')?.classList.remove('hidden'); lucide.createIcons(); };
-        window.publishLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; const dummy = document.createElement("input"); document.body.appendChild(dummy); dummy.value = url; dummy.select(); document.execCommand("copy"); document.body.removeChild(dummy); showNotification("發佈連結已複製！"); };
+        // --- 登入控制 ---
+        window.loginWithGoogle = async () => {
+            try { 
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider); 
+            } catch (e) { 
+                showNotification("Google 登入失敗", "alert"); 
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        };
 
-        window.loginWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { showNotification("登入失敗", "alert"); } };
         window.loginWithCustom = async () => {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
-            if (!u || !p) return;
-            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
-            if (snap.exists() && snap.data().password === p) { await signInAnonymously(auth); state.userLabel = u; sessionStorage.setItem('custom_user_session', u); showAppUI(u, false); startSyncing(u); logUserActivity(u, true, { displayName: u }); }
-            else showNotification("帳號或密碼錯誤", "alert");
+            if (!u || !p) return showNotification("請輸入帳號密碼", "alert");
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            try {
+                await initAuth();
+                const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
+                if (snap.exists()) {
+                    if (snap.data().password === p) {
+                        state.userLabel = u;
+                        sessionStorage.setItem('custom_user_session', u);
+                        showAppUI(u, false);
+                        startSyncing(u);
+                        logUserActivity(u, true, { displayName: u });
+                    } else { showNotification("密碼錯誤", "alert"); }
+                } else { showNotification("帳號不存在", "alert"); }
+            } catch (e) { showNotification("連線失敗", "alert"); }
+            finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
-        window.adminLogin = async () => { if (document.getElementById('adminUser').value === 'yljh' && document.getElementById('adminPass').value === 'yljh8320873') { await signInAnonymously(auth); state.isAdmin = true; showAdminDashboard(); } };
+
+        window.adminLogin = async () => {
+            if (document.getElementById('adminUser').value === 'yljh' && document.getElementById('adminPass').value === 'yljh8320873') {
+                await initAuth();
+                state.isAdmin = true;
+                showAdminDashboard();
+                showNotification("管理者已登入");
+            } else { showNotification("管理員帳密錯誤", "alert"); }
+        };
+
         window.logout = () => { stopAutoPlay(); signOut(auth); sessionStorage.removeItem('custom_user_session'); window.location.href = window.location.origin + window.location.pathname; };
 
+        // --- Auth 狀態監聽 ---
         onAuthStateChanged(auth, async (user) => {
-            if (await checkUrlParams()) return;
-            if (user) {
+            if (await handleInitialization()) return;
+
+            if (user && !user.isAnonymous) {
                 state.user = user;
-                if (state.isAdmin) showAdminDashboard();
-                else {
+                if (state.isAdmin) {
+                    showAdminDashboard();
+                } else {
                     const session = sessionStorage.getItem('custom_user_session');
-                    if (session) { state.userLabel = session; showAppUI(session, false); startSyncing(session); }
-                    else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName, true, user.photoURL); startSyncing(user.uid); logUserActivity(user.uid, false, user); }
+                    if (session) {
+                        state.userLabel = session; showAppUI(session, false); startSyncing(session);
+                    } else {
+                        state.userLabel = user.uid;
+                        showAppUI(user.displayName, true, user.photoURL);
+                        startSyncing(user.uid);
+                        logUserActivity(user.uid, false, user); // 記錄 Google 登入
+                    }
                 }
-            } else { document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('hidden'); }
+            } else if (!state.isStudentView) {
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                initAuth(); // 背景靜態驗證
+            }
             lucide.createIcons();
         });
 
+        // --- 資料紀錄 ---
         async function logUserActivity(id, isCustom, userObj = null) {
-            if (state.isStudentView) return;
+            if (state.isStudentView || !auth.currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id);
-            const data = { displayName: isCustom ? id : (userObj?.displayName || "Google 使用者"), lastSeen: Date.now(), type: isCustom ? 'custom' : 'google' };
+            const data = { 
+                displayName: isCustom ? id : (userObj?.displayName || "Google 使用者"), 
+                lastSeen: Date.now(), 
+                type: isCustom ? 'custom' : 'google' 
+            };
             if (!isCustom && userObj?.email) data.email = userObj.email;
-            await setDoc(ref, data, { merge: true });
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true });
+            
+            try {
+                await setDoc(ref, data, { merge: true });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true });
+            } catch (e) {}
         }
 
-        window.importWords = async () => {
-            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
-            if (!n || !t) return;
-            const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 5, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
-            const id = 'u' + Date.now();
-            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id), { name: n, words: list, createdAt: Date.now() });
-            showNotification("單元已同步");
-        };
+        function startSyncing(id) {
+            if (!id) return;
+            onSnapshot(collection(db, 'artifacts', appId, 'users', id, 'units'), (snap) => {
+                state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUnitList(); renderWords();
+            });
+        }
 
-        // --- 🚀 英聽播放系統 ---
+        // --- 英聽系統 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
-            const words = [...state.displayedWords]; if (words.length === 0) return;
+            const words = [...state.displayedWords];
+            if (words.length === 0) return showNotification("請選取單元", "alert");
             state.isAudioPlaying = true; state.isAudioPaused = false; updateAudioUI(true);
-            const reps = parseInt(document.getElementById('audioRepeatCount').value), pause = parseInt(document.getElementById('audioIntervalPause').value);
+            const reps = parseInt(document.getElementById('audioRepeatCount').value);
+            const pause = parseInt(document.getElementById('audioIntervalPause').value);
             if (document.getElementById('audioBlindMode').checked) document.getElementById('wordGrid').classList.add('blind-mode');
             for (let i = 0; i < words.length; i++) {
                 if (!state.isAudioPlaying) break;
                 while (state.isAudioPaused && state.isAudioPlaying) await sleep(200);
                 const w = words[i];
                 if (document.getElementById('audioVisualSync').checked && !document.getElementById('audioBlindMode').checked) highlightWordCard(w.id);
-                document.getElementById('floatingStatusText').innerText = `正在朗讀: ${w.en}`;
+                document.getElementById('floatingStatusText').innerText = `朗讀中: ${w.en}`;
                 for (let r = 0; r < reps; r++) {
                     if (!state.isAudioPlaying) break;
                     while (state.isAudioPaused && state.isAudioPlaying) await sleep(200);
@@ -425,11 +530,9 @@
                 bar.classList.add('active');
                 document.getElementById('btnStartAudio').classList.add('hidden');
                 document.getElementById('btnPauseAudio').classList.toggle('hidden', state.isAudioPaused);
-                document.getElementById('btnStartAudio').classList.toggle('hidden', !state.isAudioPaused);
                 if (state.isAudioPaused) document.getElementById('btnStartText').innerText = "繼續播放";
                 document.getElementById('btnStopAudio').classList.remove('hidden');
                 document.getElementById('audioStatusText').classList.remove('hidden');
-                // 懸浮條按鈕
                 document.getElementById('floatPauseBtn').classList.toggle('hidden', state.isAudioPaused);
                 document.getElementById('floatResumeBtn').classList.toggle('hidden', !state.isAudioPaused);
             } else {
@@ -447,6 +550,14 @@
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
         function highlightWordCard(id) { removeHighlights(); const c = document.querySelector(`[data-word-id="${id}"]`); if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
         function removeHighlights() { document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); }
+
+        // --- 介面渲染 ---
+        window.renderUnitList = () => {
+            const el = document.getElementById('unitList'); if (!el) return;
+            if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無單元</p>'; return; }
+            el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate max-w-[150px] ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join('');
+            lucide.createIcons();
+        };
 
         window.renderWords = () => {
             const g = document.getElementById('wordGrid'), u = state.units.find(x => x.id === state.activeUnitId);
@@ -467,27 +578,36 @@
         window.cycleMode = (id) => { const u = state.units.find(x => x.id === state.activeUnitId); const w = u.words.find(x => x.id === id); if (w) { w.localMode = { 'both': 'en', 'en': 'zh', 'zh': 'both' }[w.localMode || 'both']; renderWords(); } };
         window.updateWordNote = async (id, v) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w && w.note !== v) { w.note = v; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); } };
         window.updateRating = async (id, n) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w) { w.rating = n; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } };
-        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("刪除此單元？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
-        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center">尚無單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
-        window.speak = (t) => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); };
-        function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
-        function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white', 2: 'bg-teal-400 text-white', 3: 'bg-amber-400 text-white', 4: 'bg-orange-500 text-white', 5: 'bg-rose-500 text-white' }[n]; }
+        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("永久刪除此單元嗎？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
+        
+        window.publishLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; const dummy = document.createElement("input"); document.body.appendChild(dummy); dummy.value = url; dummy.select(); document.execCommand("copy"); document.body.removeChild(dummy); showNotification("發佈連結已複製！"); };
 
-        // Admin
-        window.createAccount = async () => { const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim(); if (u && p) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() }); showNotification(`帳號 ${u} 已建立`); } };
-        window.openDeleteConfirm = (id, type) => { const m = document.getElementById('deleteConfirmModal'); document.getElementById('btnConfirmDelete').onclick = async () => { if (type === 'account') await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id)); closeDeleteConfirm(); }; m.classList.remove('hidden'); };
+        window.importWords = async () => {
+            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
+            if (!n || !t) return showNotification("請輸入內容", "alert");
+            const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 5, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
+            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u' + Date.now()), { name: n, words: list, createdAt: Date.now() });
+            showNotification("單元已儲存");
+        };
+
+        // --- 管理者功能 ---
+        window.createAccount = async () => {
+            const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim();
+            if (u && p) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() }); showNotification(`帳號 ${u} 已建立`); document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = ''; }
+        };
+        window.openDeleteConfirm = (id, type) => { const modal = document.getElementById('deleteConfirmModal'); document.getElementById('btnConfirmDelete').onclick = async () => { if (type === 'account') await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id)); closeDeleteConfirm(); }; modal.classList.remove('hidden'); };
         window.closeDeleteConfirm = () => document.getElementById('deleteConfirmModal').classList.add('hidden');
         window.openEditPass = (id) => { state.editingPassUser = id; document.getElementById('editPassModal').classList.remove('hidden'); };
-        window.closeEditPass = () => document.getElementById('editPassModal').classList.add('hidden');
+        window.closeEditPass = () => { document.getElementById('editPassModal').classList.add('hidden'); };
         window.confirmUpdatePass = async () => { const p = document.getElementById('newPassInput').value.trim(); if (p) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', state.editingPassUser), { password: p }); closeEditPass(); } };
 
         function showAdminDashboard() {
             document.getElementById('authScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.remove('hidden');
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (s) => { if (s.exists()) { const d = s.data(); document.getElementById('adminStats').innerHTML = `<div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-xs font-black uppercase">註冊人數</p><h4 class="text-3xl font-black">${d.userCount || 0}</h4></div><div class="admin-stat-card border-l-4 border-blue-500"><p class="text-xs font-black uppercase">登入次數</p><h4 class="text-3xl font-black">${d.loginCount || 0}</h4></div><div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-xs font-black uppercase">單元總數</p><h4 class="text-3xl font-black">${d.totalUnits || 0}</h4></div><div class="admin-stat-card border-l-4 border-amber-500"><p class="text-xs font-black uppercase">單字總量</p><h4 class="text-3xl font-black">${d.totalWords || 0}</h4></div>`; } });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (s) => { document.getElementById('accountManagerList').innerHTML = s.docs.map(d => `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl"><div><p class="font-bold">${d.id}</p><p class="text-[10px]">密碼: ${d.data().password}</p></div><div class="flex gap-2"><button onclick="window.openEditPass('${d.id}')" class="p-2"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.openDeleteConfirm('${d.id}', 'account')" class="p-2 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join(''); lucide.createIcons(); });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (s) => { document.getElementById('adminUserTable').innerHTML = s.docs.map(d => { const x = d.data(); return `<tr class="border-b"><td class="px-8 py-5"><b>${x.displayName}</b><br><small>${x.type}</small></td><td class="px-8 py-5 text-xs">${x.email || 'N/A'}</td><td class="px-8 py-5">${new Date(x.lastSeen).toLocaleDateString()}</td><td class="px-8 py-5 flex gap-2"><button onclick="window.adminDetail('${d.id}', '${x.displayName}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs">數據</button><button onclick="window.openDeleteConfirm('${d.id}', 'google')" class="text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (s) => { document.getElementById('accountManagerList').innerHTML = s.docs.map(d => `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border mb-2"><div><p class="font-bold">${d.id}</p><p class="text-[10px]">密碼: ${d.data().password}</p></div><div class="flex gap-2"><button onclick="window.openEditPass('${d.id}')" class="p-2 text-indigo-400 hover:bg-white rounded-lg transition-all shadow-sm"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="window.openDeleteConfirm('${d.id}', 'account')" class="p-2 text-rose-400 hover:bg-white rounded-lg transition-all shadow-sm"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join(''); lucide.createIcons(); });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (s) => { document.getElementById('adminUserTable').innerHTML = s.docs.map(d => { const x = d.data(); return `<tr class="border-b"><td class="px-8 py-5"><b>${x.displayName}</b><br><small>${x.type}</small></td><td class="px-8 py-5 text-xs text-indigo-600 font-mono">${x.email || '無 (帳密帳號)'}</td><td class="px-8 py-5 text-slate-400">${new Date(x.lastSeen).toLocaleDateString()}</td><td class="px-8 py-5 flex gap-2 justify-end"><button onclick="window.adminDetail('${d.id}', '${x.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm">詳情</button><button onclick="window.openDeleteConfirm('${d.id}', '${x.type}')" class="bg-rose-50 text-rose-500 px-3 py-2 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
         }
-        window.adminDetail = async (id, n) => { document.getElementById('detailUserTitle').innerText = n; const m = document.getElementById('adminDetailModal'); m.classList.remove('hidden'); const s = await getDocs(collection(db, 'artifacts', appId, 'users', id, 'units')); document.getElementById('detailContent').innerHTML = s.docs.map(d => { const u = d.data(); return `<div class="bg-slate-50 p-6 rounded-[2rem] shadow-sm"><h5 class="font-black text-indigo-600 mb-4">${u.name}</h5><div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px]"><b>${w.en}</b> / ${w.zh}</div>`).join('')}</div></div>`; }).join(''); lucide.createIcons(); };
+        window.adminDetail = async (id, n) => { document.getElementById('detailUserTitle').innerText = n; const m = document.getElementById('adminDetailModal'); m.classList.remove('hidden'); const s = await getDocs(collection(db, 'artifacts', appId, 'users', id, 'units')); document.getElementById('detailContent').innerHTML = s.docs.map(d => { const u = d.data(); return `<div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-sm mb-4"><h5 class="font-black text-indigo-600 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5"></i> ${u.name}</h5><div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px] font-bold"><b>${w.en}</b> / ${w.zh} ${w.note ? `<p class="mt-2 text-slate-400 italic">💡 ${w.note}</p>` : ''}</div>`).join('')}</div></div>`; }).join('') || '<p class="text-center py-10">尚無單元</p>'; lucide.createIcons(); };
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
     </script>
 </body>
