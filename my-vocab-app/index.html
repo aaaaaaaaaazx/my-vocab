@@ -12,7 +12,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        /* --- 單字卡片顯示邏輯 (CSS 控制) --- */
+        /* --- 單字卡片顯示邏輯 --- */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
         .card-both .word-note { display: block; }
@@ -86,9 +86,9 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="pauseAutoPlay()" id="floatPauseBtn" class="p-3 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-100 active:scale-90 transition-all"><i data-lucide="pause" class="w-5 h-5"></i></button>
-            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100 active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
-            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg shadow-rose-100 active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
+            <button onclick="pauseAutoPlay()" id="floatPauseBtn" class="p-3 bg-amber-500 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="pause" class="w-5 h-5"></i></button>
+            <button onclick="startAutoPlay()" id="floatResumeBtn" class="hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="play" class="w-5 h-5"></i></button>
+            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-2xl shadow-lg active:scale-90 transition-all"><i data-lucide="square" class="w-5 h-5"></i></button>
         </div>
     </div>
 
@@ -151,7 +151,7 @@
         <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100">
+                    <div class="p-2 bg-indigo-600 rounded-xl shadow-lg">
                         <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
                     </div>
                     <span class="text-xl font-black text-slate-800 tracking-tighter uppercase">單字大師</span>
@@ -261,7 +261,7 @@
 
     <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
@@ -290,7 +290,7 @@
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
-                                    <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">Email</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5">操作</th></tr>
+                                    <tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">Email</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5 text-right">操作</th></tr>
                                 </thead>
                                 <tbody id="adminUserTable" class="text-sm font-medium"></tbody>
                             </table>
@@ -316,10 +316,10 @@
         </div>
     </div>
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100">
+        <div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center">
             <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i>
             <h4 class="font-black text-lg mb-6">確定刪除？</h4>
-            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
+            <div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div>
         </div>
     </div>
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
@@ -329,15 +329,29 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 初始化與環境變數
-        const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
+        // =========================================================================
+        // 🚀 FIREBASE 核心配置
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ",
+            authDomain: "my-vocab-app-852b4.firebaseapp.com",
+            projectId: "my-vocab-app-852b4",
+            storageBucket: "my-vocab-app-852b4.firebasestorage.app",
+            messagingSenderId: "79896462245",
+            appId: "1:79896462245:web:1ece173ddc5a6d05781e4c",
+            measurementId: "G-HSMRF8W6SW"
+        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app), db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        const state = { user: null, isAdmin: false, units: [], activeUnitId: null, globalMode: 'both', userLabel: null, isAudioPlaying: false, isAudioPaused: false, displayedWords: [], isStudentView: false, editingPassUser: null };
+        const state = { 
+            user: null, isAdmin: false, units: [], activeUnitId: null, globalMode: 'both',
+            userLabel: null, isAudioPlaying: false, isAudioPaused: false, displayedWords: [],
+            isStudentView: false, editingPassUser: null 
+        };
 
-        // 🌟 核心規則：穩定驗證機制
+        // --- 核心驗證與身分獲取 ---
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -346,12 +360,12 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.warn("Auth token mismatch, falling back to anonymous.");
+                console.warn("Auth token mismatch, fallback to anonymous.");
                 await signInAnonymously(auth);
             }
         };
 
-        // --- 權限與初始化 ---
+        // --- 初始化狀態判定 ---
         async function handleInitialization() {
             const params = new URLSearchParams(window.location.search);
             const view = params.get('view'), ownerId = params.get('id');
@@ -367,46 +381,58 @@
             } return false;
         }
 
-        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView')?.classList.remove('hidden'); lucide.createIcons(); };
-        
-        window.loginWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { showNotification("登入失敗", "alert"); } };
-        
-        // 🌟 修改：解決「自定義登入失敗」問題
+        // --- UI 跳轉核心函式 ---
+        function showAppUI(name, isGoogle, photo = null) {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('userNameDisplay').innerText = name;
+            const badge = document.getElementById('userBadge'); badge.classList.remove('hidden');
+            if (isGoogle && photo) { document.getElementById('userPhoto').src = photo; document.getElementById('userPhoto').classList.remove('hidden'); document.getElementById('userIcon').classList.add('hidden'); } 
+            else { document.getElementById('userPhoto').classList.add('hidden'); document.getElementById('userIcon').classList.remove('hidden'); }
+            lucide.createIcons();
+        }
+
+        // --- 登入控制 ---
+        window.loginWithGoogle = async () => {
+            try { 
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                await signInWithPopup(auth, new GoogleAuthProvider()); 
+            } catch (e) { showNotification("Google 登入失敗", "alert"); document.getElementById('loadingIndicator').classList.add('hidden'); }
+        };
+
         window.loginWithCustom = async () => {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
             if (!u || !p) return showNotification("請輸入帳號密碼", "alert");
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
-                // 確保已有讀取權限
+                // 1. 先取得權限讀取帳密庫
                 await initAuth();
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists()) {
                     if (snap.data().password === p) {
-                        state.userLabel = u;
+                        // 2. 🌟 關鍵修正：先寫入工作階段，防止監聽器踢除
                         sessionStorage.setItem('custom_user_session', u);
+                        state.userLabel = u;
+                        // 3. 執行 UI 跳轉
                         showAppUI(u, false);
                         startSyncing(u);
                         logUserActivity(u, true, { displayName: u });
                     } else { showNotification("密碼錯誤", "alert"); }
-                } else { showNotification("帳號不存在，請聯繫管理員建立", "alert"); }
-            } catch (e) { showNotification("連線錯誤", "alert"); }
+                } else { showNotification("帳號不存在，請聯繫管理員", "alert"); }
+            } catch (e) { showNotification("連線異常", "alert"); }
             finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
 
         window.adminLogin = async () => {
             const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value;
             if (u === 'yljh' && p === 'yljh8320873') {
-                await initAuth();
-                state.isAdmin = true;
-                showAdminDashboard();
-            } else {
-                showNotification("管理員帳密錯誤", "alert");
-            }
+                await initAuth(); state.isAdmin = true; showAdminDashboard();
+            } else { showNotification("管理員帳密錯誤", "alert"); }
         };
 
         window.logout = () => { stopAutoPlay(); signOut(auth); sessionStorage.removeItem('custom_user_session'); window.location.href = window.location.origin + window.location.pathname; };
 
-        // 🌟 監聽 Auth 變化：核心修正，確保 anonymous 登入不會踢除 custom session
+        // --- 身分監聽器：修正自定義登入跳轉的核心邏輯 ---
         onAuthStateChanged(auth, async (user) => {
             if (await handleInitialization()) return;
 
@@ -417,18 +443,18 @@
                 if (state.isAdmin) {
                     showAdminDashboard();
                 } else if (!user.isAnonymous) {
-                    // Google 使用者
+                    // Google 帳號登入
                     state.userLabel = user.uid;
                     showAppUI(user.displayName, true, user.photoURL);
                     startSyncing(user.uid);
                     logUserActivity(user.uid, false, user);
                 } else if (customSession) {
-                    // 自定義帳號使用者 (處於匿名驗證狀態但有 session)
+                    // 🌟 修正點：若為匿名使用者但有 session，視為自定義帳號登入
                     state.userLabel = customSession;
                     showAppUI(customSession, false);
                     startSyncing(customSession);
-                } else if (!state.isStudentView) {
-                    // 純匿名且無 session，保持登入頁面
+                } else {
+                    // 純匿名且無 session (剛啟動或登出)，停留在登入頁
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
                 }
@@ -436,23 +462,22 @@
                 if (!state.isStudentView) {
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
-                    initAuth(); // 獲取基礎權限
+                    initAuth(); // 嘗試背景靜態驗證
                 }
             }
             lucide.createIcons();
         });
 
+        // --- 資料紀錄函式 ---
         async function logUserActivity(id, isCustom, userObj = null) {
             if (state.isStudentView || !auth.currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id);
             const data = { displayName: isCustom ? id : (userObj?.displayName || "Google 使用者"), lastSeen: Date.now(), type: isCustom ? 'custom' : 'google' };
             if (!isCustom && userObj?.email) data.email = userObj.email;
-            try {
-                await setDoc(ref, data, { merge: true });
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true });
-            } catch (e) {}
+            try { await setDoc(ref, data, { merge: true }); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true }); } catch (e) {}
         }
 
+        // --- 其餘英聽與渲染功能保持優化狀態 ---
         function startSyncing(id) {
             if (!id) return;
             onSnapshot(collection(db, 'artifacts', appId, 'users', id, 'units'), (snap) => {
@@ -461,11 +486,10 @@
             });
         }
 
-        // --- 英聽系統與 UI 渲染部分保持不變 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
-            const words = [...state.displayedWords]; if (words.length === 0) return;
+            const words = [...state.displayedWords]; if (words.length === 0) return showNotification("請選擇單元", "alert");
             state.isAudioPlaying = true; state.isAudioPaused = false; updateAudioUI(true);
             const reps = parseInt(document.getElementById('audioRepeatCount').value), pause = parseInt(document.getElementById('audioIntervalPause').value);
             if (document.getElementById('audioBlindMode').checked) document.getElementById('wordGrid').classList.add('blind-mode');
@@ -491,21 +515,16 @@
         function updateAudioUI(isPlaying) {
             const bar = document.getElementById('floatingAudioBar');
             if (isPlaying) {
-                bar.classList.add('active');
-                document.getElementById('btnStartAudio').classList.add('hidden');
+                bar.classList.add('active'); document.getElementById('btnStartAudio').classList.add('hidden');
                 document.getElementById('btnPauseAudio').classList.toggle('hidden', state.isAudioPaused);
                 if (state.isAudioPaused) document.getElementById('btnStartText').innerText = "繼續播放";
-                document.getElementById('btnStopAudio').classList.remove('hidden');
-                document.getElementById('audioStatusText').classList.remove('hidden');
+                document.getElementById('btnStopAudio').classList.remove('hidden'); document.getElementById('audioStatusText').classList.remove('hidden');
                 document.getElementById('floatPauseBtn').classList.toggle('hidden', state.isAudioPaused);
                 document.getElementById('floatResumeBtn').classList.toggle('hidden', !state.isAudioPaused);
             } else {
-                bar.classList.remove('active');
-                document.getElementById('btnStartAudio').classList.remove('hidden');
-                document.getElementById('btnPauseAudio').classList.add('hidden');
-                document.getElementById('btnStopAudio').classList.add('hidden');
-                document.getElementById('audioStatusText').classList.add('hidden');
-                document.getElementById('btnStartText').innerText = "開始英聽";
+                bar.classList.remove('active'); document.getElementById('btnStartAudio').classList.remove('hidden');
+                document.getElementById('btnPauseAudio').classList.add('hidden'); document.getElementById('btnStopAudio').classList.add('hidden');
+                document.getElementById('audioStatusText').classList.add('hidden'); document.getElementById('btnStartText').innerText = "開始英聽";
             }
             lucide.createIcons();
         }
@@ -534,24 +553,23 @@
         window.cycleMode = (id) => { const u = state.units.find(x => x.id === state.activeUnitId); const w = u.words.find(x => x.id === id); if (w) { w.localMode = { 'both': 'en', 'en': 'zh', 'zh': 'both' }[w.localMode || 'both']; renderWords(); } };
         window.updateWordNote = async (id, v) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w && w.note !== v) { w.note = v; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); } };
         window.updateRating = async (id, n) => { const u = state.units.find(x => x.id === state.activeUnitId), w = u.words.find(x => x.id === id); if (w) { w.rating = n; if (!state.isStudentView) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } };
-        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("刪除此單元？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
-        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center">尚無單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
-        window.publishLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; const dummy = document.createElement("input"); document.body.appendChild(dummy); dummy.value = url; dummy.select(); document.execCommand("copy"); document.body.removeChild(dummy); showNotification("發佈連結已複製！"); };
+        window.deleteUnit = async (id) => { if (state.isStudentView) return; if (!confirm("永久刪除此單元嗎？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if (state.activeUnitId === id) state.activeUnitId = null; };
+        window.renderUnitList = () => { const el = document.getElementById('unitList'); if (!el) return; if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic text-center py-4">尚無公開單元</p>'; return; } el.innerHTML = [...state.units].sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}"><span class="font-bold truncate ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>${!state.isStudentView ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>`).join(''); lucide.createIcons(); };
 
         window.importWords = async () => {
             const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
-            if (!n || !t) return showNotification("請輸入內容", "alert");
+            if (!n || !t) return showNotification("內容不能為空", "alert");
             const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 5, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
             await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u' + Date.now()), { name: n, words: list, createdAt: Date.now() });
             showNotification("單元已儲存");
         };
 
-        // --- 管理者功能 ---
+        // --- Admin 管理者邏輯 ---
         window.createAccount = async () => {
             const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim();
             if (u && p) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() }); showNotification(`帳號 ${u} 已建立`); document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = ''; }
         };
-        window.openDeleteConfirm = (id, type) => { const modal = document.getElementById('deleteConfirmModal'); document.getElementById('btnConfirmDelete').onclick = async () => { if (type === 'account') await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id)); closeDeleteConfirm(); }; modal.classList.remove('hidden'); };
+        window.openDeleteConfirm = (id, type) => { const m = document.getElementById('deleteConfirmModal'); document.getElementById('btnConfirmDelete').onclick = async () => { if (type === 'account') await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id)); closeDeleteConfirm(); }; m.classList.remove('hidden'); };
         window.closeDeleteConfirm = () => document.getElementById('deleteConfirmModal').classList.add('hidden');
         window.openEditPass = (id) => { state.editingPassUser = id; document.getElementById('editPassModal').classList.remove('hidden'); };
         window.closeEditPass = () => { document.getElementById('editPassModal').classList.add('hidden'); };
