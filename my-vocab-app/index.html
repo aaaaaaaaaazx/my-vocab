@@ -344,7 +344,7 @@
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
-        // 🚀 FIREBASE 核心配置
+        // 🚀 FIREBASE 核心配置與初始化
         // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ",
@@ -494,7 +494,6 @@
             });
         }
 
-        // 🌟 修復渲染邏輯 (變數參考錯誤修正)
         window.getRatingColor = (n) => ({ 
             1: 'bg-emerald-500 text-white shadow-sm', 
             2: 'bg-teal-400 text-white shadow-sm', 
@@ -524,7 +523,6 @@
             else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
             
-            // 🌟 修正：確保迴圈內部變項 (w) 一致，並加上全域 getRatingColor 參考
             g.innerHTML = list.map(w => {
                 const displayModeClass = `card-${w.localMode || state.globalMode || 'both'}`;
                 return `<div onclick="window.cycleMode('${w.id}')" data-word-id="${w.id}" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-xl ${displayModeClass}">
@@ -547,13 +545,10 @@
             renderUnitList(); 
         };
 
-        // 🌟 修復顯示模式切換
         window.setGlobalMode = (m) => { 
             state.globalMode = m; 
             const u = state.units.find(x => x.id == state.activeUnitId); 
-            if (u && u.words) {
-                u.words.forEach(w => w.localMode = m); 
-            }
+            if (u && u.words) u.words.forEach(w => w.localMode = m); 
             ['both', 'en', 'zh'].forEach(b => { 
                 const btn = document.getElementById(`btn-mode-${b}`); 
                 if (btn) btn.className = `px-5 py-2 text-sm font-bold rounded-xl transition-all ${b === m ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`; 
@@ -571,8 +566,8 @@
         window.importWords = async () => {
             const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
             if (!n || !t) return showNotification("內容不能為空", "alert");
-            // 🌟 將預設 rating 從 5 修改為 1
-            const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 1, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
+            // 🌟 核心修改：將預設熟練度等級改為 3
+            const list = t.split('\n').map((l, i) => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w' + Date.now() + Math.random().toString(36).substr(2, 5), en: p[0].trim(), zh: p[1].trim(), rating: 3, localMode: state.globalMode, note: '', createdAt: Date.now() + i } : null; }).filter(w => w);
             await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u' + Date.now()), { name: n, words: list, createdAt: Date.now() });
             showNotification("單元已儲存");
         };
