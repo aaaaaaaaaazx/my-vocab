@@ -89,12 +89,13 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <!-- 暫停/播放按鍵 -->
+            <!-- 暫停/播放切換按鈕 -->
             <button id="btnPauseAudio" onclick="togglePause()" class="p-3 bg-indigo-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-indigo-600">
-                <i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i>
+                <i data-lucide="pause" id="pauseIcon" class="w-5 h-5 text-white"></i>
             </button>
+            <!-- 停止按鈕 -->
             <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-rose-600">
-                <i data-lucide="square" class="w-5 h-5"></i>
+                <i data-lucide="square" class="w-5 h-5 text-white"></i>
             </button>
         </div>
     </div>
@@ -107,7 +108,7 @@
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
                         <i data-lucide="shield-check" class="text-white w-12 h-12 -rotate-3"></i>
                     </div>
-                    <h1 class="text-3xl font-extrabold tracking-tight">單字大師</h1>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-800">單字大師</h1>
                     <p class="text-slate-400 mt-2 font-medium italic text-sm">英文練習與雲端管理系統</p>
                 </div>
                 <div class="space-y-4">
@@ -121,7 +122,7 @@
             
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
-                <h2 class="text-2xl font-bold mb-6 tracking-tight text-slate-800">學生帳號登入</h2>
+                <h2 class="text-2xl font-bold mb-6 tracking-tight text-slate-800 text-slate-800">學生帳號登入</h2>
                 <div class="space-y-4">
                     <input type="text" id="customUser" placeholder="您的帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-slate-800">
                     <input type="password" id="customPass" placeholder="您的密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-slate-800">
@@ -151,7 +152,7 @@
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 text-slate-800 shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100"><i data-lucide="graduation-cap" class="text-white w-6 h-6"></i></div>
-                <span class="text-xl font-black uppercase tracking-tighter">單字大師</span>
+                <span class="text-xl font-black uppercase tracking-tighter text-slate-800">單字大師</span>
             </div>
             <div class="flex items-center gap-4">
                 <button id="btnPublishGuest" onclick="publishGuestLink()" class="hidden md:flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-emerald-200">
@@ -317,10 +318,10 @@
             quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: [],
             showSyllables: true, showVowels: true, showRating: true,
             stableRandomList: null,
-            voice: null // 只保留一個語音引擎
+            voice: null // 簡化為單一語音引擎
         };
 
-        // --- 核心函式 ---
+        // --- 核心函式 (Hoisting Ready) ---
         
         function showAppUI(name) {
             document.getElementById('authScreen').classList.add('hidden');
@@ -378,7 +379,7 @@
             return arr;
         }
 
-        // --- 全域掛載 ---
+        // --- 全域變數掛載 ---
         window.loginWithCustom = async function() {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
             if (!u || !p) return;
@@ -439,7 +440,7 @@
             renderWords(); 
         };
 
-        // --- 渲染核心 ---
+        // --- 渲染核心 (鎖定隨機順序) ---
         window.renderWords = () => {
             const g = document.getElementById('wordGrid'), empty = document.getElementById('emptyState'), title = document.getElementById('activeUnitTitle');
             const u = state.units.find(x => x.id == state.activeUnitId);
@@ -456,7 +457,7 @@
                 list.sort((a,b) => b.rating - a.rating);
                 state.stableRandomList = null;
             } else if (sortVal === 'random') {
-                // 固定隨機順序，防止點擊時亂跳
+                // 🌟 修復核心：固定隨機順序，防止操作時亂跳
                 if (!state.stableRandomList || state.stableRandomList.length !== list.length) {
                     state.stableRandomList = shuffleArray(list);
                 }
@@ -503,12 +504,14 @@
             lucide.createIcons();
         };
 
-        // --- 語音/其餘功能 ---
+        // --- 語音模組 (簡化) ---
         const initVoices = () => {
             const v = window.speechSynthesis.getVoices();
-            // 只保留一個最好的英文語音
+            // 自動選取最佳英文語音
             state.voice = v.find(i => i.lang === 'en-US' && i.name.includes('Google')) || v.find(i => i.lang.startsWith('en')) || null;
         };
+        window.speechSynthesis.onvoiceschanged = initVoices;
+        setTimeout(initVoices, 800);
 
         const highlightText = (text) => {
             if (!text) return "";
@@ -570,7 +573,7 @@
                 document.getElementById('floatingStatusText').innerText = w.en;
                 window.speak(w.en);
                 
-                // 等待朗讀結束 (約 2.2 秒)
+                // 等待朗讀結束時間
                 await new Promise(r => setTimeout(r, 2200));
             }
             stopAutoPlay();
@@ -585,6 +588,7 @@
             document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); 
         };
 
+        // --- 其餘系統邏輯 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 state.user = user;
@@ -599,7 +603,7 @@
         });
 
         function startSyncing(id) {
-            onSnapshot(collection(db, 'artifacts', appId, 'users', id, 'units'), (snap) => {
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users', id, 'units'), (snap) => {
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
                 renderUnitList(); renderWords();
@@ -608,14 +612,14 @@
 
         window.updateRating = async (id, n) => { 
             const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id);
-            if (w) { w.rating = n; await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } 
+            if (w) { w.rating = n; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', state.userLabel, 'units', state.activeUnitId), { words: u.words }); renderWords(); } 
         };
 
         window.importWords = async () => { 
             const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim();
             if (!n || !t) return;
             const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), rating: 5 } : null; }).filter(w => w);
-            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words });
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words });
             showNotification("儲存成功");
         };
 
@@ -631,7 +635,7 @@
 
         window.deleteUnit = async (id) => {
             if (!confirm("確定刪除？此操作不可還原。")) return;
-            await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', state.userLabel, 'units', id));
         };
 
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
