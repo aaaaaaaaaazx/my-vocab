@@ -57,6 +57,31 @@
             color: white !important;
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
         }
+
+        /* 拼字積木樣式 */
+        .block-letter {
+            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px;
+            font-weight: 900; font-size: 20px; transition: all 0.2s; cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+            color: #1e293b;
+        }
+        .block-letter:active { transform: translateY(4px); box-shadow: 0 0 0 #cbd5e1; }
+        .block-letter.used { opacity: 0.2; pointer-events: none; }
+        
+        .answer-slot {
+            width: 40px; height: 40px; border-bottom: 4px solid #4f46e5;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 22px; color: #4f46e5;
+            margin: 0 2px;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
@@ -90,7 +115,7 @@
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
                         <i data-lucide="shield-check" class="text-white w-12 h-12 -rotate-3"></i>
                     </div>
-                    <h1 class="text-3xl font-extrabold tracking-tight">單字大師V1</h1>
+                    <h1 class="text-3xl font-extrabold tracking-tight">單字大師</h1>
                     <p class="text-slate-400 mt-2 font-medium italic text-sm">英文練習與雲端管理系統</p>
                 </div>
                 <div class="space-y-4">
@@ -103,7 +128,7 @@
             
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
-                <h2 class="text-2xl font-bold mb-6 tracking-tight">學生帳號登入</h2>
+                <h2 class="text-2xl font-bold mb-6 tracking-tight text-slate-800">學生帳號登入</h2>
                 <div class="space-y-4">
                     <input type="text" id="customUser" placeholder="您的帳號" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-slate-800">
                     <input type="password" id="customPass" placeholder="您的密碼" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all text-slate-800">
@@ -113,7 +138,7 @@
 
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
-                <h2 class="text-2xl font-bold mb-6 tracking-tight font-black">管理員驗證</h2>
+                <h2 class="text-2xl font-bold mb-6 tracking-tight font-black text-slate-800">管理員驗證</h2>
                 <div class="space-y-4">
                     <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-5 py-4 bg-slate-50 border rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 text-slate-800">
                     <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 text-slate-800">
@@ -129,8 +154,8 @@
     </div>
 
     <!-- 2. 使用者主介面 (appScreen) -->
-    <div id="appScreen" class="hidden">
-        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 text-slate-800 shadow-sm">
+    <div id="appScreen" class="hidden text-slate-800">
+        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100"><i data-lucide="graduation-cap" class="text-white w-6 h-6"></i></div>
                 <span class="text-xl font-black uppercase tracking-tighter">單字大師</span>
@@ -144,7 +169,7 @@
             </div>
         </nav>
 
-        <main class="max-w-7xl mx-auto px-4 md:px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10 text-slate-800">
+        <main class="max-w-7xl mx-auto px-4 md:px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
             <!-- 左側側邊欄 -->
             <div class="lg:col-span-4 space-y-8">
                 <div id="addUnitSection" class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
@@ -163,8 +188,8 @@
             
             <div class="lg:col-span-8">
                 <!-- 控制面板 -->
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-6 text-slate-800">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 text-slate-800">
                         <div class="flex bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200 overflow-hidden">
                             <button onclick="setGlobalMode('both')" class="px-5 py-2.5 text-sm font-bold transition-all hover:bg-white/50 text-slate-600" id="btn-both">中英</button>
                             <button onclick="setGlobalMode('en')" class="px-5 py-2.5 text-sm font-bold transition-all hover:bg-white/50 text-slate-600" id="btn-en">僅英</button>
@@ -194,14 +219,14 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <button onclick="startAutoPlay()" class="col-span-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all hover:bg-indigo-700 shadow-indigo-200 flex items-center justify-center gap-2 font-bold"><i data-lucide="play" class="w-4 h-4 text-white"></i> 英聽朗讀</button>
-                            <button onclick="startRangeQuiz('block')" class="py-3 bg-amber-500 text-white rounded-2xl font-black text-xs shadow-lg active:scale-95 flex items-center justify-center gap-1 hover:bg-amber-600 font-bold font-black"><i data-lucide="layout-grid" class="w-4 h-4 text-white"></i> 積木挑戰</button>
-                            <button onclick="startRangeQuiz('dictation')" class="py-3 bg-rose-500 text-white rounded-2xl font-black text-xs shadow-lg active:scale-95 flex items-center justify-center gap-1 hover:bg-rose-600 font-bold font-black"><i data-lucide="keyboard" class="w-4 h-4 text-white"></i> 聽寫挑戰</button>
+                            <button onclick="startRangeQuiz('block')" class="py-3 bg-amber-500 text-white rounded-2xl font-black text-xs shadow-lg active:scale-95 flex items-center justify-center gap-1 hover:bg-amber-600 font-black"><i data-lucide="layout-grid" class="w-4 h-4 text-white"></i> 積木挑戰</button>
+                            <button onclick="startRangeQuiz('dictation')" class="py-3 bg-rose-500 text-white rounded-2xl font-black text-xs shadow-lg active:scale-95 flex items-center justify-center gap-1 hover:bg-rose-600 font-black"><i data-lucide="keyboard" class="w-4 h-4 text-white"></i> 聽寫挑戰</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="unitHeader" class="mb-6 px-2 flex justify-between items-end border-b pb-4 text-slate-800 font-bold">
-                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-xl md:text-3xl">請點選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1"></p></div>
+                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-xl md:text-3xl">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1"></p></div>
                     <select id="sortSelect" onchange="handleSortChange(this.value)" class="bg-transparent text-sm font-bold outline-none cursor-pointer font-bold border-b-2 border-slate-200 text-slate-600">
                         <option value="original">原始順序</option>
                         <option value="random">隨機亂數</option>
@@ -212,7 +237,7 @@
 
                 <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20 transition-all duration-500"></div>
                 <div id="emptyState" class="flex flex-col items-center justify-center py-40 text-slate-300 text-center">
-                    <i data-lucide="coffee" class="w-16 h-16 mb-4 opacity-20"></i>
+                    <i data-lucide="coffee" class="w-16 h-16 mb-4 opacity-20 text-slate-300"></i>
                     <p class="text-xl font-bold text-slate-400">請從左側點選單字本</p>
                 </div>
             </div>
@@ -222,14 +247,14 @@
     <!-- 3. 管理者後台 (adminScreen) -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10 text-slate-800">
         <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
-            <span class="font-black tracking-widest uppercase text-xl text-indigo-400">管理中心</span>
+            <span class="font-black tracking-widest uppercase text-xl text-indigo-400">管理中心中心</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理員</button>
         </nav>
-        <main class="max-w-7xl mx-auto px-8 py-10 text-slate-800 font-bold">
+        <main class="max-w-7xl mx-auto px-8 py-10 font-bold">
             <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10 text-slate-800 font-black"></div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-800">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm text-center">
-                    <h3 class="text-xl font-black mb-6 text-slate-800 font-black">建立學生帳號</h3>
+                    <h3 class="text-xl font-black mb-6 text-slate-800 font-black text-slate-800">建立學生帳號</h3>
                     <div class="space-y-4 font-medium text-slate-800">
                         <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none transition-all focus:ring-2 focus:ring-indigo-500 text-slate-800">
                         <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none transition-all focus:ring-2 focus:ring-indigo-500 text-slate-800">
@@ -255,17 +280,26 @@
             <div class="mb-6">
                 <span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">單字挑戰</span>
                 <div class="flex justify-center items-center gap-4 mt-6">
-                   <h3 id="quizZh" class="text-3xl font-black text-slate-800 tracking-tight"></h3>
+                   <h3 id="quizZh" class="text-3xl font-black text-slate-800 tracking-tight text-slate-800"></h3>
                    <button id="quizSpeakBtn" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm transition-all hover:bg-indigo-100 text-indigo-600"><i data-lucide="volume-2"></i></button>
                 </div>
-                <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2"></p>
+                <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 text-slate-400"></p>
             </div>
-            <div id="blockQuizContent" class="hidden"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px]"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-2"></div></div>
+            <!-- 積木挑戰區域 -->
+            <div id="blockQuizContent" class="hidden">
+                <div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px] items-center"></div>
+                <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100"></div>
+            </div>
+            <!-- 聽寫挑戰區域 -->
             <div id="dictationQuizContent" class="hidden space-y-6">
-                <input type="text" id="quizInput" placeholder="拼出正確單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 transition-all text-slate-800">
-                <button onclick="checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all hover:bg-rose-600 text-white">送出答案</button>
+                <input type="text" id="quizInput" placeholder="請輸入單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 transition-all text-slate-800">
+                <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all hover:bg-rose-600 text-white">檢查答案</button>
             </div>
-            <div class="mt-8"><button onclick="nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-white font-black flex items-center justify-center gap-2 mx-auto">下一題 <i data-lucide="arrow-right" class="w-4 h-4"></i></button></div>
+            <div class="mt-8">
+                <button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-white flex items-center justify-center gap-2 mx-auto">
+                    <span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -273,7 +307,7 @@
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm text-slate-800">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
             <div class="p-8 border-b flex justify-between items-center bg-slate-50/50">
-                <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800">使用者練習紀錄</h4>
+                <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800 text-slate-800">使用者練習紀錄</h4>
                 <button onclick="closeAdminDetail()" class="text-slate-400 p-2 hover:bg-slate-200 rounded-full transition-all text-slate-400"><i data-lucide="x"></i></button>
             </div>
             <div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white scrollbar-thin text-slate-800"></div>
@@ -281,7 +315,7 @@
     </div>
 
     <!-- 通知元件 -->
-    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[300] flex items-center gap-3 border border-white/10"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm text-white"></span></div>
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[300] flex items-center gap-3 border border-white/10"><i data-lucide="bell" class="w-4 h-4 text-indigo-400 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm text-white"></span></div>
 
     <!-- Firebase SDK & 主邏輯 -->
     <script type="module">
@@ -290,7 +324,7 @@
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase 配置
-        const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
+        const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8F6SW" };
         const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
@@ -300,11 +334,11 @@
             quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: [],
             showSyllables: true, showVowels: true, showRating: true,
             stableRandomList: null,
+            quizLetters: [],
             voice: null 
         };
 
-        // --- 核心函式定義 ---
-        
+        // --- 核心 UI 函式 ---
         function showAppUI(name) {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
@@ -337,14 +371,6 @@
             });
         }
 
-        function startSyncing(id) {
-            onSnapshot(collection(db, 'artifacts', appId, 'users', id, 'units'), (snap) => {
-                state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id;
-                renderUnitList(); renderWords();
-            });
-        }
-
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -372,7 +398,7 @@
             return arr;
         }
 
-        // --- 全域變數定義 ---
+        // --- 全域掛載 ---
         window.loginWithCustom = async function() {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
             if (!u || !p) return;
@@ -433,6 +459,111 @@
             renderWords(); 
         };
 
+        // --- 挑戰功能 (修正處) ---
+        
+        function renderBlockQuiz() {
+            const item = state.quizQueue[state.quizIndex];
+            if (!item) return;
+            // 過濾掉空白
+            const cleanEn = item.en.replace(/\s+/g, '');
+            document.getElementById('blockAnswerArea').innerHTML = cleanEn.split('').map((_, i) => 
+                `<div class="answer-slot">${state.currentAnswer[i] || ''}</div>`
+            ).join('');
+            
+            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => 
+                `<button onclick="window.handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'used' : ''}">${l}</button>`
+            ).join('');
+            lucide.createIcons();
+        }
+
+        function setupQuizItem() {
+            const item = state.quizQueue[state.quizIndex];
+            if (!item) return;
+            
+            document.getElementById('quizZh').innerText = item.zh;
+            document.getElementById('quizProgress').innerText = `${state.quizIndex + 1} / ${state.quizQueue.length}`;
+            document.getElementById('btnNextQuiz').classList.add('hidden');
+            
+            if (state.quizType === 'block') {
+                document.getElementById('blockQuizContent').classList.remove('hidden');
+                document.getElementById('dictationQuizContent').classList.add('hidden');
+                // 過濾空格並打亂字母
+                const letters = item.en.replace(/\s+/g, '').split('');
+                state.quizLetters = shuffleArray(letters);
+                state.currentAnswer = []; 
+                state.usedIndexes = []; 
+                renderBlockQuiz();
+            } else {
+                document.getElementById('blockQuizContent').classList.add('hidden');
+                document.getElementById('dictationQuizContent').classList.remove('hidden');
+                document.getElementById('quizInput').value = ""; 
+                document.getElementById('quizInput').focus();
+            }
+            window.speak(item.en);
+        }
+
+        window.startRangeQuiz = (type) => {
+            if (state.displayedWords.length === 0) return showNotification("無單字可供測驗", "alert");
+            const start = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
+            const end = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 10);
+            state.quizQueue = state.displayedWords.slice(start - 1, end);
+            state.quizType = type; 
+            state.quizIndex = 0;
+            document.getElementById('quizModal').classList.remove('hidden');
+            setupQuizItem();
+        };
+
+        window.handleQuizBlockClick = (idx, char) => {
+            const item = state.quizQueue[state.quizIndex];
+            const cleanEn = item.en.replace(/\s+/g, '').toLowerCase();
+            
+            if (char.toLowerCase() === cleanEn[state.currentAnswer.length]) {
+                state.currentAnswer.push(char); 
+                state.usedIndexes.push(idx); 
+                renderBlockQuiz();
+                
+                if (state.currentAnswer.length === cleanEn.length) {
+                    if (state.quizIndex < state.quizQueue.length - 1) {
+                        document.getElementById('btnNextQuiz').classList.remove('hidden');
+                    } else {
+                        showNotification("挑戰成功！全數答對！");
+                        setTimeout(window.closeQuiz, 1500);
+                    }
+                }
+            } else {
+                const slots = document.querySelectorAll('.answer-slot');
+                slots[state.currentAnswer.length]?.classList.add('animate-shake', 'text-rose-500');
+                setTimeout(() => slots[state.currentAnswer.length]?.classList.remove('animate-shake', 'text-rose-500'), 400);
+            }
+        };
+
+        window.checkDictationAnswer = () => {
+            const input = document.getElementById('quizInput').value.trim().toLowerCase();
+            const target = state.quizQueue[state.quizIndex].en.toLowerCase();
+            
+            if (input === target) {
+                if (state.quizIndex < state.quizQueue.length - 1) {
+                    document.getElementById('btnNextQuiz').classList.remove('hidden');
+                } else {
+                    showNotification("聽寫挑戰成功！");
+                    setTimeout(window.closeQuiz, 1500);
+                }
+            } else {
+                document.getElementById('quizInput').classList.add('animate-shake', 'border-rose-500');
+                setTimeout(() => document.getElementById('quizInput').classList.remove('animate-shake', 'border-rose-500'), 400);
+            }
+        };
+
+        window.nextQuizItem = () => { 
+            state.quizIndex++; 
+            setupQuizItem(); 
+        };
+
+        window.closeQuiz = () => {
+            document.getElementById('quizModal').classList.add('hidden');
+            window.speechSynthesis.cancel();
+        };
+
         // --- 渲染核心 ---
         window.renderWords = () => {
             const g = document.getElementById('wordGrid');
@@ -478,7 +609,7 @@
                     <span class="card-number" style="position:absolute; top:-10px; left:-10px; width:22px; height:22px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#cbd5e1; z-index:10;">${idx + 1}</span>
                     <div class="flex justify-between items-start mb-4">
                         <div class="space-y-1 text-left">
-                            <h4 class="word-en text-xl font-black text-slate-800 font-bold">${highlightText(w.en)}</h4>
+                            <h4 class="word-en text-xl font-black text-slate-800">${highlightText(w.en)}</h4>
                             <p class="word-zh text-indigo-600 font-bold text-sm text-indigo-600 font-bold">${w.zh}</p>
                         </div>
                         <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 voice-btn hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="volume-2" class="w-5 h-5"></i></button>
