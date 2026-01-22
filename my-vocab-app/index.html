@@ -77,13 +77,26 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
 
-    <!-- 🚀 英聽播放狀態列 -->
+    <!-- 🚀 英聽播放狀態列 (懸浮) -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-lg bg-white/90 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
         <div class="flex items-center gap-3 pl-2">
-            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg"><i data-lucide="headphones" class="text-white w-5 h-5"></i></div>
-            <div class="max-w-[150px]"><p class="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">正在英聽</p><p id="floatingStatusText" class="text-xs font-bold text-slate-500 truncate">準備中...</p></div>
+            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <i data-lucide="headphones" class="text-white w-5 h-5"></i>
+            </div>
+            <div class="max-w-[150px]">
+                <p class="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">正在英聽</p>
+                <p id="floatingStatusText" class="text-xs font-bold text-slate-500 truncate">準備中...</p>
+            </div>
         </div>
-        <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-rose-600"><i data-lucide="square" class="w-5 h-5"></i></button>
+        <div class="flex items-center gap-2">
+            <!-- 暫停/播放按鍵 -->
+            <button id="btnPauseAudio" onclick="togglePause()" class="p-3 bg-indigo-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-indigo-600">
+                <i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i>
+            </button>
+            <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-rose-600">
+                <i data-lucide="square" class="w-5 h-5"></i>
+            </button>
+        </div>
     </div>
 
     <!-- 1. 登入畫面 -->
@@ -168,6 +181,7 @@
             
             <!-- 右側主要區域 -->
             <div class="lg:col-span-8">
+                <!-- 控制面板 -->
                 <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-6">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="flex bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200 overflow-hidden">
@@ -195,10 +209,6 @@
                                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600"><span class="text-xs font-bold text-slate-500">同步</span></label>
                                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600"><span class="text-xs font-bold text-slate-500">盲聽</span></label>
                                 </div>
-                            </div>
-                            <div class="flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-100 text-indigo-700">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-[9px]">語音</span>
-                                <select id="audioVoiceSelect" class="bg-transparent font-bold text-xs outline-none w-full"><option value="">載入中...</option></select>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
@@ -257,7 +267,7 @@
         </main>
     </div>
 
-    <!-- 測驗與詳情彈窗 -->
+    <!-- 測驗 CHALLENGE Modal -->
     <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden text-slate-800">
             <button onclick="closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x"></i></button>
@@ -274,7 +284,7 @@
                 <input type="text" id="quizInput" placeholder="拼出正確單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 transition-all text-slate-800">
                 <button onclick="checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all hover:bg-rose-600 text-white">送出答案</button>
             </div>
-            <div class="mt-8"><button onclick="nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-white">下一題 <i data-lucide="arrow-right" class="inline w-4 h-4 ml-1 text-sm text-white"></i></button></div>
+            <div class="mt-8"><button onclick="nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-white">下一題 <i data-lucide="arrow-right" class="inline w-4 h-4 ml-1 text-sm"></i></button></div>
         </div>
     </div>
 
@@ -303,11 +313,11 @@
 
         const state = { 
             user: null, units: [], activeUnitId: null, globalMode: 'both', userLabel: null,
-            isAudioPlaying: false, displayedWords: [], isAdmin: false, isGuestMode: false,
-            availableVoices: [], selectedVoiceIndex: 0,
+            isAudioPlaying: false, isPaused: false, displayedWords: [], isAdmin: false, isGuestMode: false,
             quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: [],
             showSyllables: true, showVowels: true, showRating: true,
-            stableRandomList: null // 用於穩定隨機順序，防止亂跳
+            stableRandomList: null,
+            voice: null // 只保留一個語音引擎
         };
 
         // --- 核心函式 ---
@@ -359,7 +369,6 @@
             if (overlay) overlay.classList.add('hidden');
         }
 
-        // 洗牌演算法
         function shuffleArray(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -399,7 +408,6 @@
         };
 
         window.handleSortChange = (val) => {
-            // 當選擇「隨機」時，強制重設穩定洗牌清單
             if (val === 'random') state.stableRandomList = null;
             renderWords();
         };
@@ -422,7 +430,7 @@
             else if (currentMode === 'en') nextMode = 'zh';
             else nextMode = 'both';
             word.localMode = nextMode;
-            renderWords(); // 渲染時會參考穩定隨機清單，不會亂跳
+            renderWords(); 
         };
 
         window.toggleFeature = (f) => { 
@@ -448,7 +456,7 @@
                 list.sort((a,b) => b.rating - a.rating);
                 state.stableRandomList = null;
             } else if (sortVal === 'random') {
-                // 🌟 修復關鍵：如果還沒有穩定隨機清單，或者清單長度不符，才執行洗牌
+                // 固定隨機順序，防止點擊時亂跳
                 if (!state.stableRandomList || state.stableRandomList.length !== list.length) {
                     state.stableRandomList = shuffleArray(list);
                 }
@@ -460,7 +468,6 @@
             state.displayedWords = list;
             document.getElementById('unitStats').innerText = `${list.length} 個單字`;
 
-            // 更新按鈕樣式
             ['both', 'en', 'zh'].forEach(m => {
                 const btn = document.getElementById(`btn-${m}`);
                 if (btn) {
@@ -481,7 +488,7 @@
                     <div class="flex justify-between items-start mb-4">
                         <div class="space-y-1 text-left">
                             <h4 class="word-en text-xl font-black text-slate-800">${highlightText(w.en)}</h4>
-                            <p class="word-zh text-indigo-600 font-bold text-sm text-indigo-600">${w.zh}</p>
+                            <p class="word-zh text-indigo-600 font-bold text-sm text-indigo-600 font-bold">${w.zh}</p>
                         </div>
                         <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 voice-btn hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="volume-2" class="w-5 h-5"></i></button>
                     </div>
@@ -497,40 +504,86 @@
         };
 
         // --- 語音/其餘功能 ---
+        const initVoices = () => {
+            const v = window.speechSynthesis.getVoices();
+            // 只保留一個最好的英文語音
+            state.voice = v.find(i => i.lang === 'en-US' && i.name.includes('Google')) || v.find(i => i.lang.startsWith('en')) || null;
+        };
+
         const highlightText = (text) => {
             if (!text) return "";
             let p = state.showSyllables ? text.replace(/(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=\s|[^aeiouy][aeiouy])|[^aeiouy]+(?=[aeiouy])|(?=[aeiouy])))/gi, "$&·").replace(/·$/, "") : text;
-            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-bold">${m}</span>`);
+            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-black">${m}</span>`);
             return p;
         };
 
         window.speak = (t) => {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(t);
-            if (state.availableVoices[state.selectedVoiceIndex]) u.voice = state.availableVoices[state.selectedVoiceIndex];
+            if (state.voice) u.voice = state.voice;
             u.lang = 'en-US'; u.rate = 0.9;
             window.speechSynthesis.speak(u);
+        };
+
+        // --- 英聽暫停邏輯 ---
+        window.togglePause = () => {
+            state.isPaused = !state.isPaused;
+            const icon = document.getElementById('pauseIcon');
+            if (state.isPaused) {
+                icon.setAttribute('data-lucide', 'play');
+                window.speechSynthesis.pause();
+            } else {
+                icon.setAttribute('data-lucide', 'pause');
+                window.speechSynthesis.resume();
+            }
+            lucide.createIcons();
         };
 
         window.startAutoPlay = async () => {
             if (state.isAudioPlaying) return;
             const list = state.displayedWords;
             if (list.length === 0) return;
-            state.isAudioPlaying = true; document.getElementById('floatingAudioBar').classList.add('opacity-100', 'pointer-events-auto');
+            
+            state.isAudioPlaying = true;
+            state.isPaused = false;
+            document.getElementById('floatingAudioBar').classList.add('opacity-100', 'pointer-events-auto');
+            document.getElementById('pauseIcon').setAttribute('data-lucide', 'pause');
+            lucide.createIcons();
+            
             if (document.getElementById('audioBlindMode')?.checked) document.getElementById('wordGrid').classList.add('blind-mode');
+            
             for (let w of list) {
                 if (!state.isAudioPlaying) break;
+                
+                // 暫停等待邏輯
+                while (state.isPaused) {
+                    await new Promise(r => setTimeout(r, 200));
+                    if (!state.isAudioPlaying) return;
+                }
+
                 if (document.getElementById('audioVisualSync')?.checked) {
                     document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing'));
                     const c = document.querySelector(`[data-word-id="${w.id}"]`);
                     if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                 }
+                
                 document.getElementById('floatingStatusText').innerText = w.en;
-                window.speak(w.en); await new Promise(r => setTimeout(r, 2200));
+                window.speak(w.en);
+                
+                // 等待朗讀結束 (約 2.2 秒)
+                await new Promise(r => setTimeout(r, 2200));
             }
             stopAutoPlay();
         };
-        window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('wordGrid').classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
+        
+        window.stopAutoPlay = () => { 
+            state.isAudioPlaying = false; 
+            state.isPaused = false;
+            window.speechSynthesis.cancel(); 
+            document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); 
+            document.getElementById('wordGrid').classList.remove('blind-mode'); 
+            document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); 
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
