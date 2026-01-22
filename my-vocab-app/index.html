@@ -219,6 +219,12 @@
                                 <button onclick="toggleFeature('notes')" id="btn-toggle-notes" class="px-3 py-2 text-[10px] font-black rounded-xl transition-all bg-white text-indigo-600 border border-indigo-100 shadow-sm">筆記: 顯示</button>
                                 <button onclick="toggleFeature('ratings')" id="btn-toggle-ratings" class="px-3 py-2 text-[10px] font-black rounded-xl transition-all bg-white text-indigo-600 border border-indigo-100 shadow-sm">熟練度: 顯示</button>
                             </div>
+                            <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                                <i data-lucide="arrow-up-down" class="w-4 h-4 text-slate-400"></i>
+                                <select id="sortSelect" onchange="renderWords()" class="bg-transparent text-sm font-bold outline-none cursor-pointer">
+                                    <option value="original">原始順序</option><option value="random">隨機亂數</option><option value="az">A-Z 排序</option><option value="rating">不熟度優先</option>
+                                </select>
+                            </div>
                         </div>
                         <!-- 英聽控制 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
@@ -228,22 +234,13 @@
                                         <div class="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
                                             <span class="text-[10px] font-black text-indigo-400 uppercase">朗讀</span>
                                             <select id="audioRepeatCount" class="bg-transparent font-bold text-sm outline-none text-indigo-700">
-                                                <option value="1" selected>1 次</option>
-                                                <option value="2">2 次</option>
-                                                <option value="3">3 次</option>
-                                                <option value="4">4 次</option>
-                                                <option value="5">5 次</option>
+                                                <option value="1" selected>1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="4">4 次</option><option value="5">5 次</option>
                                             </select>
                                         </div>
                                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
                                             <span class="text-[10px] font-black text-slate-400 uppercase">間隔</span>
                                             <select id="audioIntervalPause" class="bg-transparent font-bold text-sm outline-none text-slate-600">
-                                                <option value="0" selected>無</option>
-                                                <option value="1">1s</option>
-                                                <option value="2">2s</option>
-                                                <option value="3">3s</option>
-                                                <option value="4">4s</option>
-                                                <option value="5">5s</option>
+                                                <option value="0" selected>無</option><option value="1">1s</option><option value="2">2s</option><option value="3">3s</option><option value="4">4s</option><option value="5">5s</option>
                                             </select>
                                         </div>
                                     </div>
@@ -314,7 +311,7 @@
 
     <!-- 管理者功能 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
-        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
         </nav>
@@ -335,7 +332,7 @@
     <!-- 通用 UI 元件 -->
     <div id="editPassModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 text-center border border-slate-100"><h4 class="font-black text-xl mb-6">修改密碼</h4><input type="text" id="newPassInput" placeholder="新密碼" class="w-full px-5 py-3 bg-slate-50 border rounded-xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500"><div class="flex gap-3"><button onclick="closeEditPass()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button onclick="confirmUpdatePass()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">確定</button></div></div></div>
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100"><div class="p-8 border-b flex justify-between items-center bg-slate-50/50"><h4 id="detailUserTitle" class="font-black text-2xl">單字紀錄</h4><button onclick="closeAdminDetail()" class="p-2 hover:bg-slate-200 rounded-full"><i data-lucide="x"></i></button></div><div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white"></div></div></div>
-    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center"><i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i><h4 class="font-black text-lg mb-6">確定刪除紀錄？</h4><div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div></div></div>
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center"><i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i><h4 class="font-black text-lg mb-6 text-slate-800">確定刪除紀錄？</h4><div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div></div></div>
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
 
     <script type="module">
@@ -535,10 +532,16 @@
                 if (sessionStorage.getItem('admin_session')) { state.isAdmin = true; showAdminDashboard(); showAdminUI(); }
                 else if (sessionStorage.getItem('custom_user_session')) { state.userLabel = sessionStorage.getItem('custom_user_session'); showAppUI(state.userLabel, false); startSyncing(state.userLabel); }
                 else document.getElementById('authScreen').classList.remove('hidden');
-            } else { if (!state.isStudentView) { document.getElementById('authScreen').classList.remove('hidden'); initAuth(); } }
+            } else { 
+                if (!state.isStudentView) { 
+                    document.getElementById('authScreen').classList.remove('hidden'); 
+                    initAuth(); // Rule 3 Requirement
+                } 
+            }
+            lucide.createIcons();
         });
 
-        // 其餘 UI 切換函式
+        // 通用 UI 功能
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         window.setGlobalMode = (m) => { state.globalMode = m; renderWords(); };
@@ -556,6 +559,39 @@
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (s) => { if (s.exists()) { const d = s.data(); document.getElementById('adminStats').innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500"><p class="text-xs font-black uppercase text-slate-400">註冊人數</p><h4 class="text-2xl font-black">${d.userCount || 0}</h4></div>`; } });
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (s) => { document.getElementById('accountManagerList').innerHTML = s.docs.map(d => `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border mb-2"><div><p class="font-bold">${d.id}</p><p class="text-[10px]">密碼: ${d.data().password}</p></div></div>`).join(''); });
         }
+        
+        // 🌟 英聽核心邏輯 (修復範圍播放)
+        window.startAutoPlay = async () => {
+            if (state.isAudioPlaying) return;
+            const start = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
+            const end = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || state.displayedWords.length);
+            const wordsToPlay = state.displayedWords.slice(start - 1, end);
+            if (wordsToPlay.length === 0) return;
+
+            state.isAudioPlaying = true;
+            document.getElementById('floatingAudioBar').classList.add('active');
+            const reps = parseInt(document.getElementById('audioRepeatCount').value);
+            const pause = parseInt(document.getElementById('audioIntervalPause').value);
+
+            for (let i = 0; i < wordsToPlay.length; i++) {
+                if (!state.isAudioPlaying) break;
+                const w = wordsToPlay[i];
+                if (document.getElementById('audioVisualSync').checked && !document.getElementById('audioBlindMode').checked) {
+                    document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing'));
+                    const c = document.querySelector(`[data-word-id="${w.id}"]`);
+                    if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                }
+                document.getElementById('floatingStatusText').innerText = `朗讀中 (${start + i}/${end}): ${w.en}`;
+                for (let r = 0; r < reps; r++) {
+                    if (!state.isAudioPlaying) break;
+                    window.speak(w.en);
+                    await new Promise(r => setTimeout(r, 1200));
+                }
+                if (state.isAudioPlaying && i < wordsToPlay.length - 1) await new Promise(r => setTimeout(r, pause * 1000));
+            }
+            stopAutoPlay();
+        };
+        window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('active'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
     </script>
 </body>
 </html>
