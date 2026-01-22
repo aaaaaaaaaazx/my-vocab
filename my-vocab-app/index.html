@@ -13,8 +13,6 @@
         body { font-family: 'Inter', sans-serif; }
         
         /* --- 單字卡片顯示邏輯 (CSS 控制) --- */
-        
-        /* 1. 中英/僅中模式：顯示筆記 */
         .card-both .word-en { display: block; }
         .card-both .word-zh { display: block; }
         .card-both .word-note { display: block; }
@@ -24,7 +22,6 @@
         .card-zh .word-note { display: block; }
         .card-zh .voice-btn { visibility: hidden; }
         
-        /* 2. 僅英文顯示模式：隱藏中文與記憶筆記 */
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none !important; }
         .card-en .word-note { display: none !important; } 
@@ -35,7 +32,6 @@
             border-width: 2px;
         }
         
-        /* 播放時的高亮樣式 */
         .word-card.playing {
             border-color: #6366f1 !important;
             box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
@@ -64,7 +60,6 @@
             display: none;
         }
 
-        /* 聽力挑戰模式 (模糊背景) */
         #wordGrid.blind-mode {
             opacity: 0.1;
             filter: blur(12px);
@@ -373,25 +368,38 @@
             }
         };
 
+        // 登入邏輯修正：先確保有認證再查詢資料
         window.loginWithCustom = async () => {
             const user = document.getElementById('customUser').value.trim();
             const pass = document.getElementById('customPass').value.trim();
             if (!user || !pass) return showNotification("請輸入帳號密碼", "alert");
+            
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
+                // Rule 3: 先確保已登入（如果是匿名狀態也行），才能讀取 public 資料
+                if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
+
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
+                
                 if (snap.exists() && snap.data().password === pass) {
-                    await signInAnonymously(auth);
                     state.userLabel = user;
                     sessionStorage.setItem('custom_user_session', user);
                     showAppUI(user);
                     startSyncing(user);
                     logUserActivity(user);
                     showNotification("登入成功");
-                } else { showNotification("帳號或密碼錯誤", "alert"); }
-            } catch (e) { showNotification("連線失敗", "alert"); }
-            finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
+                } else { 
+                    showNotification("帳號或密碼錯誤", "alert"); 
+                }
+            } catch (e) { 
+                console.error(e);
+                showNotification("連線失敗，請檢查網路", "alert"); 
+            } finally { 
+                document.getElementById('loadingIndicator').classList.add('hidden'); 
+            }
         };
 
         window.adminLogin = async () => {
@@ -399,7 +407,7 @@
             const pass = document.getElementById('adminPass').value.trim();
             if (user === 'yljh' && pass === 'yljh8320873') {
                 try {
-                    await signInAnonymously(auth);
+                    if (!auth.currentUser) await signInAnonymously(auth);
                     state.isAdmin = true;
                     showAdminDashboard();
                 } catch (e) { showNotification("登入失敗", "alert"); }
@@ -407,6 +415,16 @@
         };
 
         window.logout = () => { stopAutoPlay(); signOut(auth); sessionStorage.removeItem('custom_user_session'); location.reload(); };
+
+        // 初始化認證流程
+        const initApp = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initApp();
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -422,9 +440,6 @@
                     }
                 }
             } else {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                }
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
             }
@@ -746,7 +761,6 @@
         
         function getRatingColor(n) { return { 1: 'bg-emerald-500 text-white shadow-lg', 2: 'bg-teal-400 text-white shadow-md', 3: 'bg-amber-400 text-white shadow-md', 4: 'bg-orange-500 text-white shadow-md', 5: 'bg-rose-500 text-white shadow-lg' }[n]; }
 
-        // --- 管理者功能 ---
         window.createAccount = async () => {
             if (!auth.currentUser) return;
             const u = document.getElementById('newAccountUser').value.trim();
