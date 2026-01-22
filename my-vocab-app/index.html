@@ -70,7 +70,7 @@
     <div id="authScreen" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 text-center transition-all">
             
-            <!-- 主登入入口 -->
+            <!-- 主入口視圖 (預設顯示) -->
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <!-- 使用者帳密登入 -->
+            <!-- 使用者帳密輸入視圖 -->
             <div id="customLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -107,7 +107,7 @@
                 </div>
             </div>
 
-            <!-- 管理者驗證 -->
+            <!-- 管理者輸入視圖 -->
             <div id="adminLoginView" class="hidden text-left">
                 <button onclick="toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-bold hover:text-slate-600">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回
@@ -122,7 +122,7 @@
 
             <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2">
                 <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <span id="loadingText">處理中...</span>
+                <span id="loadingText">驗證中...</span>
             </div>
         </div>
     </div>
@@ -149,7 +149,6 @@
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <!-- 左側單元清單 -->
                 <div class="lg:col-span-4 space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800">
@@ -171,7 +170,6 @@
                     </div>
                 </div>
                 
-                <!-- 右側練習區 -->
                 <div class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-5">
                         <div class="flex flex-wrap items-center justify-between gap-6">
@@ -191,7 +189,6 @@
                             </div>
                         </div>
 
-                        <!-- 英聽控制 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="flex flex-wrap items-center gap-4 justify-between">
                                 <div class="flex flex-wrap items-center gap-2">
@@ -262,7 +259,7 @@
         </main>
     </div>
 
-    <!-- 管理者後台 -->
+    <!-- 3. 管理者後台 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
         <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
@@ -308,6 +305,36 @@
         <span id="notificationText" class="font-bold"></span>
     </div>
 
+    <!-- UI 專屬腳本 (立即執行，不依賴 Firebase 模組) -->
+    <script>
+        window.toggleAuthView = function(mode) {
+            const views = {
+                'main': 'loginMainView',
+                'custom': 'customLoginView',
+                'admin': 'adminLoginView'
+            };
+            
+            // 隱藏所有
+            Object.values(views).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            
+            // 顯示目標
+            const targetId = views[mode];
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                targetEl.classList.remove('hidden');
+            }
+            
+            // 重新初始化圖示 (如果 lucide 已經載入)
+            if (window.lucide) {
+                try { window.lucide.createIcons(); } catch(e) {}
+            }
+        };
+    </script>
+
+    <!-- 核心功能腳本 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -337,28 +364,10 @@
             userLabel: null,
             isAudioPlaying: false,
             isAudioPaused: false,
-            displayedWords: [],
-            isAuthReady: false
+            displayedWords: []
         };
 
-        // --- UI 工具函數 ---
-        window.toggleAuthView = (mode) => {
-            const views = ['loginMainView', 'customLoginView', 'adminLoginView'];
-            // 隱藏所有視圖
-            views.forEach(v => {
-                const el = document.getElementById(v);
-                if (el) el.classList.add('hidden');
-            });
-            
-            // 顯示目標視圖
-            const targetId = mode === 'main' ? 'loginMainView' : (mode + 'LoginView');
-            const targetEl = document.getElementById(targetId);
-            if (targetEl) {
-                targetEl.classList.remove('hidden');
-            }
-            lucide.createIcons();
-        };
-
+        // 輔助工具
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         const highlightVowels = (text) => text.replace(/[aeiou]/gi, match => `<span class="text-rose-500 font-bold">${match}</span>`);
 
@@ -388,16 +397,16 @@
             const loading = document.getElementById('loadingIndicator');
             btn.disabled = true;
             loading.classList.remove('hidden');
-            document.getElementById('loadingText').innerText = "驗證中...";
 
             try {
+                // 若尚未登入(Firebase層)，先進行匿名登入以取得讀取權限
                 if (!auth.currentUser) await signInAnonymously(auth);
 
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
                 
                 if (!snap.exists()) {
-                    showNotification("帳號不存在", "alert");
+                    showNotification("找不到該帳號", "alert");
                 } else if (snap.data().password === pass) {
                     state.userLabel = user;
                     sessionStorage.setItem('custom_user_session', user);
@@ -409,7 +418,6 @@
                     showNotification("密碼錯誤", "alert"); 
                 }
             } catch (e) { 
-                console.error(e);
                 showNotification(`系統錯誤: ${e.message}`, "alert"); 
             } finally { 
                 btn.disabled = false;
@@ -424,7 +432,7 @@
                 if (!auth.currentUser) await signInAnonymously(auth);
                 state.isAdmin = true;
                 showAdminDashboard();
-            } else { showNotification("管理密碼錯誤", "alert"); }
+            } else { showNotification("管理者密碼錯誤", "alert"); }
         };
 
         window.logout = () => { 
@@ -434,11 +442,10 @@
             location.reload(); 
         };
 
-        // --- 核心認證流程 ---
+        // --- 認證監聽 ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 state.user = user;
-                state.isAuthReady = true;
                 const session = sessionStorage.getItem('custom_user_session');
                 
                 if (session && !state.isAdmin) {
@@ -448,18 +455,17 @@
                 } else if (state.isAdmin) {
                     showAdminDashboard();
                 } else {
-                    // 若有 Auth 但沒 App Session，保持在登入頁面
+                    // Firebase 已登入但尚未登入學生帳號，維持在登入介面
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
                 }
             } else {
-                state.isAuthReady = false;
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
-                // 初始化匿名登入以確保 Firestore 可讀取
-                signInAnonymously(auth).catch(e => console.error("Auth Init fail", e));
+                // 嘗試匿名登入以預備權限
+                signInAnonymously(auth).catch(() => {});
             }
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         });
 
         function showAppUI(name) {
@@ -467,10 +473,10 @@
             document.getElementById('appScreen').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = name;
             document.getElementById('userBadge').classList.remove('hidden');
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         }
 
-        // --- 資料同步 ---
+        // --- 資料連線 ---
         function startSyncing(id) {
             if (!id || !auth.currentUser) return;
             const unitsRef = collection(db, 'artifacts', appId, 'users', id, 'units');
@@ -478,7 +484,7 @@
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderUnitList();
                 renderWords();
-            }, (err) => console.error("Sync Error", err));
+            }, (err) => console.error("Snapshot error:", err));
         }
 
         async function logUserActivity(id) {
@@ -493,7 +499,7 @@
         window.importWords = async () => {
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
-            if (!state.userLabel || !name || !text) return showNotification("請填寫單元與單字", "alert");
+            if (!state.userLabel || !name || !text) return showNotification("請輸入單元名與單字", "alert");
             const wordList = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
                 return parts.length >= 2 ? {
@@ -503,19 +509,19 @@
                 } : null;
             }).filter(w => w);
             
-            if (wordList.length === 0) return showNotification("格式錯誤", "alert");
+            if (wordList.length === 0) return showNotification("格式不符", "alert");
             const unitId = 'u' + Date.now();
             try {
                 const newUnit = { name, words: wordList, createdAt: Date.now() };
                 await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', unitId), newUnit);
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
                 document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = '';
-                showNotification("已同步雲端");
+                showNotification("已同步至雲端");
                 state.activeUnitId = unitId;
             } catch (e) { showNotification("儲存失敗", "alert"); }
         };
 
-        // --- 英聽功能 ---
+        // --- 英聽控制 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
@@ -554,7 +560,7 @@
                 }
                 if (state.isAudioPlaying && i < wordsToPlay.length - 1) await sleep(intervalPause * 1000 + 800); 
             }
-            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("播放完畢"); }
+            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("單元朗讀結束"); }
         };
 
         window.pauseAutoPlay = () => {
@@ -592,7 +598,7 @@
                 status.classList.add('hidden');
                 document.getElementById('btnStartText').innerText = "開始英聽";
             }
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         }
 
         function speakAsync(text) {
@@ -604,6 +610,7 @@
             });
         }
 
+        // --- 渲染功能 ---
         window.renderWords = () => {
             const grid = document.getElementById('wordGrid');
             const unit = state.units.find(u => u.id === state.activeUnitId);
@@ -646,7 +653,7 @@
                         </div>
                     </div>
                 </div>`}).join('');
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         };
 
         window.setActiveUnit = (id) => { 
@@ -693,7 +700,7 @@
         };
 
         window.deleteUnit = async (id) => {
-            if (!confirm("確定刪除？")) return;
+            if (!confirm("確定刪除此單元嗎？")) return;
             await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
             if (state.activeUnitId === id) state.activeUnitId = null;
         };
@@ -706,7 +713,7 @@
                     <span class="font-bold truncate">${u.name}</span>
                     <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>`).join('');
-            lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         };
 
         window.speak = (t) => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); };
@@ -717,7 +724,7 @@
             const p = document.getElementById('newAccountPass').value.trim();
             if (u && p) {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() });
-                showNotification(`已建立學生帳號 ${u}`);
+                showNotification(`已發布帳號: ${u}`);
                 document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = '';
             }
         };
@@ -729,9 +736,9 @@
                 if (doc.exists()) {
                     const d = doc.data();
                     document.getElementById('adminStats').innerHTML = `
-                        <div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-slate-400 text-xs font-black uppercase">總登入次</p><h4 class="text-3xl font-black">${d.loginCount || 0}</h4></div>
-                        <div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-slate-400 text-xs font-black uppercase">課程單元</p><h4 class="text-3xl font-black">${d.totalUnits || 0}</h4></div>
-                        <div class="admin-stat-card border-l-4 border-amber-500"><p class="text-slate-400 text-xs font-black uppercase">單字庫總計</p><h4 class="text-3xl font-black">${d.totalWords || 0}</h4></div>`;
+                        <div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-slate-400 text-xs font-black uppercase">登入總次數</p><h4 class="text-3xl font-black">${d.loginCount || 0}</h4></div>
+                        <div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-slate-400 text-xs font-black uppercase">建立單元數</p><h4 class="text-3xl font-black">${d.totalUnits || 0}</h4></div>
+                        <div class="admin-stat-card border-l-4 border-amber-500"><p class="text-slate-400 text-xs font-black uppercase">總單字量</p><h4 class="text-3xl font-black">${d.totalWords || 0}</h4></div>`;
                 }
             });
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => {
@@ -740,7 +747,7 @@
                     return `<tr class="border-b">
                         <td class="px-8 py-5 font-bold">${d.displayName}</td>
                         <td class="px-8 py-5 text-slate-400">${new Date(d.lastSeen).toLocaleString()}</td>
-                        <td class="px-8 py-5"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs">數據</button></td>
+                        <td class="px-8 py-5"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs">數據紀錄</button></td>
                     </tr>`;
                 }).join('');
             });
@@ -748,7 +755,7 @@
 
         window.adminDetail = async (uid, name) => {
             document.getElementById('adminDetailModal').classList.remove('hidden');
-            document.getElementById('detailUserTitle').innerText = `${name} 的紀錄`;
+            document.getElementById('detailUserTitle').innerText = `${name} 的單字清單`;
             const snap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
             document.getElementById('detailContent').innerHTML = snap.docs.map(uDoc => {
                 const u = uDoc.data();
@@ -756,8 +763,8 @@
                     <h5 class="font-black text-indigo-600 mb-4">${u.name}</h5>
                     <div class="grid grid-cols-1 gap-2">${u.words.map(w => `<div class="bg-white p-3 rounded-xl border text-[11px]"><b>${w.en}</b> / ${w.zh}</div>`).join('')}</div>
                 </div>`;
-            }).join('') || '<p class="text-center py-10 font-bold text-slate-300">目前無數據</p>';
-            lucide.createIcons();
+            }).join('') || '<p class="text-center py-10 font-bold text-slate-300">查無數據</p>';
+            if (window.lucide) window.lucide.createIcons();
         };
 
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
