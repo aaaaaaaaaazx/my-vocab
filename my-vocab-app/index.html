@@ -71,20 +71,9 @@
             background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; 
             padding: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
         }
-
-        #loadingOverlay {
-            position: fixed; inset: 0; background: white; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
-
-    <!-- 初始載入遮罩 (3.5秒強制解除) -->
-    <div id="loadingOverlay">
-        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-slate-400 font-bold animate-pulse text-sm">正在連線資料庫...</p>
-    </div>
 
     <!-- 🚀 英聽播放狀態列 (懸浮) -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-lg bg-white/90 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
@@ -95,8 +84,8 @@
         <button onclick="stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-rose-600"><i data-lucide="square" class="w-5 h-5"></i></button>
     </div>
 
-    <!-- 1. 登入畫面 -->
-    <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
+    <!-- 1. 登入畫面 (啟動後直接顯示，不再被隱藏遮罩擋住) -->
+    <div id="authScreen" class="flex items-center justify-center min-h-screen p-4 text-center">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
             <div id="loginMainView">
                 <div class="mb-8">
@@ -246,7 +235,7 @@
     <!-- 3. 管理者後台 (adminScreen) -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10 text-slate-800">
         <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
-            <span class="font-black tracking-widest uppercase text-xl text-indigo-400">管理中心中心</span>
+            <span class="font-black tracking-widest uppercase text-xl text-indigo-400">管理中心</span>
             <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理員</button>
         </nav>
         <main class="max-w-7xl mx-auto px-8 py-10 text-slate-800">
@@ -255,9 +244,9 @@
                 <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm text-center">
                     <h3 class="text-xl font-black mb-6 text-slate-800">建立學生帳號</h3>
                     <div class="space-y-4">
-                        <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                        <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                        <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold transition-all active:scale-95 shadow-lg">確認發布</button>
+                        <input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none transition-all focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none transition-all focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold transition-all active:scale-95 shadow-lg">發布帳號</button>
                     </div>
                 </div>
                 <div class="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
@@ -272,7 +261,7 @@
         </main>
     </div>
 
-    <!-- 測驗 Modal -->
+    <!-- 測驗 CHALLENGE Modal -->
     <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden">
             <button onclick="closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x"></i></button>
@@ -304,6 +293,7 @@
         </div>
     </div>
 
+    <!-- 通知元件 -->
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[300] flex items-center gap-3 border border-white/10"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
 
     <!-- Firebase SDK & 主邏輯 -->
@@ -325,7 +315,7 @@
             showSyllables: true, showVowels: true, showRating: true
         };
 
-        // --- 核心函式定義 ---
+        // --- 核心函式定義 (標準 function 宣告以支援 Hoisting) ---
         
         function showAppUI(name) {
             document.getElementById('authScreen').classList.add('hidden');
@@ -346,7 +336,7 @@
                         <div class="admin-stat-card border-l-4 border-indigo-500"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">課程單元</p><h4 class="text-2xl font-black">${d.totalUnits || 0}</h4></div>
                         <div class="admin-stat-card border-l-4 border-emerald-500"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">總單字量</p><h4 class="text-2xl font-black">${d.totalWords || 0}</h4></div>
                         <div class="admin-stat-card border-l-4 border-amber-500"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">活躍記錄</p><h4 class="text-2xl font-black">${d.loginCount || 0}</h4></div>
-                        <div class="admin-stat-card border-l-4 border-rose-500"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">系統狀況</p><h4 class="text-2xl font-black text-emerald-500 text-sm">良好</h4></div>`;
+                        <div class="admin-stat-card border-l-4 border-rose-500"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">系統狀況</p><h4 class="text-2xl font-black text-emerald-500 text-sm">正常</h4></div>`;
                 }
             });
 
@@ -368,6 +358,7 @@
             });
         }
 
+        // --- 認證初始化 ---
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -377,16 +368,10 @@
                 }
             } catch (e) {
                 console.error("驗證系統初始化失敗", e);
-                document.getElementById('authScreen').classList.remove('hidden');
             }
         }
 
-        function hideOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) overlay.classList.add('hidden');
-        }
-
-        // --- 全域變數定義 (掛載到 window 以供 HTML onclick 呼叫) ---
+        // --- 全域變數掛載 ---
         window.loginWithCustom = async function() {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
             if (!u || !p) return;
@@ -416,41 +401,28 @@
             } else { showNotification("管理者驗證失敗", "alert"); }
         };
 
-        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
-        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
-        window.setGlobalMode = (m) => { 
-            state.globalMode = m; 
-            // 當全局模式改變時，重置所有單字的個別 localMode
-            const unit = state.units.find(u => u.id === state.activeUnitId);
-            if (unit) {
-                unit.words.forEach(w => delete w.localMode);
-            }
-            renderWords(); 
-        };
-        
-        window.toggleFeature = (f) => { 
-            const key = 'show' + f.charAt(0).toUpperCase() + f.slice(1);
-            state[key] = !state[key]; 
-            renderWords(); 
-        };
+        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v)?.classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
 
-        // --- 個別單字卡片翻轉邏輯 ---
+        // --- 單字卡翻轉與功能切換 ---
         window.cycleWordMode = (id) => {
             const unit = state.units.find(u => u.id === state.activeUnitId);
             if (!unit) return;
             const word = unit.words.find(w => w.id === id);
             if (!word) return;
-
-            // 取得當前模式 (若無個別模式則參考全局模式)
             const currentMode = word.localMode || state.globalMode;
             let nextMode;
             if (currentMode === 'both') nextMode = 'en';
             else if (currentMode === 'en') nextMode = 'zh';
             else nextMode = 'both';
-
             word.localMode = nextMode;
             renderWords();
+        };
+
+        window.toggleFeature = (f) => { 
+            const key = 'show' + f.charAt(0).toUpperCase() + f.slice(1);
+            state[key] = !state[key]; 
+            renderWords(); 
         };
 
         // --- 語音引擎 ---
@@ -513,7 +485,7 @@
         function renderBlockQuiz() {
             const item = state.quizQueue[state.quizIndex];
             document.getElementById('blockAnswerArea').innerHTML = item.en.split('').map((_, i) => `<div class="answer-slot">${state.currentAnswer[i] || ''}</div>`).join('');
-            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''}">${l}</button>`).join('');
+            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''}">${l}</button>`);
         }
 
         window.handleQuizBlockClick = (idx, char) => {
@@ -544,7 +516,7 @@
         window.nextQuizItem = () => { state.quizIndex++; setupQuizItem(); };
         window.closeQuiz = () => document.getElementById('quizModal').classList.add('hidden');
 
-        // --- 身份驗證監聽 ---
+        // --- 核心身份監聽 ---
         onAuthStateChanged(auth, async (user) => {
             const params = new URLSearchParams(window.location.search);
             const viewType = params.get('view'), guestId = params.get('id');
@@ -576,10 +548,20 @@
             } else {
                 document.getElementById('authScreen').classList.remove('hidden');
             }
-            hideOverlay();
+            
+            // 互斥勾選邏輯
+            const syncCheck = document.getElementById('audioVisualSync');
+            const blindCheck = document.getElementById('audioBlindMode');
+            if (syncCheck && blindCheck) {
+                syncCheck.onchange = () => { if (syncCheck.checked) blindCheck.checked = false; };
+                blindCheck.onchange = () => { if (blindCheck.checked) syncCheck.checked = false; };
+            }
+            
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.add('hidden');
         });
 
-        // --- UI 功能與資料維護 ---
+        // --- 數據渲染與維護 ---
         window.renderUnitList = () => {
             const el = document.getElementById('unitList'); if (!el) return;
             el.innerHTML = state.units.map(u => `
@@ -591,8 +573,8 @@
         };
 
         window.deleteUnit = async (id) => {
-            if (state.isGuestMode) return showNotification("訪客模式無法修改", "alert");
-            if (!confirm("確定永久刪除此單字本？")) return;
+            if (state.isGuestMode) return showNotification("訪客模式不可修改", "alert");
+            if (!confirm("確定刪除此單字本？")) return;
             try { 
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id));
                 if (state.activeUnitId === id) state.activeUnitId = null;
@@ -610,7 +592,7 @@
             else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
             else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
-            document.getElementById('unitStats').innerText = `${list.length} 單字`;
+            document.getElementById('unitStats').innerText = `${list.length} 個單字`;
 
             const sylBtn = document.getElementById('toggle-syllables-btn');
             const vowBtn = document.getElementById('toggle-vowels-btn');
@@ -652,6 +634,7 @@
             const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; }).filter(w => w);
             await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words });
             showNotification("儲存成功");
+            document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = '';
         };
 
         window.publishGuestLink = () => {
@@ -662,6 +645,31 @@
             showNotification("訪客連結已複製！");
         };
 
+        window.adminDetail = async (uid, name) => {
+            const modal = document.getElementById('adminDetailModal');
+            document.getElementById('detailUserTitle').innerText = `${name} 練習數據`;
+            modal.classList.remove('hidden');
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units'));
+            document.getElementById('detailContent').innerHTML = snap.docs.map(uDoc => {
+                const u = uDoc.data();
+                return `<div class="bg-slate-100 p-5 rounded-2xl border mb-4 text-slate-800 font-bold"><h6>${u.name}</h6><div class="text-xs mt-2 text-slate-500 font-medium">${u.words.map(w => w.en).join(', ')}</div></div>`;
+            }).join('') || '無數據';
+            lucide.createIcons();
+        };
+
+        window.createAccount = async () => {
+            const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim();
+            if (u && p) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p, createdAt: Date.now() });
+                showNotification(`帳號 ${u} 已發布`);
+                document.getElementById('newAccountUser').value = ''; document.getElementById('newAccountPass').value = '';
+            }
+        };
+
+        window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
+        window.setGlobalMode = (m) => { state.globalMode = m; renderWords(); };
+        window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white shadow-sm', 2: 'bg-teal-400 text-white shadow-sm', 3: 'bg-amber-400 text-white shadow-sm', 4: 'bg-orange-500 text-white shadow-sm', 5: 'bg-rose-500 text-white shadow-sm' }[n]);
+
         window.startAutoPlay = async () => {
             if (state.isAudioPlaying) return;
             const list = state.displayedWords;
@@ -670,7 +678,7 @@
             if (document.getElementById('audioBlindMode')?.checked) document.getElementById('wordGrid').classList.add('blind-mode');
             for (let w of list) {
                 if (!state.isAudioPlaying) break;
-                if (document.getElementById('audioVisualSync')?.checked) {
+                if (document.querySelectorAll('.word-card').length > 0 && document.getElementById('audioVisualSync')?.checked) {
                     document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing'));
                     const c = document.querySelector(`[data-word-id="${w.id}"]`);
                     if (c) { c.classList.add('playing'); c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -682,7 +690,7 @@
         };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('wordGrid').classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
 
-        window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white', 2: 'bg-teal-400 text-white', 3: 'bg-amber-400 text-white', 4: 'bg-orange-500 text-white', 5: 'bg-rose-500 text-white' }[n]);
+        window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
         function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
 
         initAuth();
