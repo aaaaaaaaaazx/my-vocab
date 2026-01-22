@@ -27,7 +27,6 @@
         .card-zh .word-en { display: none !important; }
         .card-zh .word-zh { display: block; }
         .card-zh .word-note { display: block; }
-        .card-zh .voice-btn { visibility: visible; }
         
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none !important; }
@@ -98,9 +97,21 @@
             75% { transform: translateX(5px); }
         }
         .animate-shake { animation: shake 0.3s ease-in-out; }
+
+        /* 初始化載入遮罩 */
+        #loadingOverlay {
+            position: fixed; inset: 0; background: white; z-index: 9999;
+            display: flex; flex-direction: column; items-center; justify-content: center;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
+
+    <!-- 初始載入遮罩 -->
+    <div id="loadingOverlay">
+        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-400 font-bold animate-pulse">系統初始化中...</p>
+    </div>
 
     <!-- 🚀 懸浮英聽控制列 -->
     <div id="floatingAudioBar" class="bg-white/80 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-[2rem] p-4 flex items-center justify-between gap-4">
@@ -178,7 +189,7 @@
                 </div>
                 <div class="flex items-center gap-6">
                     <button id="btnPublish" onclick="publishLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-emerald-100 shadow-sm"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈網頁</button>
-                    <div id="userBadge" class="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-full border border-slate-200"><div id="userIcon" class="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-[10px]"><i data-lucide="user" class="w-3 h-3"></i></div><span id="userNameDisplay" class="text-sm font-bold text-slate-700"></span></div>
+                    <div id="userBadge" class="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-full border border-slate-200"><div id="userIcon" class="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-[10px] hidden"><i data-lucide="user" class="w-3 h-3"></i></div><span id="userNameDisplay" class="text-sm font-bold text-slate-700"></span></div>
                     <button id="btnLogout" onclick="logout()" class="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl transition-all">登出</button>
                 </div>
             </div>
@@ -217,7 +228,7 @@
                             </div>
                         </div>
 
-                        <!-- 🌟 核心控制面板 -->
+                        <!-- 🌟 核心控制面板 (測驗按鈕移至此) -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="space-y-4">
@@ -230,6 +241,7 @@
                                             <span class="text-[10px] font-black text-amber-500 uppercase">範圍</span>
                                             <div class="flex items-center gap-1"><input type="number" id="audioRangeStart" value="1" min="1" class="w-10 bg-transparent text-sm font-bold outline-none"><span class="text-amber-300">~</span><input type="number" id="audioRangeEnd" value="10" min="1" class="w-10 bg-transparent text-sm font-bold outline-none"></div>
                                         </div>
+                                        <!-- 🌟 卡片與盲聽互斥 -->
                                         <div class="flex gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                                             <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600"><span class="text-xs font-bold text-slate-500">卡片</span></label>
                                             <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600"><span class="text-xs font-bold text-slate-500">盲聽</span></label>
@@ -244,10 +256,11 @@
                                         </div>
                                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
                                             <span class="text-[10px] font-black text-slate-400 uppercase">朗讀</span>
-                                            <select id="audioRepeatCount" class="bg-transparent font-bold text-xs outline-none text-slate-700"><option value="1" selected>1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="4">4 次</option><option value="5">5 次</option></select>
+                                            <select id="audioRepeatCount" class="bg-transparent font-bold text-xs outline-none text-slate-700"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="4">4 次</option><option value="5">5 次</option></select>
                                         </div>
                                     </div>
                                 </div>
+                                <!-- 🌟 測驗挑戰區 -->
                                 <div class="flex flex-col gap-2 justify-center">
                                     <div class="flex gap-2">
                                         <button id="btnStartAudio" onclick="startAutoPlay()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"><i data-lucide="play" class="w-4 h-4"></i> 朗讀範圍</button>
@@ -271,7 +284,7 @@
 
                     <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 transition-all duration-500"></div>
                     
-                    <!-- Empty State -->
+                    <!-- 提示引導區 -->
                     <div id="emptyState" class="flex flex-col items-center justify-center py-40 text-slate-300 text-center">
                         <i data-lucide="layout" class="w-16 h-16 mb-4 mx-auto opacity-20"></i>
                         <p class="text-xl font-bold text-slate-400">請從左側點選單字本開始練習</p>
@@ -281,7 +294,7 @@
         </main>
     </div>
 
-    <!-- 遊戲 Modals -->
+    <!-- 遊戲 Modal -->
     <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden">
             <button onclick="closeQuiz()" class="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full text-slate-400"><i data-lucide="x"></i></button>
@@ -294,13 +307,13 @@
                 <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2">1 / 10</p>
             </div>
 
-            <!-- 積木區 -->
+            <!-- 積木挑戰 -->
             <div id="blockQuizContent" class="hidden">
                 <div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px]"></div>
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-2"></div>
             </div>
 
-            <!-- 聽寫區 -->
+            <!-- 聽寫挑戰 -->
             <div id="dictationQuizContent" class="hidden space-y-6">
                 <input type="text" id="quizInput" placeholder="輸入英文單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 border-transparent focus:border-rose-500 focus:bg-white rounded-2xl outline-none text-2xl font-black tracking-widest transition-all">
                 <button onclick="checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-rose-600 active:scale-95 transition-all">檢查答案</button>
@@ -314,15 +327,18 @@
 
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[300] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
 
+    <!-- 🌟 單一腳本塊 🌟 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // 1. Firebase 配置
         const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
         const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
+        // 2. 全域狀態
         const state = { 
             user: null, units: [], activeUnitId: null, globalMode: 'both', userLabel: null,
             isAudioPlaying: false, displayedWords: [], isStudentView: false,
@@ -331,6 +347,7 @@
             quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: []
         };
 
+        // 3. 核心功能
         const initAuth = async () => {
             if (auth.currentUser) return auth.currentUser;
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -339,7 +356,7 @@
             try { return (await signInAnonymously(auth)).user; } catch (e) { return null; }
         };
 
-        // 互斥勾選
+        // 互斥勾選邏輯
         document.getElementById('audioVisualSync').onchange = (e) => {
             if (e.target.checked) document.getElementById('audioBlindMode').checked = false;
         };
@@ -347,6 +364,7 @@
             if (e.target.checked) document.getElementById('audioVisualSync').checked = false;
         };
 
+        // 語音引擎
         const initVoices = () => {
             const voices = window.speechSynthesis.getVoices();
             state.availableVoices = voices.filter(v => v.lang.startsWith('en'));
@@ -359,15 +377,11 @@
         window.speechSynthesis.onvoiceschanged = initVoices;
         setTimeout(initVoices, 500);
 
-        const syllabify = (word) => {
-            if (!word || !state.showSyllables) return word;
-            let s = word.toLowerCase().trim(); if (s.length <= 3) return word;
-            return word.replace(/(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy][aeiouy])|[^aeiouy]+(?=[aeiouy])|(?=[aeiouy])))/gi, "$&·").replace(/·$/, "");
-        };
-
         const highlightText = (text) => {
             if (!text) return "";
-            let processed = syllabify(text);
+            // 音節切分
+            let processed = state.showSyllables ? text.replace(/(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy][aeiouy])|[^aeiouy]+(?=[aeiouy])|(?=[aeiouy])))/gi, "$&·").replace(/·$/, "") : text;
+            // 母音紅字
             if (state.showVowels) processed = processed.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-bold">${m}</span>`);
             return processed;
         };
@@ -380,13 +394,12 @@
             window.speechSynthesis.speak(u);
         };
 
-        // 測驗挑戰核心
+        // 4. 測驗挑戰系統
         window.startRangeQuiz = (type) => {
             const start = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
             const end = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || state.displayedWords.length);
             state.quizQueue = state.displayedWords.slice(start - 1, end);
-            if (state.quizQueue.length === 0) return showNotification("範圍內無單字", "alert");
-
+            if (state.quizQueue.length === 0) return showNotification("選擇範圍內無單字", "alert");
             state.quizType = type; state.quizIndex = 0;
             document.getElementById('quizModal').classList.remove('hidden');
             setupQuizItem();
@@ -397,7 +410,6 @@
             document.getElementById('quizZh').innerText = item.zh;
             document.getElementById('quizProgress').innerText = `${state.quizIndex + 1} / ${state.quizQueue.length}`;
             document.getElementById('btnNextQuiz').classList.add('hidden');
-
             if (state.quizType === 'block') {
                 document.getElementById('blockQuizContent').classList.remove('hidden');
                 document.getElementById('dictationQuizContent').classList.add('hidden');
@@ -414,20 +426,18 @@
 
         function renderBlockQuiz() {
             const item = state.quizQueue[state.quizIndex];
-            const ans = document.getElementById('blockAnswerArea'), pool = document.getElementById('blockPoolArea');
-            ans.innerHTML = item.en.split('').map((_, i) => `<div class="answer-slot">${state.currentAnswer[i] || ''}</div>`).join('');
-            pool.innerHTML = state.quizLetters.map((l, i) => `<button onclick="handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'used' : ''}">${l}</button>`).join('');
-            lucide.createIcons();
+            document.getElementById('blockAnswerArea').innerHTML = item.en.split('').map((_, i) => `<div class="answer-slot">${state.currentAnswer[i] || ''}</div>`).join('');
+            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'used' : ''}">${l}</button>`).join('');
         }
 
         window.handleQuizBlockClick = (idx, char) => {
-            const item = state.quizQueue[state.quizIndex];
+            const target = state.quizQueue[state.quizIndex].en;
             if (state.usedIndexes.includes(idx)) return;
-            if (char.toLowerCase() === item.en[state.currentAnswer.length].toLowerCase()) {
+            if (char.toLowerCase() === target[state.currentAnswer.length].toLowerCase()) {
                 state.currentAnswer.push(char); state.usedIndexes.push(idx); renderBlockQuiz();
-                if (state.currentAnswer.length === item.en.length) {
+                if (state.currentAnswer.length === target.length) {
                     if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
-                    else { showNotification("恭喜完成挑戰！"); setTimeout(closeQuiz, 1500); }
+                    else { showNotification("挑戰完成！"); setTimeout(closeQuiz, 1500); }
                 }
             } else {
                 const slots = document.querySelectorAll('.answer-slot');
@@ -439,8 +449,8 @@
         };
 
         window.checkDictationAnswer = () => {
-            const item = state.quizQueue[state.quizIndex];
-            if (document.getElementById('quizInput').value.trim().toLowerCase() === item.en.toLowerCase()) {
+            const target = state.quizQueue[state.quizIndex].en;
+            if (document.getElementById('quizInput').value.trim().toLowerCase() === target.toLowerCase()) {
                 if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
                 else { showNotification("聽寫挑戰完成！"); setTimeout(closeQuiz, 1500); }
             } else {
@@ -452,7 +462,7 @@
         window.nextQuizItem = () => { state.quizIndex++; setupQuizItem(); };
         window.closeQuiz = () => document.getElementById('quizModal').classList.add('hidden');
 
-        // 渲染單字
+        // 5. 渲染與 UI 切換
         window.renderWords = () => {
             const g = document.getElementById('wordGrid');
             const empty = document.getElementById('emptyState');
@@ -477,10 +487,9 @@
                     <div class="word-note mb-4"><textarea class="note-area w-full text-[11px] p-3 bg-slate-50 border border-slate-100 rounded-2xl resize-none" placeholder="筆記..." rows="2" onblur="window.updateWordNote('${w.id}', this.value)">${w.note || ''}</textarea></div>
                     <div class="rating-section pt-4 border-t border-slate-50 flex items-center justify-between"><span class="text-[10px] font-black text-slate-300">熟練度</span><div class="flex gap-1">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black ${w.rating == n ? window.getRatingColor(n) : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}</div></div>
                 </div>`).join('');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         };
 
-        // 單字本刪除
         window.deleteUnit = async (id) => {
             if (!confirm("確定要永久刪除此單字本嗎？")) return;
             try {
@@ -493,7 +502,7 @@
         window.renderUnitList = () => {
             const el = document.getElementById('unitList'); if (!el) return;
             const units = state.isStudentView ? state.units.filter(u => u.published) : state.units;
-            if (units.length === 0) { el.innerHTML = `<p class="text-slate-300 text-sm italic text-center py-4">尚無單元</p>`; return; }
+            if (units.length === 0) { el.innerHTML = `<p class="text-slate-300 text-sm italic text-center py-4">目前沒有單字本</p>`; return; }
             el.innerHTML = units.map(u => `
                 <div onclick="setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}">
                     <span class="font-bold truncate text-sm ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
@@ -504,7 +513,7 @@
                         ` : ''}
                     </div>
                 </div>`).join('');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         };
 
         window.loginWithCustom = async () => {
@@ -516,9 +525,9 @@
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists() && snap.data().password === p) {
                     sessionStorage.setItem('custom_user_session', u);
-                    state.userLabel = u; showAppUI(u, false); startSyncing(u);
-                } else { showNotification("帳號或密碼錯誤", "alert"); }
-            } catch (e) { showNotification("連線失敗，請重新整理", "alert"); }
+                    state.userLabel = u; showAppUI(u); startSyncing(u);
+                } else { showNotification("帳號不存在或密碼錯誤", "alert"); }
+            } catch (e) { showNotification("連線異常，請重試", "alert"); }
             finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
 
@@ -531,17 +540,36 @@
         }
 
         onAuthStateChanged(auth, async (user) => {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view'), ownerId = params.get('id');
+            
+            // 優先處理訪客模式
+            if (view === 'student' && ownerId) {
+                state.isStudentView = true; state.userLabel = ownerId;
+                document.getElementById('authScreen').classList.add('hidden');
+                state.showNotes = state.showRatings = false;
+                await initAuth(); startSyncing(ownerId); showAppUI("訪客練習");
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                return;
+            }
+
             if (user) {
                 state.user = user;
                 const sessionUser = sessionStorage.getItem('custom_user_session');
-                if (sessionStorage.getItem('admin_session')) { showAdminUI(); }
-                else if (sessionUser) { state.userLabel = sessionUser; showAppUI(sessionUser, false); startSyncing(sessionUser); }
+                const isAdmin = sessionStorage.getItem('admin_session');
+                if (isAdmin) { showAdminUI(); }
+                else if (sessionUser) { state.userLabel = sessionUser; showAppUI(sessionUser); startSyncing(sessionUser); }
                 else { document.getElementById('authScreen').classList.remove('hidden'); }
-            } else { initAuth(); document.getElementById('authScreen').classList.remove('hidden'); }
+            } else {
+                await initAuth();
+                document.getElementById('authScreen').classList.remove('hidden');
+            }
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            if (window.lucide) lucide.createIcons();
         });
 
-        // 通用工具
-        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
+        // 通用工具與按鈕綁定
+        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); };
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         window.setGlobalMode = (m) => { state.globalMode = m; renderWords(); };
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; if(f === 'notes' || f === 'ratings') document.getElementById('wordGrid').classList.toggle('hide-'+f, !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]); updateFeatureUI(); renderWords(); };
@@ -554,8 +582,8 @@
         window.publishLink = () => { if(!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; window.open(url, '_blank'); };
         window.logout = () => { signOut(auth); sessionStorage.clear(); window.location.href = window.location.origin + window.location.pathname; };
         function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
-        function showAppUI(name) { ['authScreen', 'adminScreen'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = name; document.getElementById('userBadge').classList.remove('hidden'); lucide.createIcons(); }
-        function showAdminUI() { ['authScreen', 'appScreen'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('adminScreen').classList.remove('hidden'); lucide.createIcons(); }
+        function showAppUI(name) { ['authScreen', 'adminScreen', 'loadingOverlay'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = name; document.getElementById('userBadge').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); }
+        function showAdminUI() { ['authScreen', 'appScreen', 'loadingOverlay'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('adminScreen').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); }
 
         window.startAutoPlay = async () => {
             if (state.isAudioPlaying) return;
@@ -583,6 +611,10 @@
         window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('active'); document.getElementById('wordGrid')?.classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
 
         window.adminLogin = async () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'yljh' && p === 'yljh8320873') { await initAuth(); sessionStorage.setItem('admin_session', 'true'); showAdminUI(); } else { showNotification("管理員帳密錯誤", "alert"); } };
+        
+        // 🌟 修正後的 PWA/初始化邏輯
+        window.pauseAutoPlay = () => { window.speechSynthesis.pause(); document.getElementById('floatPauseBtn').classList.add('hidden'); document.getElementById('floatResumeBtn').classList.remove('hidden'); };
+        window.startAutoPlayResume = () => { window.speechSynthesis.resume(); document.getElementById('floatPauseBtn').classList.remove('hidden'); document.getElementById('floatResumeBtn').classList.add('hidden'); };
     </script>
 </body>
 </html>
