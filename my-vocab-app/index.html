@@ -27,6 +27,7 @@
         .card-zh .word-en { display: none !important; }
         .card-zh .word-zh { display: block; }
         .card-zh .word-note { display: block; }
+        .card-zh .voice-btn { visibility: visible; }
         
         .card-en .word-en { display: block; }
         .card-en .word-zh { display: none !important; }
@@ -101,7 +102,7 @@
         /* 初始化載入遮罩 */
         #loadingOverlay {
             position: fixed; inset: 0; background: white; z-index: 9999;
-            display: flex; flex-direction: column; items-center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
     </style>
 </head>
@@ -228,7 +229,7 @@
                             </div>
                         </div>
 
-                        <!-- 🌟 核心控制面板 (測驗按鈕移至此) -->
+                        <!-- 🌟 核心控制面板 -->
                         <div id="audioPlayerPanel" class="border-t pt-5 space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="space-y-4">
@@ -241,7 +242,6 @@
                                             <span class="text-[10px] font-black text-amber-500 uppercase">範圍</span>
                                             <div class="flex items-center gap-1"><input type="number" id="audioRangeStart" value="1" min="1" class="w-10 bg-transparent text-sm font-bold outline-none"><span class="text-amber-300">~</span><input type="number" id="audioRangeEnd" value="10" min="1" class="w-10 bg-transparent text-sm font-bold outline-none"></div>
                                         </div>
-                                        <!-- 🌟 卡片與盲聽互斥 -->
                                         <div class="flex gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                                             <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600"><span class="text-xs font-bold text-slate-500">卡片</span></label>
                                             <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600"><span class="text-xs font-bold text-slate-500">盲聽</span></label>
@@ -260,7 +260,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- 🌟 測驗挑戰區 -->
                                 <div class="flex flex-col gap-2 justify-center">
                                     <div class="flex gap-2">
                                         <button id="btnStartAudio" onclick="startAutoPlay()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"><i data-lucide="play" class="w-4 h-4"></i> 朗讀範圍</button>
@@ -284,7 +283,6 @@
 
                     <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 transition-all duration-500"></div>
                     
-                    <!-- 提示引導區 -->
                     <div id="emptyState" class="flex flex-col items-center justify-center py-40 text-slate-300 text-center">
                         <i data-lucide="layout" class="w-16 h-16 mb-4 mx-auto opacity-20"></i>
                         <p class="text-xl font-bold text-slate-400">請從左側點選單字本開始練習</p>
@@ -327,18 +325,16 @@
 
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[300] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
 
-    <!-- 🌟 單一腳本塊 🌟 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 1. Firebase 配置
+        // Firebase 配置
         const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
         const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // 2. 全域狀態
         const state = { 
             user: null, units: [], activeUnitId: null, globalMode: 'both', userLabel: null,
             isAudioPlaying: false, displayedWords: [], isStudentView: false,
@@ -347,7 +343,13 @@
             quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: []
         };
 
-        // 3. 核心功能
+        // --- 初始化遮罩強制移除器 (防止卡死) ---
+        const hideOverlay = () => {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.add('hidden');
+        };
+        setTimeout(hideOverlay, 3000); // 3 秒強制逾時
+
         const initAuth = async () => {
             if (auth.currentUser) return auth.currentUser;
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -364,7 +366,6 @@
             if (e.target.checked) document.getElementById('audioVisualSync').checked = false;
         };
 
-        // 語音引擎
         const initVoices = () => {
             const voices = window.speechSynthesis.getVoices();
             state.availableVoices = voices.filter(v => v.lang.startsWith('en'));
@@ -379,9 +380,7 @@
 
         const highlightText = (text) => {
             if (!text) return "";
-            // 音節切分
             let processed = state.showSyllables ? text.replace(/(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy][aeiouy])|[^aeiouy]+(?=[aeiouy])|(?=[aeiouy])))/gi, "$&·").replace(/·$/, "") : text;
-            // 母音紅字
             if (state.showVowels) processed = processed.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-bold">${m}</span>`);
             return processed;
         };
@@ -394,12 +393,12 @@
             window.speechSynthesis.speak(u);
         };
 
-        // 4. 測驗挑戰系統
+        // 測驗系統
         window.startRangeQuiz = (type) => {
             const start = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
             const end = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || state.displayedWords.length);
             state.quizQueue = state.displayedWords.slice(start - 1, end);
-            if (state.quizQueue.length === 0) return showNotification("選擇範圍內無單字", "alert");
+            if (state.quizQueue.length === 0) return showNotification("範圍內無單字", "alert");
             state.quizType = type; state.quizIndex = 0;
             document.getElementById('quizModal').classList.remove('hidden');
             setupQuizItem();
@@ -414,8 +413,7 @@
                 document.getElementById('blockQuizContent').classList.remove('hidden');
                 document.getElementById('dictationQuizContent').classList.add('hidden');
                 state.quizLetters = item.en.split('').sort(() => Math.random() - 0.5);
-                state.currentAnswer = []; state.usedIndexes = [];
-                renderBlockQuiz();
+                state.currentAnswer = []; state.usedIndexes = []; renderBlockQuiz();
             } else {
                 document.getElementById('blockQuizContent').classList.add('hidden');
                 document.getElementById('dictationQuizContent').classList.remove('hidden');
@@ -462,7 +460,7 @@
         window.nextQuizItem = () => { state.quizIndex++; setupQuizItem(); };
         window.closeQuiz = () => document.getElementById('quizModal').classList.add('hidden');
 
-        // 5. 渲染與 UI 切換
+        // 渲染單字
         window.renderWords = () => {
             const g = document.getElementById('wordGrid');
             const empty = document.getElementById('emptyState');
@@ -502,7 +500,7 @@
         window.renderUnitList = () => {
             const el = document.getElementById('unitList'); if (!el) return;
             const units = state.isStudentView ? state.units.filter(u => u.published) : state.units;
-            if (units.length === 0) { el.innerHTML = `<p class="text-slate-300 text-sm italic text-center py-4">目前沒有單字本</p>`; return; }
+            if (units.length === 0) { el.innerHTML = `<p class="text-slate-300 text-sm italic text-center py-4">尚無單元</p>`; return; }
             el.innerHTML = units.map(u => `
                 <div onclick="setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}">
                     <span class="font-bold truncate text-sm ${state.activeUnitId === u.id ? 'text-indigo-700' : 'text-slate-600'}">${u.name}</span>
@@ -542,33 +540,24 @@
         onAuthStateChanged(auth, async (user) => {
             const params = new URLSearchParams(window.location.search);
             const view = params.get('view'), ownerId = params.get('id');
-            
-            // 優先處理訪客模式
             if (view === 'student' && ownerId) {
                 state.isStudentView = true; state.userLabel = ownerId;
                 document.getElementById('authScreen').classList.add('hidden');
-                state.showNotes = state.showRatings = false;
-                await initAuth(); startSyncing(ownerId); showAppUI("訪客練習");
-                document.getElementById('loadingOverlay').classList.add('hidden');
-                return;
+                state.showNotes = state.showRatings = false; await initAuth(); startSyncing(ownerId); showAppUI("訪客練習");
+                hideOverlay(); return;
             }
-
             if (user) {
                 state.user = user;
                 const sessionUser = sessionStorage.getItem('custom_user_session');
-                const isAdmin = sessionStorage.getItem('admin_session');
-                if (isAdmin) { showAdminUI(); }
+                if (sessionStorage.getItem('admin_session')) { showAdminUI(); }
                 else if (sessionUser) { state.userLabel = sessionUser; showAppUI(sessionUser); startSyncing(sessionUser); }
                 else { document.getElementById('authScreen').classList.remove('hidden'); }
-            } else {
-                await initAuth();
-                document.getElementById('authScreen').classList.remove('hidden');
-            }
-            document.getElementById('loadingOverlay').classList.add('hidden');
+            } else { await initAuth(); document.getElementById('authScreen').classList.remove('hidden'); }
+            hideOverlay();
             if (window.lucide) lucide.createIcons();
         });
 
-        // 通用工具與按鈕綁定
+        // 按鈕與切換
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); };
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         window.setGlobalMode = (m) => { state.globalMode = m; renderWords(); };
@@ -581,7 +570,6 @@
         window.importWords = async () => { const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if (!n || !t) return; const list = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), rating: 3, note: '' } : null; }).filter(w => w); await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words: list, published: false, createdAt: Date.now() }); document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; };
         window.publishLink = () => { if(!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=student&id=${state.userLabel}`; window.open(url, '_blank'); };
         window.logout = () => { signOut(auth); sessionStorage.clear(); window.location.href = window.location.origin + window.location.pathname; };
-        function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
         function showAppUI(name) { ['authScreen', 'adminScreen', 'loadingOverlay'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = name; document.getElementById('userBadge').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); }
         function showAdminUI() { ['authScreen', 'appScreen', 'loadingOverlay'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById('adminScreen').classList.remove('hidden'); if (window.lucide) lucide.createIcons(); }
 
@@ -611,8 +599,6 @@
         window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('active'); document.getElementById('wordGrid')?.classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
 
         window.adminLogin = async () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'yljh' && p === 'yljh8320873') { await initAuth(); sessionStorage.setItem('admin_session', 'true'); showAdminUI(); } else { showNotification("管理員帳密錯誤", "alert"); } };
-        
-        // 🌟 修正後的 PWA/初始化邏輯
         window.pauseAutoPlay = () => { window.speechSynthesis.pause(); document.getElementById('floatPauseBtn').classList.add('hidden'); document.getElementById('floatResumeBtn').classList.remove('hidden'); };
         window.startAutoPlayResume = () => { window.speechSynthesis.resume(); document.getElementById('floatPauseBtn').classList.remove('hidden'); document.getElementById('floatResumeBtn').classList.add('hidden'); };
     </script>
