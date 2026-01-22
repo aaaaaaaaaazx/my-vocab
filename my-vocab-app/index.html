@@ -322,13 +322,38 @@
         </div>
     </div>
 
+    <!-- 管理者介面 -->
+    <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10">
+        <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
+            <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH Admin Panel</span>
+            <button onclick="logout()" class="text-sm font-bold bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-xl transition-all">結束管理</button>
+        </nav>
+        <main class="max-w-7xl mx-auto px-8 py-10">
+            <div id="adminStats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="space-y-8">
+                    <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm"><h3 class="text-xl font-black mb-6 flex items-center gap-2"><i data-lucide="user-plus"></i> 建立帳號</h3><div class="space-y-4"><input type="text" id="newAccountUser" placeholder="學生帳號" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none"><input type="text" id="newAccountPass" placeholder="初始密碼" class="w-full px-4 py-2 bg-slate-50 border rounded-lg outline-none"><button onclick="createAccount()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold shadow-md">發布帳號</button></div></div>
+                    <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm"><h3 class="text-xl font-black mb-6 flex items-center gap-2"><i data-lucide="users"></i> 帳號清單</h3><div id="accountManagerList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div></div>
+                </div>
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="bg-white rounded-[2rem] border overflow-hidden shadow-sm border-slate-200"><div class="px-8 py-6 border-b bg-slate-50/50 flex justify-between items-center"><h3 class="text-xl font-black text-slate-800">使用者管理中心</h3></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest"><tr><th class="px-8 py-5">使用者</th><th class="px-8 py-5">Email</th><th class="px-8 py-5">最後上線</th><th class="px-8 py-5 text-right">操作</th></tr></thead><tbody id="adminUserTable" class="text-sm font-medium"></tbody></table></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="editPassModal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 text-center border border-slate-100"><h4 class="font-black text-xl mb-6">修改密碼</h4><input type="text" id="newPassInput" placeholder="新密碼" class="w-full px-5 py-3 bg-slate-50 border rounded-xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500"><div class="flex gap-3"><button onclick="closeEditPass()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button onclick="confirmUpdatePass()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">確定</button></div></div></div>
+    <div id="adminDetailModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100"><div class="p-8 border-b flex justify-between items-center bg-slate-50/50"><h4 id="detailUserTitle" class="font-black text-2xl">單字紀錄</h4><button onclick="closeAdminDetail()" class="p-2 hover:bg-slate-200 rounded-full"><i data-lucide="x"></i></button></div><div id="detailContent" class="p-8 overflow-y-auto space-y-6 bg-white"></div></div></div>
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"><div class="bg-white w-full max-w-xs rounded-[2rem] shadow-2xl p-8 text-center border border-slate-100 text-center"><i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i><h4 class="font-black text-lg mb-6 text-slate-800">確定刪除紀錄？</h4><div class="flex gap-3"><button onclick="closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-center">取消</button><button id="btnConfirmDelete" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold">確定</button></div></div></div>
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200] flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm"></span></div>
+
     <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 配置
         const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
         const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -345,7 +370,6 @@
         const initAuth = async () => {
             if (auth.currentUser) return auth.currentUser;
             
-            // 優先嘗試環境權杖
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 try {
                     const result = await signInWithCustomToken(auth, __initial_auth_token);
@@ -355,7 +379,6 @@
                 }
             }
             
-            // 強制降級至匿名登入確保基本的資料讀取權限
             try {
                 const result = await signInAnonymously(auth);
                 return result.user;
@@ -365,7 +388,6 @@
             }
         };
 
-        // 語音引擎初始化
         const initVoices = () => {
             const voices = window.speechSynthesis.getVoices();
             state.availableVoices = voices.filter(v => v.lang.startsWith('en'));
@@ -378,7 +400,6 @@
         window.speechSynthesis.onvoiceschanged = initVoices;
         setTimeout(initVoices, 500);
 
-        // 文字標示與音節處理
         const syllabify = (word) => {
             if (!word || !state.showSyllables) return word;
             let s = word.toLowerCase().trim(); if (s.length <= 3) return word;
@@ -458,10 +479,14 @@
             const sortVal = document.getElementById('sortSelect').value;
             let list = [...(u.words || [])];
             
-            // 🌟 修正語法判斷式
-            if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
-            else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
-            else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
+            // 🌟 修正語法判斷式：徹底移除錯誤字元
+            if (sortVal === 'az') {
+                list.sort((a,b) => a.en.localeCompare(b.en));
+            } else if (sortVal === 'random') {
+                list.sort(() => Math.random() - 0.5);
+            } else if (sortVal === 'rating') {
+                list.sort((a,b) => b.rating - a.rating);
+            }
             state.displayedWords = list;
 
             document.getElementById('unitStats').innerText = `${list.length} 個單字`;
@@ -469,7 +494,7 @@
                 <div data-word-id="${w.id}" class="word-card bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-xl card-${w.localMode || 'both'}">
                     <span class="card-number">${idx + 1}</span>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="space-y-1 text-left"><h4 class="word-en text-2xl font-black">${highlightText(w.en)}</h4><p class="word-zh text-indigo-600 font-bold">${w.zh}</p></div>
+                        <div class="space-y-1 text-left"><h4 class="word-en text-2xl font-black">${highlightText(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-lg">${w.zh}</p></div>
                         <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl hover:bg-indigo-100 transition-all"><i data-lucide="volume-2"></i></button>
                     </div>
                     <div class="flex gap-2 mb-4">
@@ -488,14 +513,14 @@
             if (!u || !p) return showNotification("請輸入帳密", "alert");
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
-                // Rule 3: 確保獲得匿名連線身分以獲取資料庫讀取權限
+                // 強制完成身分驗證獲取資料庫讀取權限
                 await initAuth();
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists() && snap.data().password === p) {
                     sessionStorage.setItem('custom_user_session', u);
                     state.userLabel = u; showAppUI(u, false); startSyncing(u);
                 } else { showNotification("帳號不存在或密碼錯誤", "alert"); }
-            } catch (e) { showNotification("連線異常，請重新嘗試", "alert"); }
+            } catch (e) { showNotification("連線異常，請重新整理頁面", "alert"); }
             finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
 
@@ -531,7 +556,7 @@
             lucide.createIcons();
         });
 
-        // 通用 UI 功能
+        // UI 互動函式
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.setActiveUnit = (id) => { state.activeUnitId = id; renderWords(); renderUnitList(); };
         window.setGlobalMode = (m) => { state.globalMode = m; renderWords(); };
@@ -572,6 +597,8 @@
             stopAutoPlay();
         };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('active'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
+
+        window.deleteUnit = async (id) => { if (!confirm("確定刪除此單元嗎？")) return; try { await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); if(state.activeUnitId === id) state.activeUnitId = null; showNotification("單元已刪除"); } catch(e) { showNotification("刪除失敗", "alert"); } };
     </script>
 </body>
 </html>
