@@ -326,12 +326,13 @@
             isAudioPlaying: false,
             isAudioPaused: false,
             displayedWords: [],
-            isAuthReady: false
+            isAuthReady: false,
+            isLoggingIn: false // 新增：正在進行手動登入流程的標記
         };
 
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // --- 核心認證 Rule 3：確保連線權限 ---
+        // --- 核心認證 Rule 3：確保具備基礎讀取權限 ---
         async function ensureAuth() {
             if (auth.currentUser) {
                 state.isAuthReady = true;
@@ -343,30 +344,41 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-                let checkTimes = 0;
-                while (!auth.currentUser && checkTimes < 20) {
-                    await sleep(100);
-                    checkTimes++;
+                // 重要：強制等待直到 auth state 更新
+                let attempts = 0;
+                while (!auth.currentUser && attempts < 20) {
+                    await sleep(150);
+                    attempts++;
                 }
                 state.isAuthReady = !!auth.currentUser;
                 return auth.currentUser;
             } catch (e) {
-                console.error("Firebase Auth Error:", e);
+                console.error("Auth Error:", e);
                 return null;
             }
         }
+
+        // --- 模式互斥切換功能 ---
+        window.toggleAudioMode = (mode) => {
+            const v = document.getElementById('audioVisualSync');
+            const b = document.getElementById('audioBlindMode');
+            if (mode === 'visual' && v.checked) b.checked = false;
+            else if (mode === 'blind' && b.checked) v.checked = false;
+        };
 
         // --- 管理員登入流程 ---
         window.adminLogin = async () => {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value.trim();
             if (user === 'yljh' && pass === 'yljh8320873') {
+                state.isLoggingIn = true;
                 state.isAdmin = true; 
                 await ensureAuth();
                 showAdminDashboard();
-                showNotification("後台已解鎖");
+                showNotification("管理者後台已開啟");
+                state.isLoggingIn = false;
             } else { 
-                showNotification("管理者密碼錯誤", "alert"); 
+                showNotification("管理帳號密碼錯誤", "alert"); 
             }
         };
 
@@ -374,38 +386,42 @@
         window.loginWithCustom = async () => {
             const user = document.getElementById('customUser').value.trim();
             const pass = document.getElementById('customPass').value.trim();
-            if (!user || !pass) return showNotification("請填寫帳號與密碼", "alert");
+            if (!user || !pass) return showNotification("請輸入完整帳密", "alert");
             
             const btn = document.getElementById('loginBtn');
             const loading = document.getElementById('loadingIndicator');
             
             btn.disabled = true;
             loading.classList.remove('hidden');
+            document.getElementById('loadingText').innerText = "雲端驗證中...";
+            state.isLoggingIn = true; // 鎖定狀態，防止監聽器干擾
 
             try {
                 const fbUser = await ensureAuth();
-                if (!fbUser) throw new Error("連線失敗");
+                if (!fbUser) throw new Error("認證伺服器連線失敗");
 
+                // Rule 1: 指向正確的帳號存儲路徑
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
                 
                 if (!snap.exists()) {
-                    showNotification("找不到該帳號", "alert");
+                    showNotification("找不到該帳號，請與老師確認", "alert");
                 } else if (snap.data().password === pass) {
                     state.userLabel = user;
                     sessionStorage.setItem('custom_user_session', user);
                     showAppUI(user);
                     startSyncing(user);
                     logUserActivity(user);
-                    showNotification("登入成功！");
+                    showNotification("驗證成功，準備練習");
                 } else { 
-                    showNotification("密碼錯誤", "alert"); 
+                    showNotification("密碼錯誤，請再試一次", "alert"); 
                 }
             } catch (e) { 
-                showNotification(`雲端異常: ${e.message}`, "alert"); 
+                showNotification(`系統錯誤: ${e.message}`, "alert"); 
             } finally { 
                 btn.disabled = false;
                 loading.classList.add('hidden'); 
+                state.isLoggingIn = false;
             }
         };
 
@@ -418,6 +434,9 @@
 
         // --- 核心狀態監聽器 ---
         onAuthStateChanged(auth, (user) => {
+            // 如果正在進行手動登入流程，則不執行自動重置邏輯
+            if (state.isLoggingIn) return;
+
             if (user) {
                 state.user = user;
                 state.isAuthReady = true;
@@ -430,14 +449,16 @@
                     showAppUI(session);
                     startSyncing(session);
                 } else {
+                    // 若無 Session 則停留登入頁面
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
+                    document.getElementById('adminScreen').classList.add('hidden');
                 }
             } else {
                 state.isAuthReady = false;
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
-                ensureAuth().catch(() => {});
+                ensureAuth().catch(() => {}); // 靜默執行預認證
             }
             lucide.createIcons();
         });
@@ -445,11 +466,12 @@
         function showAppUI(name) {
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
             document.getElementById('userNameDisplay').innerText = name;
             lucide.createIcons();
         }
 
-        // --- 數據連線 ---
+        // --- 數據庫同步 ---
         function startSyncing(id) {
             if (!id || !auth.currentUser) return;
             const unitsRef = collection(db, 'artifacts', appId, 'users', id, 'units');
@@ -457,21 +479,25 @@
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderUnitList();
                 renderWords();
+            }, (err) => {
+                if (err.code === 'permission-denied') console.warn("等待認證完成以讀取單元...");
             });
         }
 
         async function logUserActivity(id) {
             if (!auth.currentUser) return;
+            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats');
+            const recordRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id);
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id), { displayName: id, lastSeen: Date.now() }, { merge: true });
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { loginCount: increment(1) }, { merge: true });
+                await setDoc(recordRef, { displayName: id, lastSeen: Date.now() }, { merge: true });
+                await setDoc(statsRef, { loginCount: increment(1) }, { merge: true });
             } catch (e) {}
         }
 
         window.importWords = async () => {
             const name = document.getElementById('unitNameInput').value.trim();
             const text = document.getElementById('wordsInput').value.trim();
-            if (!state.userLabel || !name || !text) return showNotification("請填寫資料", "alert");
+            if (!state.userLabel || !name || !text) return showNotification("請填寫單元與內容", "alert");
             const wordList = text.split('\n').map((line, idx) => {
                 const parts = line.split(/[,，]/);
                 return parts.length >= 2 ? {
@@ -487,17 +513,17 @@
                 await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', unitId), { name, words: wordList, createdAt: Date.now() });
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
                 document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = '';
-                showNotification("單元已儲存");
+                showNotification("已同步雲端");
                 state.activeUnitId = unitId;
             } catch (e) { showNotification("同步失敗", "alert"); }
         };
 
-        // --- 英聽播放引擎 ---
+        // --- 英聽控制 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
             const wordsToPlay = [...state.displayedWords];
-            if (wordsToPlay.length === 0) return showNotification("無可用單字", "alert");
+            if (wordsToPlay.length === 0) return showNotification("無可用內容", "alert");
             state.isAudioPlaying = true;
             updateAudioUI(true);
             const isBlind = document.getElementById('audioBlindMode').checked;
@@ -525,7 +551,7 @@
                 }
                 if (state.isAudioPlaying && i < wordsToPlay.length - 1) await sleep(pause * 1000 + 800); 
             }
-            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("播放完畢"); }
+            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("朗讀完成"); }
         };
 
         window.pauseAutoPlay = () => {
@@ -703,6 +729,7 @@
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000);
         }
 
+        // 初始化
         ensureAuth();
     </script>
 </body>
