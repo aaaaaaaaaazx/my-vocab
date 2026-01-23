@@ -169,7 +169,6 @@
 
         <main class="max-w-7xl mx-auto px-6 py-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <!-- 左側側邊欄 -->
                 <div class="lg:col-span-4 space-y-8">
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800">
@@ -191,7 +190,6 @@
                     </div>
                 </div>
                 
-                <!-- 右側練習區 -->
                 <div class="lg:col-span-8">
                     <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 mb-8 space-y-5">
                         <div class="flex flex-wrap items-center justify-between gap-6">
@@ -300,7 +298,7 @@
 
     <!-- 頁面頁尾：最後更新日期與時間 -->
     <div class="text-center py-8 text-slate-400 text-[11px] font-semibold border-t border-slate-100 mt-10">
-        <p>單字大師學習系統 | 最後更新日期：2026-01-23 15:42</p>
+        <p>單字大師學習系統 | 最後更新日期：2026-01-23 15:52</p>
     </div>
 
     <script type="module">
@@ -334,41 +332,33 @@
             isAudioPaused: false,
             displayedWords: [],
             isAuthReady: false,
-            isLoggingIn: false
+            isManualLoggingIn: false // 鎖定狀態防止監聽器競爭
         };
 
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // --- 核心認證邏輯 (Rule 3 強制性等待) ---
-        async function ensureAuth() {
-            if (auth.currentUser) {
-                state.isAuthReady = true;
-                return auth.currentUser;
-            }
+        // --- 核心認證 Rule 3 ---
+        async function forceEnsureAuth() {
+            if (auth.currentUser) return auth.currentUser;
             try {
-                // 優先使用 Token 或 匿名登入
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
-                
-                // 強制輪詢確保 auth 物件已掛載 UID，這在 iframe 環境下至關重要
-                let attempts = 0;
-                while (!auth.currentUser && attempts < 50) {
+                // 強制輪詢確保 auth 生效
+                let checkCount = 0;
+                while (!auth.currentUser && checkCount < 50) {
                     await sleep(100);
-                    attempts++;
+                    checkCount++;
                 }
-                
-                state.isAuthReady = !!auth.currentUser;
                 return auth.currentUser;
             } catch (e) {
-                console.error("Firebase認證失敗:", e);
                 return null;
             }
         }
 
-        // --- 模式切換與互斥 ---
+        // --- 模式切換 ---
         window.toggleAudioMode = (mode) => {
             const v = document.getElementById('audioVisualSync');
             const b = document.getElementById('audioBlindMode');
@@ -376,64 +366,64 @@
             else if (mode === 'blind' && b.checked) v.checked = false;
         };
 
-        // --- 核心登入功能 (優化連線權限) ---
+        // --- 核心登入功能 (終極穩定版) ---
         window.loginWithCustom = async () => {
             const user = document.getElementById('customUser').value.trim();
             const pass = document.getElementById('customPass').value.trim();
-            if (!user || !pass) return showNotification("請輸入帳號與密碼", "alert");
+            if (!user || !pass) return showNotification("請填寫帳號與密碼", "alert");
             
             const btn = document.getElementById('loginBtn');
             const loader = document.getElementById('loadingIndicator');
+            const loadText = document.getElementById('loadingText');
             
             btn.disabled = true;
             loader.classList.remove('hidden');
-            document.getElementById('loadingText').innerText = "開啟雲端連線...";
-            state.isLoggingIn = true; 
+            state.isManualLoggingIn = true; // 鎖定狀態
 
             try {
-                // 強制確保已完成 Firebase 通道連線
-                const fbUser = await ensureAuth();
-                if (!fbUser) throw new Error("認證伺服器逾時，請刷新頁面");
+                loadText.innerText = "正在建立雲端連線...";
+                const fbUser = await forceEnsureAuth();
+                if (!fbUser) throw new Error("認證逾時，請檢查網路後重新整理");
 
-                document.getElementById('loadingText').innerText = "驗證帳密中...";
-
-                // Rule 1: 查詢公共資料夾中的帳號
+                loadText.innerText = "正在驗證帳號密碼...";
+                // Rule 1: 查詢公共資料夾帳號
                 const accRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', user);
                 const snap = await getDoc(accRef);
                 
                 if (!snap.exists()) {
-                    showNotification("帳號不存在", "alert");
+                    showNotification("找不到該帳號", "alert");
                 } else if (snap.data().password === pass) {
                     state.userLabel = user;
                     sessionStorage.setItem('custom_user_session', user);
+                    
+                    loadText.innerText = "正在載入您的單字本...";
                     showAppUI(user);
                     startSyncing(user);
-                    logUserActivity(user);
+                    await logUserActivity(user);
                     showNotification("登入成功！");
                 } else { 
-                    showNotification("密碼錯誤", "alert"); 
+                    showNotification("密碼錯誤，請再試一次", "alert"); 
                 }
             } catch (e) { 
-                console.error("Login Error:", e);
+                console.error("Login detail error:", e);
                 showNotification(`登入失敗: ${e.message}`, "alert"); 
             } finally { 
                 btn.disabled = false;
                 loader.classList.add('hidden'); 
-                state.isLoggingIn = false;
+                state.isManualLoggingIn = false;
             }
         };
 
-        // --- 管理員登入 ---
         window.adminLogin = async () => {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value.trim();
             if (user === 'yljh' && pass === 'yljh8320873') {
-                state.isLoggingIn = true;
+                state.isManualLoggingIn = true;
                 state.isAdmin = true; 
-                await ensureAuth();
+                await forceEnsureAuth();
                 showAdminDashboard();
-                showNotification("歡迎進入管理者系統");
-                state.isLoggingIn = false;
+                showNotification("後台管理權限已解鎖");
+                state.isManualLoggingIn = false;
             } else { 
                 showNotification("密碼錯誤", "alert"); 
             }
@@ -446,15 +436,14 @@
             location.reload(); 
         };
 
-        // --- Firebase 狀態監聽器 ---
+        // --- 狀態監聽器 ---
         onAuthStateChanged(auth, (user) => {
-            if (state.isLoggingIn) return; 
+            // 手動登入過程中不執行自動切換，防止 UI 抖動
+            if (state.isManualLoggingIn) return;
 
             if (user) {
                 state.user = user;
-                state.isAuthReady = true;
                 const session = sessionStorage.getItem('custom_user_session');
-                
                 if (state.isAdmin) {
                     showAdminDashboard();
                 } else if (session) {
@@ -466,10 +455,9 @@
                     document.getElementById('appScreen').classList.add('hidden');
                 }
             } else {
-                state.isAuthReady = false;
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
-                ensureAuth().catch(() => {});
+                forceEnsureAuth().catch(() => {});
             }
             lucide.createIcons();
         });
@@ -482,7 +470,7 @@
             lucide.createIcons();
         }
 
-        // --- 數據庫同步 ---
+        // --- 雲端數據連線 ---
         function startSyncing(id) {
             if (!id || !auth.currentUser) return;
             const unitsRef = collection(db, 'artifacts', appId, 'users', id, 'units');
@@ -490,6 +478,8 @@
                 state.units = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderUnitList();
                 renderWords();
+            }, (err) => {
+                console.error("Snapshot Sync fail:", err);
             });
         }
 
@@ -514,18 +504,18 @@
                 } : null;
             }).filter(w => w);
             
-            if (wordList.length === 0) return showNotification("格式錯誤，請使用 英文,中文", "alert");
+            if (wordList.length === 0) return showNotification("格式錯誤 (英文,中文)", "alert");
             const unitId = 'u' + Date.now();
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', unitId), { name, words: wordList, createdAt: Date.now() });
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), { totalUnits: increment(1), totalWords: increment(wordList.length) }, { merge: true });
                 document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = '';
-                showNotification("已同步雲端");
+                showNotification("單元已同步成功");
                 state.activeUnitId = unitId;
             } catch (e) { showNotification("同步失敗", "alert"); }
         };
 
-        // --- 英聽控制 ---
+        // --- 英聽引擎 ---
         window.startAutoPlay = async () => {
             if (state.isAudioPaused) { state.isAudioPaused = false; updateAudioUI(true); return; }
             if (state.isAudioPlaying) return;
@@ -558,7 +548,7 @@
                 }
                 if (state.isAudioPlaying && i < wordsToPlay.length - 1) await sleep(pause * 1000 + 800); 
             }
-            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("播放完畢"); }
+            if (state.isAudioPlaying) { stopAutoPlay(); showNotification("單元播放結束"); }
         };
 
         window.pauseAutoPlay = () => {
@@ -628,7 +618,7 @@
                         <textarea class="note-area w-full text-[11px] p-3 bg-slate-50 border rounded-2xl resize-none outline-none focus:ring-2 focus:ring-indigo-500" placeholder="..." rows="2" onblur="window.updateWordNote('${word.id}', this.value)">${word.note || ''}</textarea>
                     </div>
                     <div class="pt-4 border-t border-slate-50 flex items-center justify-between">
-                        <span class="text-[10px] font-black text-slate-300 uppercase">熟練度</span>
+                        <span class="text-[10px] font-black text-slate-300 uppercase">熟悉等級</span>
                         <div class="flex gap-1">
                             ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${word.id}', ${n})" class="w-7 h-7 rounded-lg text-[10px] font-black transition-all ${word.rating === n ? ratingColor + ' text-white' : 'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
                         </div>
@@ -683,9 +673,9 @@
 
         window.renderUnitList = () => {
             const el = document.getElementById('unitList');
-            if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm">尚無單元</p>'; return; }
+            if (state.units.length === 0) { el.innerHTML = '<p class="text-slate-300 text-sm italic">尚無單元</p>'; return; }
             el.innerHTML = [...state.units].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(u => `
-                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'}">
+                <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-transparent hover:bg-slate-50'}">
                     <span class="font-bold truncate text-slate-700">${u.name}</span>
                     <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>`).join('');
@@ -694,7 +684,7 @@
 
         window.speak = (t) => { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); };
 
-        // --- 管理者 ---
+        // --- 管理者功能 ---
         window.createAccount = async () => {
             const u = document.getElementById('newAccountUser').value.trim();
             const p = document.getElementById('newAccountPass').value.trim();
@@ -720,10 +710,10 @@
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => {
                 document.getElementById('adminUserTable').innerHTML = snap.docs.map(docSnap => {
                     const d = docSnap.data();
-                    return `<tr class="border-b">
+                    return `<tr class="border-b hover:bg-slate-50">
                         <td class="px-8 py-5 font-bold">${d.displayName}</td>
                         <td class="px-8 py-5 text-slate-400">${d.lastSeen ? new Date(d.lastSeen).toLocaleString() : '-'}</td>
-                        <td class="px-8 py-5"><button class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs">查看</button></td>
+                        <td class="px-8 py-5"><button class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs">數據詳情</button></td>
                     </tr>`;
                 }).join('');
             });
@@ -738,8 +728,8 @@
             setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000);
         }
 
-        // 初始化背景認證
-        ensureAuth();
+        // 初始化
+        forceEnsureAuth();
     </script>
 </body>
 </html>
