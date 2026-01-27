@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專業互動英文練習 - 2026 終極整合版</title>
+    <title>專業互動英文練習 - 2026 終極修復版</title>
     
     <!-- PWA 支援 -->
     <meta name="theme-color" content="#4f46e5">
@@ -17,7 +17,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
-        /* 核心模式 CSS 強化 */
+        /* 核心顯示邏輯 */
         .card-both .word-en, .card-both .word-zh { display: block !important; }
         .card-en .word-en { display: block !important; }
         .card-en .word-zh { display: none !important; }
@@ -44,7 +44,7 @@
             opacity: 0.1; filter: blur(15px); pointer-events: none; transition: all 0.5s ease;
         }
 
-        /* 🌟 統一 UI 切換按鈕樣式 */
+        /* 統一 UI 切換按鈕樣式 */
         .ui-toggle-btn {
             padding: 0.5rem 1rem;
             font-size: 0.8rem;
@@ -75,7 +75,7 @@
             border-color: #e2e8f0 !important;
         }
 
-        /* 多行筆記欄 */
+        /* 筆記欄樣式 */
         .note-field {
             background-color: #fffbeb;
             border: 2px dashed #fcd34d;
@@ -116,6 +116,10 @@
             border-radius: 50%;
             animation: pulse-glow 3s infinite ease-in-out;
         }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
 
         /* 挑戰樣式 */
         .block-letter {
@@ -134,6 +138,13 @@
             font-weight: 900; font-size: 22px; color: #4f46e5;
             margin: 0 2px;
         }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-900 font-sans text-slate-800">
@@ -151,7 +162,7 @@
         </div>
         <div class="flex items-center gap-2">
             <button id="btnPauseAudio" onclick="window.togglePause()" class="p-3 bg-indigo-50 text-indigo-600 rounded-full active:scale-90 transition-all shadow-md hover:bg-indigo-100 border border-indigo-100">
-                <i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i>
+                <i data-lucide="pause" id="pauseIcon" class="w-5 h-5 font-bold"></i>
             </button>
             <button onclick="window.stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 transition-all shadow-md hover:bg-rose-600 text-white">
                 <i data-lucide="square" class="w-5 h-5"></i>
@@ -192,11 +203,10 @@
                     <button onclick="window.toggleAuthView('admin')" class="text-xs text-slate-400 font-bold underline decoration-dotted hover:text-indigo-600 transition-colors">管理者入口</button>
                 </div>
                 <div class="mt-6 text-[10px] text-slate-300 font-medium tracking-wide uppercase">
-                    最後更新時間：2026-01-27 19:40
+                    最後更新時間：2026-01-27 20:05
                 </div>
             </div>
             
-            <!-- 登入部分邏輯省略保持原狀 -->
             <div id="customLoginView" class="hidden text-left font-bold">
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-2 text-xs font-black hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6 text-slate-800">學生登入</h2>
@@ -208,7 +218,7 @@
             </div>
 
             <div id="adminLoginView" class="hidden text-left text-slate-800">
-                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-2 text-xs font-black hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black hover:text-indigo-600 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理員驗證</h2>
                 <div class="space-y-4">
                     <input type="text" id="adminUser" placeholder="管理帳號" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-slate-800 transition-all font-bold">
@@ -225,8 +235,8 @@
     </div>
 
     <!-- 2. 使用者練習介面 -->
-    <div id="appScreen" class="hidden text-slate-800 font-bold">
-        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
+    <div id="appScreen" class="hidden text-slate-800">
+        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm font-bold">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 text-white font-bold">
                     <i data-lucide="graduation-cap" class="w-6 h-6"></i>
@@ -251,14 +261,14 @@
                         <textarea id="wordsInput" placeholder="格式: 單字-定義&#10;apple-蘋果&#10;banana-香蕉" rows="5" class="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold"></textarea>
                         <div class="flex items-center gap-3 py-1 font-bold">
                             <input type="checkbox" id="unitPublishToggle" checked class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            <label for="unitPublishToggle" class="text-sm font-black text-slate-600 font-bold">公開發佈給訪客</label>
+                            <label for="unitPublishToggle" class="text-sm font-black text-slate-600">公開發佈給訪客</label>
                         </div>
-                        <button onclick="window.importWords()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg active:scale-95 transition-all text-md font-black text-white font-bold">儲存至雲端</button>
+                        <button onclick="window.importWords()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg active:scale-95 transition-all text-md font-black text-white">儲存至雲端</button>
                     </div>
                 </div>
                 <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 text-slate-800 font-bold">
-                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 font-bold font-bold"><i data-lucide="book-open" class="text-indigo-600 w-6 h-6 font-bold"></i> 我的單字本</h2>
-                    <div id="unitList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin text-slate-700 font-bold"></div>
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 font-bold"><i data-lucide="book-open" class="text-indigo-600 w-6 h-6 font-bold"></i> 我的單字本</h2>
+                    <div id="unitList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin text-slate-700"></div>
                 </div>
             </div>
             
@@ -295,11 +305,11 @@
                             <div class="flex flex-wrap gap-3 items-center bg-slate-50 p-2 rounded-xl border-2 border-slate-100 font-black font-bold">
                                 <div class="flex items-center gap-2 font-bold">
                                     <span class="text-[10px] font-black text-slate-400 font-bold">重播</span>
-                                    <select id="playRepeatCount" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-indigo-600">
+                                    <select id="playRepeatCount" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-indigo-600 font-bold">
                                         <option value="1">1次</option><option value="2">2次</option><option value="3">3次</option><option value="4">4次</option><option value="5">5次</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center gap-2 font-bold">
+                                <div class="flex items-center gap-2 font-bold font-bold">
                                     <span class="text-[10px] font-black text-slate-400 font-bold">間隔</span>
                                     <select id="pauseInterval" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-amber-600 font-bold">
                                         <option value="1">1秒</option><option value="2" selected>2秒</option><option value="3">3秒</option><option value="4">4秒</option><option value="5">5秒</option>
@@ -315,9 +325,9 @@
                     </div>
                 </div>
 
-                <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 text-slate-800 font-bold font-bold">
+                <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 text-slate-800 font-bold">
                     <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold"></p></div>
-                    <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1 font-bold">
+                    <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1">
                         <option value="original">原始順序</option>
                         <option value="random">隨機亂數</option>
                         <option value="az">A-Z 排序</option>
@@ -365,7 +375,7 @@
     </div>
 
     <!-- 管理者詳情 Modal -->
-    <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm text-slate-800 font-bold">
+    <div id="adminDetailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm text-slate-800 font-bold font-bold">
         <div class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100 text-slate-800 font-bold font-bold">
             <div class="p-8 border-b flex justify-between items-center bg-slate-50/50 font-bold">
                 <h4 id="detailUserTitle" class="font-black text-2xl text-slate-800 font-bold">使用者練習紀錄</h4>
@@ -376,7 +386,7 @@
                 <h5 class="text-indigo-900 font-black mb-4 flex items-center gap-2 font-bold"><i data-lucide="send" class="w-5 h-5 font-bold"></i> 派送課程單元副本</h5>
                 <div class="flex gap-4">
                     <select id="dispatchUnitSelect" class="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-2 font-bold outline-none text-slate-700 font-bold"></select>
-                    <button id="btnConfirmDispatch" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition-all font-bold">確認派送</button>
+                    <button id="btnConfirmDispatch" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition-all font-bold font-bold">確認派送</button>
                 </div>
             </div>
         </div>
@@ -389,7 +399,7 @@
             <div class="mb-6 font-bold">
                 <span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold font-bold">單字挑戰</span>
                 <div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold">
-                   <h3 id="quizZh" class="text-4xl font-black text-slate-800 tracking-tight font-bold"></h3>
+                   <h3 id="quizZh" class="text-4xl font-black text-slate-800 tracking-tight font-bold font-bold"></h3>
                    <button id="quizSpeakBtn" onclick="window.speak(state.quizQueue[state.quizIndex].en)" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm transition-all hover:bg-indigo-100 font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button>
                 </div>
                 <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 text-slate-400 font-bold font-bold"></p>
@@ -399,10 +409,10 @@
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-slate-800 font-bold font-bold"></div>
             </div>
             <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800 font-bold">
-                <input type="text" id="quizInput" placeholder="請輸入單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 transition-all text-slate-800 font-bold">
+                <input type="text" id="quizInput" placeholder="請輸入單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 transition-all text-slate-800 font-bold font-bold">
                 <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all hover:bg-rose-600 text-white font-bold font-bold">檢查答案</button>
             </div>
-            <div class="mt-8 text-center text-slate-800 font-bold">
+            <div class="mt-8 text-center text-slate-800 font-bold font-bold">
                 <button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-white font-black flex items-center justify-center gap-2 mx-auto font-bold">
                     <span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4 font-bold"></i>
                 </button>
@@ -433,21 +443,21 @@
             stableDisplayList: null 
         };
 
-        // --- 核心工具 ---
+        // --- 核心 UI 工具 ---
         function showAppUI(name) { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('adminScreen').classList.add('hidden'); document.getElementById('userNameDisplay').innerText = name; }
         function showAdminDashboard() { 
             document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.remove('hidden');
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'summary', 'stats'), (snap) => { if (snap.exists()) { const d = snap.data(); document.getElementById('adminStats').innerHTML = `
-                <div class="admin-stat-card border-l-8 border-indigo-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">單元總數</p><h4 class="text-2xl font-black text-slate-800">${d.totalUnits || 0}</h4></div>
-                <div class="admin-stat-card border-l-8 border-emerald-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">總單字量</p><h4 class="text-2xl font-black text-slate-800">${d.totalWords || 0}</h4></div>
-                <div class="admin-stat-card border-l-8 border-amber-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1">活躍人次</p><h4 class="text-2xl font-black text-slate-800">${d.loginCount || 0}</h4></div>`; } });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => { const table = document.getElementById('adminUserTable'); table.innerHTML = snap.docs.map(docSnap => { const d = docSnap.data(); return `<tr class="border-b-2 hover:bg-slate-50 transition-all font-black text-md"><td class="px-8 py-6 text-slate-800 font-bold font-bold">${d.displayName}</td><td class="px-8 py-6 text-slate-400 text-xs text-center font-bold">${new Date(d.lastSeen).toLocaleString()}</td><td class="px-8 py-6 text-right flex gap-3 justify-end"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-700">詳情</button><button onclick="window.deleteUserAccount('${docSnap.id}', '${d.displayName}')" class="bg-rose-50 text-rose-500 p-2 rounded-xl hover:bg-rose-500 hover:text-white transition-all font-bold font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
+                <div class="admin-stat-card border-l-8 border-indigo-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1 font-bold">單元總數</p><h4 class="text-2xl font-black text-slate-800">${d.totalUnits || 0}</h4></div>
+                <div class="admin-stat-card border-l-8 border-emerald-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1 font-bold">總單字量</p><h4 class="text-2xl font-black text-slate-800 font-bold">${d.totalWords || 0}</h4></div>
+                <div class="admin-stat-card border-l-8 border-amber-500 p-6"><p class="text-slate-400 text-[10px] font-black uppercase mb-1 font-bold font-bold">活躍人次</p><h4 class="text-2xl font-black text-slate-800 font-bold">${d.loginCount || 0}</h4></div>`; } });
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'user_records'), (snap) => { const table = document.getElementById('adminUserTable'); table.innerHTML = snap.docs.map(docSnap => { const d = docSnap.data(); return `<tr class="border-b-2 hover:bg-slate-50 transition-all font-black text-md"><td class="px-8 py-6 text-slate-800 font-bold font-bold">${d.displayName}</td><td class="px-8 py-6 text-slate-400 text-xs text-center font-bold">${new Date(d.lastSeen).toLocaleString()}</td><td class="px-8 py-6 text-right flex gap-3 justify-end font-bold"><button onclick="window.adminDetail('${docSnap.id}', '${d.displayName}')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-700">詳情</button><button onclick="window.deleteUserAccount('${docSnap.id}', '${d.displayName}')" class="bg-rose-50 text-rose-500 p-2 rounded-xl hover:bg-rose-500 hover:text-white transition-all font-bold font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`; }).join(''); lucide.createIcons(); });
         }
         async function initAuth() { try { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth)); } else { await signInAnonymously(auth); } } catch (e) { console.error(e); } }
         function hideOverlay() { const overlay = document.getElementById('loadingOverlay'); if (overlay) overlay.classList.add('hidden'); }
         function startSyncing(id) { const q = collection(db, 'artifacts', appId, 'public', 'data', 'units'); onSnapshot(q, (snap) => { const allUnits = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); let filtered = allUnits.filter(u => u.ownerId === id); if (state.isGuestMode) filtered = filtered.filter(u => u.isPublished === true); state.units = filtered; if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id; renderUnitList(); renderWords(); }); }
 
-        // --- 全域變數/函式掛載 ---
+        // --- 功能掛載 ---
         window.loginWithCustom = async function() {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim(); if (!u || !p) return;
             document.getElementById('loadingIndicator').classList.remove('hidden');
@@ -471,35 +481,21 @@
         window.deleteUserAccount = async (id, name) => { if (!confirm(`確定刪除 ${name}？`)) return; await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', id)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', id)); showNotification("已刪除"); };
         window.closeAdminDetail = () => { document.getElementById('adminDetailModal').classList.add('hidden'); };
         
-        window.handleSortChange = (val) => { 
-            state.stableDisplayList = null; 
-            renderWords(); 
-        };
+        window.handleSortChange = (val) => { state.stableDisplayList = null; renderWords(); };
 
-        // 🌟 修復全域模式切換
         window.setGlobalMode = (m) => { 
             state.globalMode = m; 
-            // 強制重置所有卡片的個別狀態
             const unit = state.units.find(u => u.id === state.activeUnitId);
-            if (unit && unit.words) {
-                unit.words.forEach(w => delete w.localMode);
-            }
+            if (unit && unit.words) { unit.words.forEach(w => delete w.localMode); }
             renderWords(); 
         };
 
-        // 🌟 修復個別卡片模式切換
         window.cycleWordMode = (id) => { 
             if(state.editingWordId === id) return; 
-            const unit = state.units.find(u => u.id === state.activeUnitId); 
-            if (!unit) return; 
-            const word = unit.words.find(w => w.id === id); 
-            if (!word) return; 
+            const unit = state.units.find(u => u.id === state.activeUnitId); if (!unit) return; 
+            const word = unit.words.find(w => w.id === id); if (!word) return; 
             const currentMode = word.localMode || state.globalMode; 
-            let nextMode = 'both';
-            if (currentMode === 'both') nextMode = 'en';
-            else if (currentMode === 'en') nextMode = 'zh';
-            else nextMode = 'both';
-            word.localMode = nextMode; 
+            word.localMode = currentMode === 'both' ? 'en' : currentMode === 'en' ? 'zh' : 'both'; 
             renderWords(); 
         };
 
@@ -510,7 +506,7 @@
         window.saveUnitName = async (id) => {
             const input = document.getElementById(`edit-unit-name-${id}`); if (!input) return;
             const newName = input.value.trim();
-            if (newName) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: newName }); showNotification("名稱已更新"); state.editingUnitId = null; renderUnitList(); if (state.activeUnitId === id) renderWords(); }
+            if (newName) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: newName }); state.editingUnitId = null; renderUnitList(); }
         };
 
         window.importWords = async () => { 
@@ -531,8 +527,8 @@
                 return `
                 <div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 shadow-sm font-bold text-indigo-700' : 'bg-white shadow-sm font-bold'}">
                     <div class="flex items-center gap-2 truncate flex-1 pr-2">
-                        ${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.togglePublish('${u.id}', ${u.isPublished || false})" class="${u.isPublished ? 'text-indigo-600' : 'text-slate-300'} hover:scale-110 transition-transform"><i data-lucide="${u.isPublished ? 'eye' : 'eye-off'}" class="w-4 h-4 font-bold"></i></button>` : ''}
-                        ${isEditing ? `<input id="edit-unit-name-${u.id}" class="w-full border rounded px-1 text-sm font-bold" value="${u.name}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter') window.saveUnitName('${u.id}')"><button onclick="event.stopPropagation(); window.saveUnitName('${u.id}')" class="text-emerald-500"><i data-lucide="check" class="w-4 h-4 font-bold"></i></button>` : `<span class="truncate">${u.name}</span><button onclick="event.stopPropagation(); window.toggleEditUnitName('${u.id}')" class="text-slate-500 hover:text-indigo-500 transition-colors"><i data-lucide="pencil" class="w-3 h-3"></i></button>`}
+                        ${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.togglePublish('${u.id}', ${u.isPublished || false})" class="${u.isPublished ? 'text-indigo-600' : 'text-slate-300'} hover:scale-110 transition-transform"><i data-lucide="${u.isPublished ? 'eye' : 'eye-off'}" class="w-4 h-4"></i></button>` : ''}
+                        ${isEditing ? `<input id="edit-unit-name-${u.id}" class="w-full border rounded px-1 text-sm font-bold" value="${u.name}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter') window.saveUnitName('${u.id}')"><button onclick="event.stopPropagation(); window.saveUnitName('${u.id}')" class="text-emerald-500"><i data-lucide="check" class="w-4 h-4"></i></button>` : `<span class="truncate">${u.name}</span><button onclick="event.stopPropagation(); window.toggleEditUnitName('${u.id}')" class="text-slate-500 hover:text-indigo-500 transition-colors"><i data-lucide="pencil" class="w-3 h-3"></i></button>`}
                     </div>
                     ${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400 hover:bg-rose-50 p-1.5 rounded-lg transition-all text-rose-500 font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                 </div>`}).join(''); lucide.createIcons();
@@ -545,97 +541,33 @@
             if (word) { word.en = enIn.value.trim(); word.zh = zhIn.value.trim(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: unit.words }); state.editingWordId = null; renderWords(); }
         };
 
-        // 🌟 修復挑戰邏輯 (忽略空白與大小寫)
-        window.renderBlockQuiz = () => {
-            const item = state.quizQueue[state.quizIndex]; if (!item) return;
-            const cleanEn = item.en.replace(/\s+/g, '');
-            document.getElementById('blockAnswerArea').innerHTML = cleanEn.split('').map((_, i) => `<div class="answer-slot font-bold">${state.currentAnswer[i] || ''}</div>`).join('');
-            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="window.handleQuizBlockClick(${i}, '${l}')" class="block-letter font-bold ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''}">${l}</button>`).join('');
-            lucide.createIcons();
-        };
-
-        window.handleQuizBlockClick = (idx, char) => {
-            const item = state.quizQueue[state.quizIndex];
-            const cleanEn = item.en.replace(/\s+/g, '').toLowerCase();
-            if (char.toLowerCase() === cleanEn[state.currentAnswer.length]) {
-                state.currentAnswer.push(char); state.usedIndexes.push(idx); window.renderBlockQuiz();
-                if (state.currentAnswer.length === cleanEn.length) {
-                    if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
-                    else { showNotification("挑戰圓滿完成！"); setTimeout(window.closeQuiz, 1500); }
-                }
-            } else {
-                const slots = document.querySelectorAll('.answer-slot');
-                slots[state.currentAnswer.length]?.classList.add('animate-shake', 'text-rose-500');
-                setTimeout(() => slots[state.currentAnswer.length]?.classList.remove('animate-shake', 'text-rose-500'), 400);
-            }
-        };
-
-        window.checkDictationAnswer = () => {
-            const input = document.getElementById('quizInput').value.trim().toLowerCase();
-            const target = state.quizQueue[state.quizIndex].en.toLowerCase().replace(/\s+/g, '');
-            if (input.replace(/\s+/g, '') === target) {
-                if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
-                else { showNotification("聽寫挑戰成功！"); setTimeout(window.closeQuiz, 1500); }
-            } else {
-                document.getElementById('quizInput').classList.add('animate-shake', 'border-rose-500');
-                setTimeout(() => document.getElementById('quizInput').classList.remove('animate-shake', 'border-rose-500'), 400);
-            }
-        };
-
-        window.setupQuizItem = () => {
-            const item = state.quizQueue[state.quizIndex]; if (!item) return;
-            document.getElementById('quizZh').innerText = item.zh;
-            document.getElementById('quizProgress').innerText = `目前進度：${state.quizIndex + 1} / ${state.quizQueue.length}`;
-            document.getElementById('btnNextQuiz').classList.add('hidden');
-            if (state.quizType === 'block') {
-                document.getElementById('blockQuizContent').classList.remove('hidden');
-                document.getElementById('dictationQuizContent').classList.add('hidden');
-                const letters = item.en.replace(/\s+/g, '').split('');
-                state.quizLetters = letters.sort(() => Math.random() - 0.5);
-                state.currentAnswer = []; state.usedIndexes = []; window.renderBlockQuiz();
-            } else {
-                document.getElementById('blockQuizContent').classList.add('hidden');
-                document.getElementById('dictationQuizContent').classList.remove('hidden');
-                document.getElementById('quizInput').value = ""; document.getElementById('quizInput').focus();
-            }
-            window.speak(item.en);
-        };
-
-        window.startRangeQuiz = (type) => {
-            if (state.displayedWords.length === 0) return showNotification("無單字", "alert");
-            const start = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
-            const end = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 10);
-            state.quizQueue = state.displayedWords.slice(start - 1, end);
-            state.quizType = type; state.quizIndex = 0;
-            document.getElementById('quizModal').classList.remove('hidden');
-            window.setupQuizItem();
-        };
-
-        window.nextQuizItem = () => { state.quizIndex++; window.setupQuizItem(); };
-        window.closeQuiz = () => { document.getElementById('quizModal').classList.add('hidden'); window.speechSynthesis.cancel(); };
-
-        // 🌟 修正後的渲染核心 (支援穩定排序與樂觀更新)
+        // 🌟 修正後的渲染核心：解決點擊失效與同步問題
         window.renderWords = () => {
-            const g = document.getElementById('wordGrid'), empty = document.getElementById('emptyState');
+            const g = document.getElementById('wordGrid');
             const u = state.units.find(x => x.id == state.activeUnitId);
-            if (!u || !g) { if(g) g.innerHTML = ''; empty?.classList.remove('hidden'); return; }
-            empty?.classList.add('hidden');
+            if (!u || !g) { if(g) g.innerHTML = ''; return; }
             document.getElementById('activeUnitTitle').innerText = u.name;
-            const sortVal = document.getElementById('sortSelect').value;
 
-            // 🌟 穩定排序機制
-            if (!state.stableDisplayList) {
+            // 🌟 關鍵修正：同步穩定清單的數據參照
+            if (state.stableDisplayList) {
+                state.stableDisplayList = state.stableDisplayList.map(oldWord => {
+                    const fresh = u.words.find(w => w.id === oldWord.id);
+                    return fresh ? fresh : oldWord;
+                });
+            } else {
                 let list = [...(u.words || [])];
+                const sortVal = document.getElementById('sortSelect').value;
                 if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
                 else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
                 else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
                 state.stableDisplayList = list;
             }
+
             const list = state.stableDisplayList;
             state.displayedWords = list;
             document.getElementById('unitStats').innerText = `本單元共有 ${list.length} 個單詞`;
 
-            // 更新按鈕樣式 (ON 藍/OFF 白)
+            // 更新 UI 按鈕
             const updateBtn = (id, on, text) => { 
                 const b = document.getElementById(id); 
                 if(b) { b.className = `ui-toggle-btn ${on ? 'toggle-on' : 'toggle-off'}`; b.innerText = text + (on ? ' ON' : ' OFF'); } 
@@ -655,7 +587,7 @@
                             ${isEditing ? `<input id="edit-en-${w.id}" class="edit-input text-2xl mb-2 font-bold" value="${w.en}" onclick="event.stopPropagation()"><input id="edit-zh-${w.id}" class="edit-input text-lg font-bold" value="${w.zh}" onclick="event.stopPropagation()">` : `<h4 class="word-en text-4xl font-black text-slate-800 tracking-tight">${highlightText(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-xl">${w.zh}</p>`}
                         </div>
                         <div class="flex flex-col gap-2 ml-4">
-                            ${isEditing ? `<button onclick="event.stopPropagation(); window.saveEditedWord('${w.id}')" class="p-3 bg-emerald-500 text-white rounded-2xl active:scale-90 font-bold"><i data-lucide="check"></i></button>` : `<button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl font-bold"><i data-lucide="volume-2" class="w-7 h-7"></i></button>${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.toggleEditWord('${w.id}')" class="p-2 text-slate-500 hover:text-indigo-500 transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}`}
+                            ${isEditing ? `<button onclick="event.stopPropagation(); window.saveEditedWord('${w.id}')" class="p-3 bg-emerald-500 text-white rounded-2xl active:scale-90 font-bold"><i data-lucide="check"></i></button>` : `<button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl font-bold"><i data-lucide="volume-2" class="w-7 h-7"></i></button>${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.toggleEditWord('${w.id}')" class="p-2 text-slate-500 hover:text-indigo-500 transition-colors font-bold"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}`}
                         </div>
                     </div>
                     ${state.showNote ? `<textarea class="note-field font-bold" placeholder="點擊編輯筆記..." onclick="event.stopPropagation()" onblur="window.updateNote('${w.id}', this.value)">${w.note || ''}</textarea>` : ''}
@@ -663,6 +595,43 @@
                 </div>`}).join(''); lucide.createIcons();
         };
 
+        // 🌟 樂觀更新機制
+        window.updateRating = async (id, n) => { 
+            const u = state.units.find(x => x.id == state.activeUnitId);
+            const w = u.words.find(x => x.id == id);
+            if (w) { w.rating = n; renderWords(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } 
+        };
+
+        // 🌟 修復挑戰邏輯 (忽略空白)
+        window.handleQuizBlockClick = (idx, char) => {
+            const item = state.quizQueue[state.quizIndex];
+            const cleanEn = item.en.replace(/\s+/g, '').toLowerCase();
+            if (char.toLowerCase() === cleanEn[state.currentAnswer.length]) {
+                state.currentAnswer.push(char); state.usedIndexes.push(idx); renderBlockQuiz();
+                if (state.currentAnswer.length === cleanEn.length) {
+                    if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
+                    else { showNotification("挑戰圓滿完成！"); setTimeout(window.closeQuiz, 1500); }
+                }
+            } else {
+                const slots = document.querySelectorAll('.answer-slot');
+                slots[state.currentAnswer.length]?.classList.add('animate-shake', 'text-rose-500');
+                setTimeout(() => slots[state.currentAnswer.length]?.classList.remove('animate-shake', 'text-rose-500'), 400);
+            }
+        };
+
+        window.checkDictationAnswer = () => {
+            const input = document.getElementById('quizInput').value.trim().toLowerCase().replace(/\s+/g, '');
+            const target = state.quizQueue[state.quizIndex].en.toLowerCase().replace(/\s+/g, '');
+            if (input === target) {
+                if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
+                else { showNotification("聽寫成功！"); setTimeout(window.closeQuiz, 1500); }
+            } else {
+                document.getElementById('quizInput').classList.add('animate-shake', 'border-rose-500');
+                setTimeout(() => document.getElementById('quizInput').classList.remove('animate-shake', 'border-rose-500'), 400);
+            }
+        };
+
+        // 其他功能略
         const highlightText = (t) => { if (!t) return ""; let p = state.showSyllables ? t.replace(/(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=\s|[^aeiouy][aeiouy])|[^aeiouy]+(?=[aeiouy])|(?=[aeiouy])))/gi, "$&·").replace(/·$/, "") : t; if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-black">${m}</span>`); return p; };
         window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); if (state.voice) u.voice = state.voice; u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
         window.togglePause = () => { state.isPaused = !state.isPaused; const icon = document.getElementById('pauseIcon'); if (state.isPaused) { icon.setAttribute('data-lucide', 'play'); window.speechSynthesis.pause(); } else { icon.setAttribute('data-lucide', 'pause'); window.speechSynthesis.resume(); } lucide.createIcons(); };
@@ -671,26 +640,7 @@
                 document.getElementById('floatingStatusText').innerText = w.en; for(let r=0; r<rep; r++) { while (state.isPaused) { await new Promise(res => setTimeout(res, 200)); if (!state.isAudioPlaying) return; } window.speak(w.en); await new Promise(res => setTimeout(res, 2200)); } await new Promise(res => setTimeout(res, intv * 1000)); } window.stopAutoPlay();
         };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; state.isPaused = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('wordGrid').classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
-
-        onAuthStateChanged(auth, async (user) => { if (!user) { await signInAnonymously(auth); return; }
-            const params = new URLSearchParams(window.location.search); const viewType = params.get('view'), guestId = params.get('id');
-            if (viewType === 'guest' && guestId) { state.isGuestMode = true; state.userLabel = guestId; document.getElementById('addUnitSection').classList.add('hidden'); document.getElementById('btnPublishGuest').classList.add('hidden'); showAppUI("訪客模式"); startSyncing(guestId); }
-            else { state.user = user; const adminSess = sessionStorage.getItem('admin_session'), customSess = sessionStorage.getItem('custom_user_session');
-                if (adminSess === 'true') showAdminDashboard(); else if (customSess) { state.userLabel = customSess; showAppUI(customSess); startSyncing(customSess); }
-                else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName || "我的空間"); startSyncing(user.uid); } else document.getElementById('authScreen').classList.remove('hidden'); }
-            hideOverlay();
-        });
-
-        // 🌟 樂觀更新掌握度
-        window.updateRating = async (id, n) => { 
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == id);
-            if (w) { 
-                w.rating = n; 
-                renderWords(); // 立即重新渲染畫面顏色
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); 
-            } 
-        };
+        onAuthStateChanged(auth, async (user) => { if (!user) { await signInAnonymously(auth); return; } const params = new URLSearchParams(window.location.search); const viewType = params.get('view'), guestId = params.get('id'); if (viewType === 'guest' && guestId) { state.isGuestMode = true; state.userLabel = guestId; document.getElementById('addUnitSection').classList.add('hidden'); document.getElementById('btnPublishGuest').classList.add('hidden'); showAppUI("訪客模式"); startSyncing(guestId); } else { state.user = user; const adminSess = sessionStorage.getItem('admin_session'), customSess = sessionStorage.getItem('custom_user_session'); if (adminSess === 'true') showAdminDashboard(); else if (customSess) { state.userLabel = customSess; showAppUI(customSess); startSyncing(customSess); } else if (!user.isAnonymous) { state.userLabel = user.uid; showAppUI(user.displayName || "我的空間"); startSyncing(user.uid); } else document.getElementById('authScreen').classList.remove('hidden'); } hideOverlay(); });
         window.updateNote = async (id, val) => { const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); if (w && w.note !== val) { w.note = val; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); showNotification("筆記已更新"); } };
         window.togglePublish = async (id, s) => { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { isPublished: !s }); showNotification(!s ? "已發佈" : "私人模式"); };
         window.deleteUnit = async (id) => { if (!confirm("確定刪除？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
@@ -698,17 +648,16 @@
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.setActiveUnit = (id) => { state.activeUnitId = id; state.stableDisplayList = null; renderWords(); renderUnitList(); };
         window.publishGuestLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const n = document.getElementById('notification'), t = document.getElementById('notificationText');
-            t.innerHTML = `連結已複製！<button onclick="window.open('${url}', '_blank')" class="ml-4 underline font-black text-indigo-300">立即開啟</button>`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            t.innerHTML = `連結複製！<button onclick="window.open('${url}', '_blank')" class="ml-4 underline font-black text-indigo-300">立即開啟</button>`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
             n.classList.replace('translate-y-20', 'translate-y-0'); n.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { n.classList.replace('translate-y-0', 'translate-y-20'); n.classList.replace('opacity-100', 'opacity-0'); }, 8000); };
-        window.adminDetail = async (u, n) => { const modal = document.getElementById('adminDetailModal'); document.getElementById('detailUserTitle').innerText = `${n} 數據看板`; modal.classList.remove('hidden'); const q = collection(db, 'artifacts', appId, 'public', 'data', 'units'), snap = await getDocs(q), all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            document.getElementById('detailContent').innerHTML = all.filter(x => x.ownerId === u).map(x => `<div class="bg-slate-100 p-6 rounded-2xl border mb-4 font-bold"><h6>${x.name}</h6><div class="text-xs mt-2 text-slate-500">${x.words.map(w => w.en).join(', ')}</div></div>`).join('') || '<p class="text-center">目前無單字本</p>';
+        window.adminDetail = async (u, n) => { const modal = document.getElementById('adminDetailModal'); document.getElementById('detailUserTitle').innerText = `${n} 看板`; modal.classList.remove('hidden'); const q = collection(db, 'artifacts', appId, 'public', 'data', 'units'), snap = await getDocs(q), all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            document.getElementById('detailContent').innerHTML = all.filter(x => x.ownerId === u).map(x => `<div class="bg-slate-100 p-6 rounded-2xl border mb-4 font-bold"><h6>${x.name}</h6><div class="text-xs mt-2 text-slate-500">${x.words.map(w => w.en).join(', ')}</div></div>`).join('') || '<p class="text-center">無單字本</p>';
             const sel = document.getElementById('dispatchUnitSelect'); sel.innerHTML = all.map(x => `<option value="${x.id}">${x.name} (${x.ownerId})</option>`).join('');
             document.getElementById('btnConfirmDispatch').onclick = async () => { const sid = sel.value; if (!sid) return; const su = all.find(x => x.id === sid); if (su) { const nu = { ...su, ownerId: u, isPublished: false }; delete nu.id; await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'units'), nu); showNotification("派送成功"); window.adminDetail(u, n); } }; lucide.createIcons(); };
         window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white shadow-sm', 2: 'bg-teal-400 text-white shadow-sm', 3: 'bg-amber-400 text-white shadow-sm', 4: 'bg-orange-500 text-white shadow-sm', 5: 'bg-rose-500 text-white shadow-sm' }[n]);
         function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
         const initVoices_auto = () => { const v = window.speechSynthesis.getVoices(); state.voice = v.find(i => i.lang === 'en-US' && i.name.includes('Google')) || v.find(i => i.lang.startsWith('en')) || null; };
         window.speechSynthesis.onvoiceschanged = initVoices_auto;
-
         initAuth();
     </script>
 </body>
