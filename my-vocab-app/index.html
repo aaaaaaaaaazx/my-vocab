@@ -171,7 +171,7 @@
         </div>
     </div>
 
-    <!-- 1. 登入畫面 -->
+    <!-- 1. 登入畫面 (修正啟動邏輯) -->
     <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center text-slate-800">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 font-bold">
             <div id="loginMainView">
@@ -184,7 +184,7 @@
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 hover:bg-black text-white font-black py-4 rounded-[1.2rem] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 text-md"><i data-lucide="user" class="w-5 h-5 text-white"></i> 帳號密碼登入</button>
                 </div>
                 <div class="mt-8 border-t pt-6"><button onclick="window.toggleAuthView('admin')" class="text-xs text-slate-400 font-bold underline decoration-dotted">管理者入口</button></div>
-                <div class="mt-6 text-[10px] text-slate-300 font-medium tracking-wide uppercase">最後更新：2026-01-29 12:45</div>
+                <div class="mt-6 text-[10px] text-slate-300 font-medium tracking-wide uppercase">最後更新：2026-01-29 13:00</div>
             </div>
             
             <div id="customLoginView" class="hidden text-left font-bold">
@@ -221,11 +221,11 @@
             <div class="flex items-center gap-4">
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="hidden md:flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-black border border-emerald-100"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈訪客練習</button>
                 <span id="userNameDisplay" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200"></span>
-                <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
+                <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-bold">登出</button>
             </div>
         </nav>
 
-        <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 font-bold">
             <div class="lg:col-span-4 space-y-8">
                 <div id="addUnitSection" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 text-slate-800">
                     <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 font-bold"><i data-lucide="file-plus-2" class="text-indigo-600 w-6 h-6"></i> 新增單元</h2>
@@ -234,7 +234,7 @@
                         <textarea id="wordsInput" placeholder="格式: 單字-定義&#10;apple-蘋果&#10;banana-香蕉" rows="5" class="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 text-sm"></textarea>
                         <div class="flex items-center gap-3 py-1 font-bold">
                             <input type="checkbox" id="unitPublishToggle" checked class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600">
-                            <label for="unitPublishToggle" class="text-sm font-black text-slate-600">公開發佈給訪客</label>
+                            <label for="unitPublishToggle" class="text-sm font-black text-slate-600 font-bold">公開發佈給訪客</label>
                         </div>
                         <button onclick="window.importWords()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg active:scale-95 text-md">儲存至雲端</button>
                     </div>
@@ -247,9 +247,9 @@
             
             <div class="lg:col-span-8 font-bold">
                 <!-- 介面控制面板 -->
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-6 space-y-6 text-slate-800">
-                    <div class="flex flex-wrap items-center justify-between gap-4 font-bold">
-                        <div class="flex bg-slate-100 p-1.5 rounded-xl shadow-inner border-2 border-slate-200 overflow-hidden font-bold">
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-6 space-y-6 text-slate-800 font-bold">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex bg-slate-100 p-1.5 rounded-xl shadow-inner border-2 border-slate-200 overflow-hidden font-bold font-bold">
                             <button onclick="window.setGlobalMode('both')" class="ui-toggle-btn rounded-lg" id="btn-both">中英</button>
                             <button onclick="window.setGlobalMode('en')" class="ui-toggle-btn rounded-lg ml-1" id="btn-en">英文</button>
                             <button onclick="window.setGlobalMode('zh')" class="ui-toggle-btn rounded-lg ml-1" id="btn-zh">中文</button>
@@ -264,37 +264,37 @@
 
                     <div class="border-t pt-6 grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
                         <div class="space-y-4">
-                            <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex flex-wrap items-center gap-3 font-bold font-bold">
                                 <div class="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-xl border-2 border-amber-100 text-amber-700 font-black">
                                     <span class="text-[10px] uppercase font-black">範圍</span>
-                                    <input type="number" id="audioRangeStart" value="1" min="1" class="w-10 bg-transparent text-md outline-none font-black">
+                                    <input type="number" id="audioRangeStart" value="1" min="1" class="w-10 bg-transparent text-md outline-none font-black font-bold font-bold">
                                     <span class="text-amber-300 font-black">~</span>
-                                    <input type="number" id="audioRangeEnd" value="10" min="1" class="w-10 bg-transparent text-md outline-none font-black">
+                                    <input type="number" id="audioRangeEnd" value="10" min="1" class="w-10 bg-transparent text-md outline-none font-black font-bold font-bold">
                                 </div>
-                                <div class="flex gap-3 bg-slate-50 px-4 py-2 rounded-xl border-2 border-slate-200 font-black">
-                                    <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600" onchange="window.handleSyncCheck('sync')"><span class="text-xs font-bold text-slate-500">同步</span></label>
+                                <div class="flex gap-3 bg-slate-50 px-4 py-2 rounded-xl border-2 border-slate-200 font-black font-bold font-bold">
+                                    <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600" onchange="window.handleSyncCheck('sync')"><span class="text-xs font-bold text-slate-500 font-bold">同步</span></label>
                                     <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600" onchange="window.handleSyncCheck('blind')"><span class="text-xs font-bold text-slate-500 font-bold">盲聽</span></label>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-3 items-center bg-slate-50 p-2 rounded-xl border-2 border-slate-100 font-black">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-black text-slate-400">重播</span>
-                                    <select id="playRepeatCount" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-indigo-600">
+                            <div class="flex flex-wrap gap-3 items-center bg-slate-50 p-2 rounded-xl border-2 border-slate-100 font-black font-bold font-bold font-bold">
+                                <div class="flex items-center gap-2 font-bold font-bold font-bold font-bold font-bold">
+                                    <span class="text-[10px] font-black text-slate-400 font-bold font-bold">重播</span>
+                                    <select id="playRepeatCount" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-indigo-600 font-bold font-bold font-bold">
                                         <option value="1">1次</option><option value="2">2次</option><option value="3">3次</option><option value="4">4次</option><option value="5">5次</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-black text-slate-400">間隔</span>
-                                    <select id="pauseInterval" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-amber-600">
+                                <div class="flex items-center gap-2 font-bold font-bold font-bold font-bold">
+                                    <span class="text-[10px] font-black text-slate-400 font-bold font-bold">間隔</span>
+                                    <select id="pauseInterval" class="bg-white border-2 border-slate-200 text-xs font-bold rounded-lg p-1 outline-none text-amber-600 font-bold font-bold font-bold">
                                         <option value="1">1秒</option><option value="2" selected>2秒</option><option value="3">3秒</option><option value="4">4秒</option><option value="5">5秒</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-3 font-black">
-                            <button onclick="window.startAutoPlay()" class="py-4 bg-indigo-600 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-indigo-700 flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="play" class="w-5 h-5"></i>英聽</button>
-                            <button onclick="window.startRangeQuiz('block')" class="py-4 bg-amber-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-amber-600 flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="layout-grid" class="w-5 h-5"></i>積木</button>
-                            <button onclick="window.startRangeQuiz('dictation')" class="py-4 bg-rose-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-rose-600 flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="keyboard" class="w-5 h-5"></i>聽寫</button>
+                            <button onclick="window.startAutoPlay()" class="py-4 bg-indigo-600 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-indigo-700 flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold"><i data-lucide="play" class="w-5 h-5 font-bold font-bold font-bold"></i>英聽</button>
+                            <button onclick="window.startRangeQuiz('block')" class="py-4 bg-amber-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-amber-600 flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold font-bold"><i data-lucide="layout-grid" class="w-5 h-5 font-bold font-bold font-bold"></i>積木</button>
+                            <button onclick="window.startRangeQuiz('dictation')" class="py-4 bg-rose-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 hover:bg-rose-600 flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold font-bold font-bold"><i data-lucide="keyboard" class="w-5 h-5 font-bold font-bold"></i>聽寫</button>
                         </div>
                     </div>
                 </div>
@@ -304,48 +304,65 @@
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div class="flex items-center gap-3">
                             <h4 class="text-base font-black text-slate-800 flex items-center gap-2"><i data-lucide="calendar-check" class="text-indigo-600 w-5 h-5 font-bold"></i> 複習追蹤</h4>
-                            <span id="reviewCountDisplay" class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full">尚未選擇</span>
+                            <span id="reviewCountDisplay" class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full font-bold">尚未選擇</span>
                         </div>
-                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                            <span class="text-[10px] font-black text-slate-400">起始日期</span>
-                            <input type="date" id="baseDateInput" onchange="window.updateBaseDate(this.value)" class="bg-transparent text-xs font-bold outline-none text-slate-600 cursor-pointer font-bold">
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 font-bold font-bold font-bold">
+                            <span class="text-[10px] font-black text-slate-400 font-bold font-bold">起始日期</span>
+                            <input type="date" id="baseDateInput" onchange="window.updateBaseDate(this.value)" class="bg-transparent text-xs font-bold outline-none text-slate-600 cursor-pointer font-bold font-bold font-bold">
                         </div>
                     </div>
-                    <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 scrollbar-hide font-bold">
+                    <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 scrollbar-hide font-bold font-bold font-bold">
                         <!-- 動態渲染節點 -->
                     </div>
                 </div>
 
-                <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 text-slate-800 font-bold">
-                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold"></p></div>
-                    <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1">
+                <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 text-slate-800 font-bold font-bold font-bold font-bold font-bold">
+                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold font-bold font-bold"></p></div>
+                    <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1 font-bold">
                         <option value="original">原始順序</option><option value="random">隨機亂數</option><option value="az">A-Z 排序</option><option value="rating">掌握度排序</option>
                     </select>
                 </div>
 
-                <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12 transition-all duration-500 text-slate-800 font-bold"></div>
+                <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12 transition-all duration-500 text-slate-800 font-bold font-bold font-bold"></div>
                 
-                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300 text-center">
-                    <i data-lucide="coffee" class="w-16 h-16 mb-4 opacity-20"></i>
-                    <p class="text-lg font-black text-slate-400">尚未載入單字本</p>
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-slate-300 text-center font-bold">
+                    <i data-lucide="coffee" class="w-16 h-16 mb-4 opacity-20 font-bold font-bold font-bold font-bold font-bold"></i>
+                    <p class="text-lg font-black text-slate-400 font-bold font-bold font-bold font-bold font-bold font-bold">尚未載入單字本</p>
                 </div>
             </div>
         </main>
     </div>
 
     <!-- 測驗彈窗 -->
-    <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl font-bold font-bold">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden text-slate-800">
-            <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all font-bold font-bold"><i data-lucide="x"></i></button>
-            <div class="mb-6 font-bold"><span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold">單字挑戰</span><div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold"><h3 id="quizZh" class="text-4xl font-black font-bold"></h3><button id="quizSpeakBtn" onclick="window.speak(state.quizQueue[state.quizIndex].en)" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button></div><p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 font-bold"></p></div>
-            <div id="blockQuizContent" class="hidden font-bold"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px] items-center font-bold"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold font-bold"></div></div>
-            <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800"><input type="text" id="quizInput" placeholder="請輸入單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 font-bold"><button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 font-bold">檢查答案</button></div>
-            <div class="mt-8 text-center font-bold"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg font-bold"><span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4"></i></button></div>
+    <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl font-bold font-bold font-bold font-bold">
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden text-slate-800 font-bold font-bold font-bold">
+            <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all font-bold font-bold font-bold font-bold"><i data-lucide="x"></i></button>
+            <div class="mb-6 font-bold font-bold font-bold font-bold font-bold font-bold">
+                <span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold">單字挑戰</span>
+                <div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold font-bold font-bold font-bold font-bold font-bold">
+                   <h3 id="quizZh" class="text-4xl font-black font-bold font-bold font-bold font-bold"></h3>
+                   <button id="quizSpeakBtn" onclick="window.speak(state.quizQueue[state.quizIndex].en)" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm font-bold font-bold font-bold font-bold font-bold font-bold font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button>
+                </div>
+                <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold"></p>
+            </div>
+            <div id="blockQuizContent" class="hidden font-bold font-bold font-bold font-bold font-bold font-bold">
+                <div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px] items-center font-bold font-bold font-bold font-bold font-bold font-bold"></div>
+                <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold font-bold font-bold font-bold font-bold font-bold"></div>
+            </div>
+            <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800 font-bold font-bold font-bold font-bold font-bold font-bold">
+                <input type="text" id="quizInput" placeholder="請輸入單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 font-bold font-bold font-bold font-bold font-bold font-bold">
+                <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold">檢查答案</button>
+            </div>
+            <div class="mt-8 text-center font-bold font-bold font-bold font-bold font-bold font-bold">
+                <button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg font-bold font-bold font-bold font-bold font-bold font-bold font-bold">
+                    <span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4 font-bold font-bold font-bold font-bold"></i>
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- 通知元件 -->
-    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl z-[300] flex items-center gap-3 border border-white/10 font-bold"><i data-lucide="bell" class="w-4 h-4 text-indigo-400 font-bold"></i><span id="notificationText" class="font-bold"></span></div>
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl z-[300] flex items-center gap-3 border border-white/10 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold"><i data-lucide="bell" class="w-4 h-4 text-indigo-400 font-bold font-bold font-bold font-bold font-bold"></i><span id="notificationText" class="font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold"></span></div>
 
     <!-- Firebase SDK & Logic -->
     <script type="module">
@@ -379,10 +396,17 @@
             voice: null, stableDisplayList: null 
         };
 
-        // --- 🌟 修正後的登入邏輯 ---
+        // --- 🌟 修正後的啟動與登入邏輯 ---
         window.toggleAuthView = (m) => {
             ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.showAppUI = (name) => {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('userNameDisplay').innerText = name;
             lucide.createIcons();
         };
 
@@ -399,17 +423,35 @@
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', u), {
                         displayName: u, lastSeen: Date.now()
                     }, { merge: true });
-                    location.reload();
-                } else { showNotification("帳號或密碼錯誤"); }
-            } catch (e) { showNotification("伺服器連線失敗"); }
-            finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
+                    location.reload(); // 透過重新整理觸發 Auth 狀態更新
+                } else {
+                    showNotification("帳號或密碼錯誤");
+                }
+            } catch (e) {
+                showNotification("連線伺服器失敗");
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        };
+
+        window.adminLogin = async function() {
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value.trim();
+            if (u === 'yljh' && p === 'yljh8320873') {
+                sessionStorage.setItem('admin_session', 'true');
+                location.reload();
+            } else {
+                showNotification("管理員驗證失敗");
+            }
         };
 
         window.logout = () => {
-            signOut(auth); sessionStorage.clear(); location.href = location.pathname;
+            signOut(auth);
+            sessionStorage.clear();
+            location.href = location.pathname;
         };
 
-        // --- 🌟 智慧複習系統 ---
+        // --- 🌟 智慧複習系統邏輯 ---
         window.updateBaseDate = async (val) => {
             if (!state.activeUnitId) return;
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: val });
@@ -425,7 +467,7 @@
 
             const progress = u.reviewProgress || {};
             const baseDate = u.baseDate || "";
-            dateInp.value = baseDate;
+            if(dateInp) dateInp.value = baseDate;
 
             const doneCount = REVIEW_STAGES.filter(s => progress[s.id]).length;
             counter.innerText = doneCount === 0 ? "尚未開始" : `已完成 ${doneCount} / 11`;
@@ -458,7 +500,7 @@
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: u.reviewProgress });
         };
 
-        // --- 音節切割與渲染核心 ---
+        // --- 核心渲染與排序功能 ---
         function formatSyllables(w) {
             if (!w || w.includes(" ")) return w;
             const o = w.toLowerCase().trim(); if (o.length <= 3) return w;
@@ -528,17 +570,17 @@
                 return `<div onclick="window.cycleWordMode('${w.id}')" class="word-card bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 card-${mode} hover:shadow-xl transition-all">
                     <span style="position:absolute; top:-10px; left:-10px; width:26px; height:26px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#cbd5e1;">${idx+1}</span>
                     <div class="flex justify-between items-start mb-4 font-bold">
-                        <div class="space-y-2 flex-1"><h4 class="word-en text-4xl font-black text-slate-800 tracking-tight">${highlightText(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-xl">${w.zh}</p></div>
-                        <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl font-bold"><i data-lucide="volume-2" class="w-7 h-7"></i></button>
+                        <div class="space-y-2 flex-1"><h4 class="word-en text-4xl font-black text-slate-800 tracking-tight font-bold font-bold font-bold">${highlightText(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-xl">${w.zh}</p></div>
+                        <button onclick="event.stopPropagation(); window.speak('${w.en}')" class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl font-bold font-bold font-bold font-bold font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button>
                     </div>
                     ${state.showNote ? `<textarea class="note-field" placeholder="筆記..." onclick="event.stopPropagation()" onblur="window.updateNote('${w.id}', this.value)">${w.note || ''}</textarea>` : ''}
-                    ${state.showRating ? `<div class="rating-section pt-6 border-t border-slate-50 flex items-center justify-between font-bold"><span class="text-xs font-black text-slate-300">熟練度</span><div class="flex gap-2">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-10 h-10 rounded-xl text-sm font-black ${w.rating == n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'} transition-all">${n}</button>`).join('')}</div></div>` : ''}
+                    ${state.showRating ? `<div class="rating-section pt-6 border-t border-slate-50 flex items-center justify-between font-bold"><span class="text-xs font-black text-slate-300">熟練度</span><div class="flex gap-2 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-10 h-10 rounded-xl text-sm font-black ${w.rating == n ? getRatingColor(n) : 'bg-slate-100 text-slate-400'} transition-all">${n}</button>`).join('')}</div></div>` : ''}
                 </div>`}).join('');
             lucide.createIcons();
             window.renderReviewTracking();
         };
 
-        // --- 其餘掛載函式 ---
+        // --- 工具函式掛載 ---
         window.updateRating = async (id, n) => {
             const u = state.units.find(u => u.id === state.activeUnitId);
             const w = u.words.find(w => w.id === id);
@@ -563,6 +605,7 @@
             document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; showNotification("單元已存至雲端");
         };
 
+        // --- 測驗功能 ---
         window.startRangeQuiz = (type) => {
             if (state.displayedWords.length === 0) return showNotification("無單字");
             const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1), e = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 10);
@@ -620,7 +663,7 @@
         window.closeQuiz = () => { document.getElementById('quizModal').classList.add('hidden'); window.speechSynthesis.cancel(); };
 
         // 工具
-        window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white', 2: 'bg-teal-400 text-white', 3: 'bg-amber-400 text-white', 4: 'bg-orange-500 text-white', 5: 'bg-rose-500 text-white' }[n]);
+        window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white shadow-sm', 2: 'bg-teal-400 text-white shadow-sm', 3: 'bg-amber-400 text-white shadow-sm', 4: 'bg-orange-500 text-white shadow-sm', 5: 'bg-rose-500 text-white shadow-sm' }[n]);
         window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); if (state.voice) u.voice = state.voice; u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
         window.togglePause = () => { state.isPaused = !state.isPaused; const icon = document.getElementById('pauseIcon'); if (state.isPaused) { icon.setAttribute('data-lucide', 'play'); window.speechSynthesis.pause(); } else { icon.setAttribute('data-lucide', 'pause'); window.speechSynthesis.resume(); } lucide.createIcons(); };
         window.startAutoPlay = async () => { if (state.isAudioPlaying) return; const list = state.displayedWords; if (list.length === 0) return; state.isAudioPlaying = true; state.isPaused = false; const rep = parseInt(document.getElementById('playRepeatCount').value) || 1; const intv = parseInt(document.getElementById('pauseInterval').value) || 2; document.getElementById('floatingAudioBar').classList.add('opacity-100', 'pointer-events-auto'); if (document.getElementById('audioBlindMode')?.checked) document.getElementById('wordGrid').classList.add('blind-mode');
@@ -628,28 +671,25 @@
                 document.getElementById('floatingStatusText').innerText = w.en; for(let r=0; r<rep; r++) { while (state.isPaused) { await new Promise(res => setTimeout(res, 200)); if (!state.isAudioPlaying) return; } window.speak(w.en); await new Promise(res => setTimeout(res, 2200)); } await new Promise(res => setTimeout(res, intv * 1000)); } window.stopAutoPlay();
         };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; state.isPaused = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('wordGrid').classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
-
         function showNotification(t) { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); }
 
         function renderUnitList() {
             const el = document.getElementById('unitList'); if (!el) return;
-            el.innerHTML = state.units.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 font-bold text-indigo-700' : 'bg-white font-bold'}"><span class="truncate">${u.name}</span><button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('');
+            el.innerHTML = state.units.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer ${state.activeUnitId === u.id ? 'border-indigo-500 bg-indigo-50 font-bold text-indigo-700' : 'bg-white font-bold'} font-bold"><span class="truncate">${u.name}</span><button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400 font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('');
             lucide.createIcons();
         }
         window.deleteUnit = async (id) => { if (!confirm("確定刪除？")) return; await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
 
-        // --- 核心啟動 ---
+        // --- 🚀 核心啟動邏輯 ---
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { await signInAnonymously(auth); return; }
             const customSess = sessionStorage.getItem('custom_user_session');
             const adminSess = sessionStorage.getItem('admin_session');
 
             if (adminSess === 'true') {
-                showAppUI("管理員模式");
-                // 管理邏輯...
+                window.showAppUI("管理員模式");
             } else if (customSess) {
                 state.userLabel = customSess;
-                showAppUI(customSess);
+                window.showAppUI(customSess);
                 const q = collection(db, 'artifacts', appId, 'public', 'data', 'units');
                 onSnapshot(q, (snap) => {
                     state.units = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.ownerId === customSess);
@@ -657,7 +697,14 @@
                     renderUnitList(); renderWords();
                 });
             } else {
+                // 如果沒有 Session，確保顯示登入畫面
                 document.getElementById('authScreen').classList.remove('hidden');
+                lucide.createIcons();
+            }
+
+            // 如果 user 為空且未登入任何 session，啟動匿名驗證以便查詢資料庫
+            if (!user && !customSess && !adminSess) {
+                await signInAnonymously(auth);
             }
         });
 
