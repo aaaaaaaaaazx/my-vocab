@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 5.2</title>
+    <title>單字大師 - Eternal Edition 5.3</title>
     
     <!-- PWA & Mobile Meta -->
     <meta name="theme-color" content="#4f46e5">
@@ -69,22 +69,22 @@
         .date-past { color: #f43f5e; }
         .date-future { color: #6366f1; }
 
-        /* 漂亮模式切換按鈕 */
+        /* 🌟 優化：加大的漂亮模式切換按鈕 */
         .card-mode-toggle {
             position: absolute; top: 14px; right: 14px;
-            padding: 6px 10px; background: white;
-            border-radius: 12px; display: flex; align-items: center;
-            justify-content: center; gap: 4px;
+            padding: 8px 14px; background: white;
+            border-radius: 16px; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
             color: #6366f1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid #f1f5f9; z-index: 20;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .card-mode-toggle:hover { 
             transform: scale(1.05); border-color: #4f46e5; background: #f5f3ff;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.1);
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.15);
         }
         .card-mode-toggle:active { transform: scale(0.95); }
-        .card-mode-toggle span { font-size: 9px; font-weight: 900; text-transform: uppercase; }
+        .card-mode-toggle span { font-size: 11px; font-weight: 900; text-transform: uppercase; }
 
         .note-field {
             background-color: #fffbeb; border: 2px dashed #fde68a; border-radius: 0.8rem;
@@ -133,8 +133,8 @@
     </div>
 
     <!-- 1. 登入畫面 -->
-    <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center font-bold">
-        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
+    <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 font-bold">
             <div id="loginMainView">
                 <div class="mb-8 text-center">
                     <div class="app-logo-wrapper"><div class="app-logo-glow"></div><svg viewBox="0 0 100 100" class="relative w-full h-full drop-shadow-lg"><defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4f46e5" /><stop offset="100%" style="stop-color:#6366f1" /></linearGradient></defs><path d="M20,30 Q50,20 80,30 L80,75 Q50,65 20,75 Z" fill="url(#logoGrad)" /><text x="50" y="60" text-anchor="middle" font-family="Arial" font-weight="900" font-size="28" fill="#ffffff">A</text></svg></div>
@@ -142,36 +142,36 @@
                     <p class="text-slate-400 font-medium italic text-xs">Eternal Edition</p>
                 </div>
                 <div class="space-y-4">
-                    <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 hover:bg-black text-white font-black py-4 rounded-[1.2rem] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 text-md font-bold font-bold font-bold"><i data-lucide="user" class="w-5 h-5 text-white font-bold"></i> 使用帳號登入</button>
+                    <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 hover:bg-black text-white font-black py-4 rounded-[1.2rem] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 text-md font-bold"><i data-lucide="user" class="w-5 h-5 text-white font-bold"></i> 使用帳號登入</button>
                 </div>
                 
                 <div class="mt-8 border-t pt-6">
                     <button onclick="window.toggleAuthView('admin')" class="text-xs text-slate-400 font-bold underline decoration-dotted font-bold">管理者模式</button>
-                    <p class="mt-4 text-[10px] text-slate-300 font-black tracking-wider uppercase">最後更新：2026-02-01 08:42</p>
+                    <p class="mt-4 text-[10px] text-slate-300 font-black tracking-wider uppercase">最後更新：2026-02-01 22:45</p>
                 </div>
             </div>
             
-            <div id="customLoginView" class="hidden text-left">
-                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-2 text-xs font-black hover:text-indigo-600 font-bold transition-colors font-bold"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
-                <h2 class="text-2xl font-bold mb-6 text-slate-800 font-bold font-bold">學生登入</h2>
+            <div id="customLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-2 text-xs font-black hover:text-indigo-600 font-bold transition-colors"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
+                <h2 class="text-2xl font-bold mb-6 text-slate-800 font-bold">學生登入</h2>
                 <div class="space-y-4">
                     <input type="text" id="customUser" placeholder="使用者帳號" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all">
                     <input type="password" id="customPass" placeholder="登入密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all">
-                    <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black active:scale-95 shadow-xl font-bold font-bold">確認進入</button>
+                    <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black active:scale-95 shadow-xl font-bold">確認進入</button>
                 </div>
             </div>
 
-            <div id="adminLoginView" class="hidden text-left">
-                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black font-bold font-bold"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
-                <h2 class="text-2xl font-black mb-6 text-slate-800 font-bold font-bold">管理中心</h2>
-                <div class="space-y-4 font-bold">
+            <div id="adminLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black font-bold"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
+                <h2 class="text-2xl font-black mb-6 text-slate-800 font-bold">管理中心</h2>
+                <div class="space-y-4">
                     <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
                     <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
-                    <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black active:scale-95 font-bold font-bold">授權進入</button>
+                    <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black active:scale-95 font-bold">授權進入</button>
                 </div>
             </div>
 
-            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2 font-bold font-bold"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>處理中...</span></div>
+            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2 font-bold"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>處理中...</span></div>
         </div>
     </div>
 
@@ -215,10 +215,10 @@
                             <button onclick="window.setGlobalMode('zh')" class="ui-toggle-btn rounded-lg ml-1" id="btn-zh">中文</button>
                         </div>
                         <div class="flex flex-wrap gap-2 font-bold">
-                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn">音節</button>
-                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn">母音</button>
-                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn">掌握度</button>
-                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn">筆記</button>
+                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn font-bold">音節</button>
+                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn font-bold">母音</button>
+                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn font-bold">掌握度</button>
+                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn font-bold">筆記</button>
                         </div>
                     </div>
                     <div class="border-t pt-6 grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
@@ -237,9 +237,9 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-3 font-black">
-                            <button onclick="window.startAutoPlay()" class="py-4 bg-indigo-600 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="play" class="w-5 h-5 font-bold font-bold font-bold"></i>英聽</button>
-                            <button onclick="window.startRangeQuiz('block')" class="py-4 bg-amber-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold font-bold font-bold"><i data-lucide="layout-grid" class="w-5 h-5 font-bold font-bold font-bold"></i>積木</button>
-                            <button onclick="window.startRangeQuiz('dictation')" class="py-4 bg-rose-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold"><i data-lucide="keyboard" class="w-5 h-5 font-bold font-bold font-bold"></i>聽寫</button>
+                            <button onclick="window.startAutoPlay()" class="py-4 bg-indigo-600 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="play" class="w-5 h-5 font-bold font-bold"></i>英聽</button>
+                            <button onclick="window.startRangeQuiz('block')" class="py-4 bg-amber-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold"><i data-lucide="layout-grid" class="w-5 h-5 font-bold font-bold font-bold"></i>積木</button>
+                            <button onclick="window.startRangeQuiz('dictation')" class="py-4 bg-rose-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold"><i data-lucide="keyboard" class="w-5 h-5 font-bold font-bold font-bold"></i>聽寫</button>
                         </div>
                     </div>
                 </div>
@@ -248,7 +248,7 @@
                 <div id="reviewTrackingArea" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-6 font-bold font-bold">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 font-bold">
                         <div class="flex items-center gap-3">
-                            <h4 class="text-base font-black text-slate-800 flex items-center gap-2 font-bold font-bold font-bold font-bold"><i data-lucide="calendar-check" class="text-indigo-600 w-5 h-5 font-bold font-bold"></i> 複習追蹤</h4>
+                            <h4 class="text-base font-black text-slate-800 flex items-center gap-2 font-bold font-bold"><i data-lucide="calendar-check" class="text-indigo-600 w-5 h-5 font-bold font-bold"></i> 複習追蹤</h4>
                             <span id="reviewCountDisplay" class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full font-bold">未選</span>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 font-bold">
@@ -256,11 +256,11 @@
                             <input type="time" id="baseTimeInput" onchange="window.updateBaseDateTime()" class="bg-transparent text-xs font-bold outline-none text-slate-600 cursor-pointer font-bold">
                         </div>
                     </div>
-                    <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 scrollbar-hide font-bold font-bold font-bold font-bold"></div>
+                    <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 scrollbar-hide font-bold font-bold font-bold"></div>
                 </div>
 
                 <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 font-bold">
-                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold font-bold font-bold font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold font-bold"></p></div>
+                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold font-bold font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold font-bold"></p></div>
                     <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1 font-bold">
                         <option value="original">原始順序</option><option value="random">隨機</option><option value="az">A-Z</option><option value="rating">掌握度</option>
                     </select>
@@ -275,10 +275,10 @@
     <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl font-bold font-bold font-bold">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden text-slate-800">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all font-bold font-bold font-bold"><i data-lucide="x"></i></button>
-            <div class="mb-6 font-bold"><span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold font-bold">挑戰模式</span><div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold"><h3 id="quizZh" class="text-4xl font-black font-bold"></h3><button id="quizSpeakBtn" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm font-bold font-bold"><i data-lucide="volume-2" class="w-7 h-7"></i></button></div><p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 font-bold font-bold"></p></div>
+            <div class="mb-6 font-bold"><span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold font-bold">挑戰模式</span><div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold"><h3 id="quizZh" class="text-4xl font-black font-bold"></h3><button id="quizSpeakBtn" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm font-bold font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button></div><p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 font-bold font-bold"></p></div>
             <div id="blockQuizContent" class="hidden font-bold"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px] items-center font-bold font-bold"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold font-bold"></div></div>
-            <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800"><input type="text" id="quizInput" placeholder="輸入單字並檢查..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 font-bold font-bold"><button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 font-bold font-bold font-bold font-bold font-bold">檢查答案</button></div>
-            <div class="mt-8 text-center font-bold font-bold font-bold font-bold font-bold"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg font-bold font-bold font-bold font-bold"><span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4"></i></button></div>
+            <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800"><input type="text" id="quizInput" placeholder="輸入單字並檢查..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 font-bold font-bold"><button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 font-bold font-bold font-bold font-bold">檢查答案</button></div>
+            <div class="mt-8 text-center font-bold font-bold font-bold font-bold font-bold"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg font-bold font-bold font-bold"><span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4"></i></button></div>
         </div>
     </div>
     
@@ -315,12 +315,12 @@
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.showNotification = (t) => { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); };
 
-        // --- 🌟 測驗與挑戰邏輯修復 ---
+        // --- 測驗與挑戰邏輯 ---
         const renderBlock = () => {
             const currentItem = state.quizQueue[state.quizIndex];
             if (!currentItem) return;
             const clean = currentItem.en.toLowerCase().replace(/[^a-z0-9]/g, '');
-            document.getElementById('blockAnswerArea').innerHTML = clean.split('').map((_, i) => `<div class="answer-slot font-bold">${state.currentAnswer[i] || ''}</div>`).join('');
+            document.getElementById('blockAnswerArea').innerHTML = clean.split('').map((_, i) => `<div class="answer-slot font-bold font-bold">${state.currentAnswer[i] || ''}</div>`).join('');
             document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="window.handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''} font-bold">${l}</button>`).join('');
         };
 
@@ -330,65 +330,50 @@
             document.getElementById('quizZh').innerText = item.zh;
             document.getElementById('quizProgress').innerText = `題目：${state.quizIndex + 1} / ${state.quizQueue.length}`;
             document.getElementById('btnNextQuiz').classList.add('hidden');
-            
             const clean = item.en.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (state.quizType === 'block') {
                 document.getElementById('blockQuizContent').classList.remove('hidden');
                 document.getElementById('dictationQuizContent').classList.add('hidden');
                 state.quizLetters = clean.split('').sort(() => Math.random() - 0.5);
-                state.currentAnswer = [];
-                state.usedIndexes = [];
-                renderBlock();
+                state.currentAnswer = []; state.usedIndexes = []; renderBlock();
             } else {
                 document.getElementById('blockQuizContent').classList.add('hidden');
                 document.getElementById('dictationQuizContent').classList.remove('hidden');
-                const i = document.getElementById('quizInput');
-                i.value = "";
-                setTimeout(() => i.focus(), 100);
+                const i = document.getElementById('quizInput'); i.value = ""; setTimeout(() => i.focus(), 100);
             }
-            window.speak(item.en);
-            lucide.createIcons();
+            window.speak(item.en); lucide.createIcons();
         };
 
         window.startRangeQuiz = (type) => {
             if (state.displayedWords.length === 0) return window.showNotification("此單元無單字");
-            const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
-            const e = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 20);
-            state.quizQueue = state.displayedWords.slice(s - 1, e);
-            state.quizType = type;
-            state.quizIndex = 0;
-            document.getElementById('quizModal').classList.remove('hidden');
-            setupQuiz();
+            const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1), e = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 20);
+            state.quizQueue = state.displayedWords.slice(s - 1, e); state.quizType = type; state.quizIndex = 0;
+            document.getElementById('quizModal').classList.remove('hidden'); setupQuiz();
         };
 
         window.handleQuizBlockClick = (i, c) => {
             const item = state.quizQueue[state.quizIndex];
             const clean = item.en.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (c === clean[state.currentAnswer.length]) {
-                state.currentAnswer.push(c);
-                state.usedIndexes.push(i);
-                renderBlock();
+                state.currentAnswer.push(c); state.usedIndexes.push(i); renderBlock();
                 if (state.currentAnswer.length === clean.length) {
                     if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
                     else { window.showNotification("挑戰成功！完美達成"); setTimeout(window.closeQuiz, 1200); }
                 }
             } else {
                 const slots = document.querySelectorAll('.answer-slot');
-                const s = slots[state.currentAnswer.length];
-                s?.classList.add('animate-shake', 'text-rose-500');
-                setTimeout(() => s?.classList.remove('animate-shake', 'text-rose-500'), 400);
+                slots[state.currentAnswer.length]?.classList.add('animate-shake', 'text-rose-500');
+                setTimeout(() => slots[state.currentAnswer.length]?.classList.remove('animate-shake', 'text-rose-500'), 400);
             }
         };
 
         window.checkDictationAnswer = () => {
-            const i = document.getElementById('quizInput').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-            const t = state.quizQueue[state.quizIndex].en.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const i = document.getElementById('quizInput').value.trim().toLowerCase().replace(/[^a-z0-9]/g, ''), t = state.quizQueue[state.quizIndex].en.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (i === t) {
                 if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
                 else { window.showNotification("正確！挑戰成功"); setTimeout(window.closeQuiz, 1200); }
             } else {
-                const inp = document.getElementById('quizInput');
-                inp.classList.add('animate-shake', 'border-rose-500');
+                const inp = document.getElementById('quizInput'); inp.classList.add('animate-shake', 'border-rose-500');
                 setTimeout(() => inp.classList.remove('animate-shake', 'border-rose-500'), 400);
             }
         };
@@ -411,10 +396,9 @@
                 } else window.showNotification("錯誤：帳號或密碼不正確");
             } catch (e) { window.showNotification("伺服器連線失敗"); } finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
-        window.adminLogin = async function() { const u = document.getElementById('adminUser').value.trim(), p = document.getElementById('adminPass').value.trim(); if (u === 'yljh' && p === 'yljh8320873') { sessionStorage.setItem('admin_session', 'true'); location.reload(); } else window.showNotification("管理員驗證失敗"); };
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
 
-        // --- 智慧複習追蹤 ---
+        // --- 智慧複習 ---
         window.updateBaseDateTime = async () => {
             const date = document.getElementById('baseDateInput').value, time = document.getElementById('baseTimeInput').value || "09:00";
             if (!state.activeUnitId || !date) return;
@@ -458,7 +442,7 @@
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: u.reviewProgress });
         };
 
-        // --- 渲染與音節演算法 ---
+        // --- 渲染功能 ---
         function formatSyllables(w) {
             if (!w || w.includes(" ") || w.length <= 3) return w;
             const vs = "aeiouy", isV = (c) => vs.includes(c.toLowerCase());
@@ -509,7 +493,13 @@
                 return `
                 <div onclick="window.speak('${w.en}')" class="word-card bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 card-${mode} hover:shadow-xl transition-all font-bold">
                     <span style="position:absolute; top:-10px; left:-10px; width:26px; height:26px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#cbd5e1;">${idx+1}</span>
-                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}')" class="card-mode-toggle font-bold"><i data-lucide="languages" class="w-3.5 h-3.5"></i><span>${modeLabel}</span></button>
+                    
+                    <!-- 🌟 切換按鈕加大優化 -->
+                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}')" class="card-mode-toggle font-bold">
+                        <i data-lucide="languages" class="w-5 h-5"></i>
+                        <span>${modeLabel}</span>
+                    </button>
+
                     <div class="flex justify-between items-start mb-4">
                         <div class="space-y-2 flex-1 font-bold">
                             ${isWordEditing ? `<input id="edit-en-${w.id}" class="edit-input mb-2" value="${w.en}" onclick="event.stopPropagation()"><input id="edit-zh-${w.id}" class="edit-input" value="${w.zh}" onclick="event.stopPropagation()">` : 
@@ -521,11 +511,11 @@
                         </div>
                     </div>
                     ${state.showNote ? `<textarea class="note-field font-bold" placeholder="備註..." onclick="event.stopPropagation()" onblur="window.updateNote('${w.id}', this.value)">${w.note || ''}</textarea>` : ''}
-                    ${state.showRating ? `<div class="rating-section pt-6 border-t border-slate-50 flex items-center justify-between font-bold font-bold"><span class="text-xs font-black text-slate-300">熟練度</span><div class="flex gap-2 font-bold">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-10 h-10 rounded-xl text-sm font-black ${w.rating == n ? window.getRatingColor(n) : 'bg-slate-100 text-slate-400'} transition-all">${n}</button>`).join('')}</div></div>` : ''}
+                    ${state.showRating ? `<div class="rating-section pt-6 border-t border-slate-50 flex items-center justify-between font-bold font-bold"><span class="text-xs font-black text-slate-300">熟練度</span><div class="flex gap-2 font-bold font-bold">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-10 h-10 rounded-xl text-sm font-black ${w.rating == n ? window.getRatingColor(n) : 'bg-slate-100 text-slate-400'} transition-all">${n}</button>`).join('')}</div></div>` : ''}
                 </div>`}).join(''); lucide.createIcons(); window.renderReviewTracking();
         };
 
-        // --- 全域指令掛載 ---
+        // --- 全域指令 ---
         window.setActiveUnit = (id) => { state.activeUnitId = id; state.stableDisplayList = null; state.editingWordId = null; window.renderWords(); renderUnitList(); };
         window.handleSortChange = (v) => { state.stableDisplayList = null; window.renderWords(); };
         window.updateRating = async (id, n) => { const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); if (w) { w.rating = n; window.renderWords(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } };
@@ -543,27 +533,22 @@
         };
         window.editUnitName = (id) => { state.editingUnitId = id; renderUnitList(); };
         window.saveUnitName = async (id) => { const input = document.getElementById(`input-unit-${id}`); if (input && input.value.trim()) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: input.value.trim() }); state.editingUnitId = null; window.showNotification("名稱已修改"); } };
-        window.importWords = async () => {
-            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if (!n || !t) return;
-            const words = t.split('\n').map(l => { const p = l.split(/[-－]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), note: '', rating: 3 } : null; }).filter(x => x);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, isPublished: true, reviewProgress: {}, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00" });
-            document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; window.showNotification("儲存成功");
-        };
+        window.toggleUnitPublish = async (id, s) => { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { isPublished: !s }); window.showNotification(!s ? "已發佈" : "已隱藏"); };
+        window.deleteUnit = async (id) => { if (confirm("確定刪除此單元嗎？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
+        window.publishGuestLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); window.showNotification("連結已複製"); };
 
         function renderUnitList() {
             const el = document.getElementById('unitList'); if (!el) return;
             el.innerHTML = state.units.map(u => {
                 const isSelected = state.activeUnitId === u.id, isEditing = state.editingUnitId === u.id;
                 return `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'bg-white border-slate-100 hover:border-indigo-200'}">
-                    <div class="flex-1 truncate mr-2 font-black">${isEditing ? `<input id="input-unit-${u.id}" class="w-full border rounded px-1 text-sm" value="${u.name}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter') window.saveUnitName('${u.id}')">` : u.name}</div>
+                    <div class="flex-1 truncate mr-2 font-black">${isEditing ? `<input id="input-unit-${u.id}" class="w-full border rounded px-1 text-sm font-bold" value="${u.name}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter') window.saveUnitName('${u.id}')">` : u.name}</div>
                     <div class="flex gap-1.5 font-bold">${!state.isGuestMode ? `
                         ${isEditing ? `<button onclick="event.stopPropagation(); window.saveUnitName('${u.id}')" class="text-emerald-500"><i data-lucide="check" class="w-4 h-4"></i></button>` : `<button onclick="event.stopPropagation(); window.editUnitName('${u.id}')" class="text-slate-400 hover:text-indigo-500 font-bold"><i data-lucide="pencil" class="w-4 h-4"></i></button>`}
                         <button onclick="event.stopPropagation(); window.toggleUnitPublish('${u.id}', ${u.isPublished || false})" class="${u.isPublished ? 'text-indigo-600' : 'text-slate-300'}"><i data-lucide="${u.isPublished ? 'eye' : 'eye-off'}" class="w-4 h-4"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>
+                        <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400 font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>
                 </div>`}).join(''); lucide.createIcons();
         }
-        window.deleteUnit = async (id) => { if (confirm("確定刪除此單元嗎？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
-        window.publishGuestLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); window.showNotification("連結已複製"); };
 
         window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white shadow-sm', 2: 'bg-teal-400 text-white shadow-sm', 3: 'bg-amber-400 text-white shadow-sm', 4: 'bg-orange-500 text-white shadow-sm', 5: 'bg-rose-500 text-white shadow-sm' }[n]);
         window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); if (state.voice) u.voice = state.voice; u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
@@ -572,6 +557,13 @@
             for (let w of list) { if (!state.isAudioPlaying) break; document.getElementById('floatingStatusText').innerText = w.en; while (state.isPaused) { await new Promise(r => setTimeout(r, 200)); if (!state.isAudioPlaying) return; } window.speak(w.en); await new Promise(r => setTimeout(r, 2200)); await new Promise(r => setTimeout(r, 2000)); } window.stopAutoPlay();
         };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; state.isPaused = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); };
+
+        window.importWords = async () => {
+            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if (!n || !t) return;
+            const words = t.split('\n').map(l => { const p = l.split(/[-－]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), note: '', rating: 3 } : null; }).filter(x => x);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, isPublished: true, reviewProgress: {}, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00" });
+            document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; window.showNotification("儲存成功");
+        };
 
         // --- 🚀 啟動邏輯 ---
         onAuthStateChanged(auth, async (user) => {
