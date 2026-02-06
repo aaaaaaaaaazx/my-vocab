@@ -1,680 +1,587 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  signInWithCustomToken,
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  onSnapshot, 
-  updateDoc,
-  deleteDoc,
-  collection
-} from 'firebase/firestore';
-import { 
-  Plane, Calendar, Plus, Trash2, Clock, Share2, 
-  Copy, CheckCircle, AlertCircle, Loader2, Sparkles, X, ArrowRight, Globe, Map as MapIcon, ChevronRight,
-  Cloud, Sun, PlaneTakeoff, ArrowUp, ArrowDown, Edit3, Save, MapPin, 
-  ChevronDown, ChevronUp, StickyNote, Eye, EyeOff, Image as ImageIcon, ExternalLink,
-  Smartphone, Shirt, Bath, Pill, FileText, Package, Calculator, Equal, ArrowLeft, ArrowRight,
-  Wallet, Utensils, Home, Car, ShoppingBag, MoreHorizontal, Receipt
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單字大師 - Eternal Edition 5.3</title>
+    
+    <!-- PWA & Mobile Meta -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        
+        /* 模式控制樣式 */
+        .card-both .word-en, .card-both .word-zh { display: block !important; }
+        .card-en .word-en { display: block !important; }
+        .card-en .word-zh { display: none !important; }
+        .card-zh .word-en { display: none !important; }
+        .card-zh .word-zh { display: block !important; }
+        .card-zh .voice-btn { visibility: hidden !important; } 
 
-/**
- * 🏆 Travel Planner - 彥麟製作最終黃金基準穩定版 (2026.02.06)
- * ------------------------------------------------
- * 1. 修正白屏：統整變數名稱與渲染守衛，確保資料未到時不崩潰。
- * 2. 費用管理系統：支援分類統計與雲端存檔。
- * 3. 豐富媒體支援：備註加入圖片網址欄位，支援超連結自動偵測。
- * 4. 備註摺疊系統：預設隱藏行程備註，支援「全局開關」與「單獨點擊展開」。
- * 5. 計算機優化：運算精度維持小數點後 8 位數，加入運算安全保護。
- */
-
-const VERSION_INFO = "穩定版 V2.7 - 2026/02/06 21:12";
-
-// --- 配置資料 ---
-const currencyNames = {
-  "TWD": "台灣 - 台幣", "USD": "美國 - 美金", "JPY": "日本 - 日圓", "KRW": "韓國 - 韓元",
-  "THB": "泰國 - 泰銖", "VND": "越南 - 越南盾", "HKD": "香港 - 港幣", "EUR": "歐盟 - 歐元",
-  "CNY": "中國 - 人民幣", "GBP": "英國 - 英鎊", "SGD": "新加坡 - 新加坡幣", "AUD": "澳洲 - 澳幣"
-};
-
-const EXPENSE_CATEGORIES = [
-  { id: 'food', name: '餐飲', icon: Utensils, color: 'text-orange-500', bg: 'bg-orange-50' },
-  { id: 'stay', name: '住宿', icon: Home, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { id: 'transport', name: '交通', icon: Car, color: 'text-blue-500', bg: 'bg-blue-50' },
-  { id: 'shopping', name: '購物', icon: ShoppingBag, color: 'text-pink-500', bg: 'bg-pink-50' },
-  { id: 'play', name: '娛樂', icon: Sparkles, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-  { id: 'other', name: '其他', icon: MoreHorizontal, color: 'text-slate-500', bg: 'bg-slate-50' }
-];
-
-const CHECKLIST_CATEGORIES = [
-  { id: 'cat_3c', name: '3C 產品', icon: Smartphone, items: ['手機', '充電線', '充電器', '相機', '萬用轉接頭', '行動電源', '筆記型電腦'] },
-  { id: 'cat_clothing', name: '衣物', icon: Shirt, items: ['上衣', '褲子', '外套', '鞋子', '內衣褲', '墨鏡', '帽子', '圍巾', '手套'] },
-  { id: 'cat_toiletries', name: '盥洗及衛生用品', icon: Bath, items: ['卸妝巾', '洗面乳', '牙膏', '牙刷', '牙線', '毛巾', '濕紙巾', '面紙'] },
-  { id: 'cat_medicine', name: '個人藥品', icon: Pill, items: ['暈車藥', '過敏藥', '消毒用品', '感冒藥', 'OK 繃', '蚊蟲止癢藥'] },
-  { id: 'cat_docs', name: '重要文件', icon: FileText, items: ['身分證', '護照', '居留證', '簽證', '國際駕照', '登機證或機票', '住宿或交通票券'] },
-  { id: 'cat_others', name: '其他用品', icon: Package, items: ['空水壺或環保杯', '家中鑰匙', '眼罩', '外幣現金或信用卡', '耳塞', '頸枕'] }
-];
-
-// --- Firebase 安全初始化 ---
-const getFirebaseServices = () => {
-  try {
-    const config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-      apiKey: "AIzaSyDHfIqjgq0cJ0fCuKlIBQhof6BEJsaYLg0",
-      authDomain: "travel-yeh.firebaseapp.com",
-      projectId: "travel-yeh",
-      storageBucket: "travel-yeh.firebasestorage.app",
-      messagingSenderId: "62005891712",
-      appId: "1:62005891712:web:4653c17db0c38f981d0c65"
-    };
-    const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(config);
-    return {
-      auth: getAuth(firebaseApp),
-      db: getFirestore(firebaseApp),
-      appId: typeof __app_id !== 'undefined' ? __app_id : 'travel-yeh'
-    };
-  } catch (e) {
-    console.error("Firebase Services Init Failed", e);
-    return { auth: null, db: null, appId: 'travel-yeh' };
-  }
-};
-
-const { auth, db, appId: currentAppId } = getFirebaseServices();
-
-// --- 工具函數 ---
-const getFormattedDate = (baseDate, dayOffset) => {
-  if (!baseDate) return "";
-  try {
-    const d = new Date(baseDate);
-    if (isNaN(d.getTime())) return "";
-    d.setDate(d.getDate() + (dayOffset - 1));
-    return d.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
-  } catch (e) { return ""; }
-};
-
-const getDayOfWeek = (baseDate, dayOffset, short = false) => {
-  if (!baseDate) return "";
-  try {
-    const d = new Date(baseDate);
-    if (isNaN(d.getTime())) return "";
-    d.setDate(d.getDate() + (dayOffset - 1));
-    const weekday = d.toLocaleDateString('zh-TW', { weekday: 'long' });
-    return short ? weekday.replace('星期', '') : weekday;
-  } catch (e) { return ""; }
-};
-
-const renderTextWithLinks = (text) => {
-  if (!text) return null;
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(urlRegex);
-  return parts.map((part, i) => {
-    if (part.match(urlRegex)) {
-      return (
-        <a key={i} href={part} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline inline-flex items-center gap-1 break-all">
-          {part} <ExternalLink size={12} />
-        </a>
-      );
-    }
-    return part;
-  });
-};
-
-// --- 子組件：費用管理 ---
-const ExpenseMaster = ({ itineraryData, updateItinField }) => {
-  const expenses = itineraryData?.expenses || [];
-  const [item, setItem] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('food');
-
-  const totalAmount = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-  
-  const categoryTotals = useMemo(() => {
-    const totals = {};
-    expenses.forEach(e => {
-      totals[e.category] = (totals[e.category] || 0) + (parseFloat(e.amount) || 0);
-    });
-    return totals;
-  }, [expenses]);
-
-  const handleAddExpense = async (e) => {
-    e.preventDefault();
-    if (!item || !amount) return;
-    const newExp = { id: Date.now().toString(), item, amount, category, date: new Date().toISOString() };
-    await updateItinField('expenses', [...expenses, newExp]);
-    setItem(''); setAmount('');
-  };
-
-  const deleteExpense = async (id) => {
-    const updated = expenses.filter(e => e.id !== id);
-    await updateItinField('expenses', updated);
-  };
-
-  return (
-    <div className="animate-fade-in space-y-8 w-full max-w-5xl mx-auto pb-10">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-white p-10 rounded-[3.5rem] shadow-xl border border-slate-100 flex flex-col justify-center">
-            <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest mb-2 ml-1">旅程總花費</h3>
-            <div className="flex items-baseline gap-2">
-                <span className="text-6xl font-black text-slate-900 tracking-tighter">${totalAmount.toLocaleString()}</span>
-                <span className="text-slate-300 font-bold">TWD</span>
-            </div>
-        </div>
-        <div className="bg-slate-900 p-8 rounded-[3rem] shadow-xl text-white">
-            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">分類統計</h4>
-            <div className="space-y-3">
-                {EXPENSE_CATEGORIES.map(cat => {
-                    const total = categoryTotals[cat.id] || 0;
-                    const percent = totalAmount > 0 ? Math.round((total / totalAmount) * 100) : 0;
-                    return (
-                        <div key={cat.id} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <cat.icon size={14} className={cat.color} />
-                                <span className="text-xs font-bold text-slate-300">{cat.name}</span>
-                            </div>
-                            <span className="text-xs font-mono font-bold text-slate-100">${total.toLocaleString()} ({percent}%)</span>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-8 md:p-10 rounded-[4rem] shadow-lg border border-slate-100">
-          <form onSubmit={handleAddExpense} className="flex flex-wrap md:flex-nowrap gap-4 items-end">
-              <div className="flex-1 space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">費用說明</label>
-                  <input required placeholder="如：晚餐..." value={item} onChange={e => setItem(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl font-bold outline-none shadow-inner" />
-              </div>
-              <div className="w-full md:w-48 space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">金額</label>
-                  <input required type="number" placeholder="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl font-bold outline-none shadow-inner" />
-              </div>
-              <div className="w-full md:w-40 space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">分類</label>
-                  <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl font-black outline-none shadow-inner">
-                      {EXPENSE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-              </div>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-2xl shadow-xl transition-all active:scale-95 shrink-0"><Plus size={28}/></button>
-          </form>
-      </div>
-
-      <div className="bg-white rounded-[3rem] shadow-xl border border-slate-50 overflow-hidden">
-          <table className="w-full text-left">
-              <thead className="bg-slate-50 text-slate-400 text-[10px] uppercase font-black">
-                  <tr>
-                      <th className="px-8 py-5">項目</th>
-                      <th className="px-8 py-5">分類</th>
-                      <th className="px-8 py-5 text-right">金額</th>
-                      <th className="px-8 py-5 text-center">操作</th>
-                  </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                  {expenses.length > 0 ? [...expenses].reverse().map(exp => {
-                      const cat = EXPENSE_CATEGORIES.find(c => c.id === exp.category) || EXPENSE_CATEGORIES[5];
-                      return (
-                          <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="px-8 py-5 font-black text-slate-700">{exp.item}</td>
-                              <td className="px-8 py-5">
-                                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${cat.bg} ${cat.color} text-[10px] font-black`}>
-                                      <cat.icon size={12}/> {cat.name}
-                                  </div>
-                              </td>
-                              <td className="px-8 py-5 text-right font-mono font-black text-slate-800 text-lg">${parseFloat(exp.amount).toLocaleString()}</td>
-                              <td className="px-8 py-5 text-center">
-                                  <button onClick={() => deleteExpense(exp.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
-                              </td>
-                          </tr>
-                      );
-                  }) : (
-                      <tr><td colSpan="4" className="px-8 py-20 text-center"><Receipt className="mx-auto text-slate-100 mb-4" size={48} /><p className="text-slate-300 font-bold">尚無費用記錄</p></td></tr>
-                  )}
-              </tbody>
-          </table>
-      </div>
-    </div>
-  );
-};
-
-// --- 子組件：天氣預測 ---
-const WeatherMaster = ({ tripInfo }) => {
-  const defaultEndDate = useMemo(() => {
-    if (!tripInfo?.startDate || !tripInfo?.duration) return '';
-    try {
-      const d = new Date(tripInfo.startDate);
-      if (isNaN(d.getTime())) return '';
-      d.setDate(d.getDate() + (parseInt(tripInfo.duration) - 1));
-      return d.toISOString().split('T')[0];
-    } catch (e) { return ''; }
-  }, [tripInfo]);
-
-  const [q, setQ] = useState({ 
-    dest: tripInfo?.city || '', 
-    start: tripInfo?.startDate || new Date().toISOString().split('T')[0],
-    end: defaultEndDate 
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (tripInfo) setQ({ dest: tripInfo.city || '', start: tripInfo.startDate || '', end: defaultEndDate });
-  }, [tripInfo, defaultEndDate]);
-
-  const fetchWeather = async (e) => {
-    if (e) e.preventDefault();
-    if (!q.dest) return;
-    setLoading(true); setError(null);
-    try {
-      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q.dest)}&count=1&language=zh&format=json`);
-      const geoData = await geoRes.json();
-      if (!geoData.results?.length) throw new Error('找不到該地點。');
-      const { latitude, longitude, name } = geoData.results[0];
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&start_date=${q.start}&end_date=${q.end || q.start}`);
-      const weatherData = await weatherRes.json();
-      setResults({
-        location: name,
-        daily: weatherData.daily.time.map((time, i) => ({
-          date: time, max: weatherData.daily.temperature_2m_max[i], min: weatherData.daily.temperature_2m_min[i], code: weatherData.daily.weather_code[i]
-        }))
-      });
-    } catch (err) { setError(err.message); } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="animate-fade-in space-y-10 w-full max-w-5xl mx-auto pb-10">
-      <div className="bg-white p-8 md:p-12 rounded-[4rem] shadow-xl border border-slate-100">
-        <h3 className="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3"><Sun className="text-orange-500" /> 全球精準氣象查詢</h3>
-        <form onSubmit={fetchWeather} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">目的地</label><input required value={q.dest} onChange={e => setQ({...q, dest: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-3xl outline-none font-bold shadow-inner" /></div>
-          <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">開始日期</label><input required type="date" value={q.start} onChange={e => setQ({...q, start: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" /></div>
-          <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">結束日期</label><input required type="date" value={q.end} min={q.start} onChange={e => setQ({...q, end: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" /></div>
-          <button type="submit" disabled={loading} className="bg-blue-600 text-white h-[60px] rounded-3xl font-black shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">{loading ? <Loader2 className="animate-spin" /> : <Search size={20}/>} 查詢</button>
-        </form>
-      </div>
-      {results && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {results.daily.map(day => (
-            <div key={day.date} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-lg group">
-                <p className="text-[10px] font-black text-slate-300 mb-4">{day.date}</p>
-                <div className="flex justify-between items-start mb-6"><Sun size={48} className="text-orange-500" /><div className="text-right"><p className="text-3xl font-black text-slate-800">{Math.round(day.max)}°</p><p className="text-sm font-bold text-slate-300">{Math.round(day.min)}°</p></div></div>
-                <div className="bg-slate-50 p-4 rounded-2xl"><p className="font-black text-sm mb-1 text-blue-600">氣溫資訊</p><p className="text-[11px] text-slate-500 leading-relaxed font-bold tracking-tight">查看預報調整行程。</p></div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- 子組件：匯率管理 ---
-const CurrencyMaster = ({ parentAmount, setParentAmount }) => {
-  const [rates, setRates] = useState({});
-  const [baseCurrency, setBaseCurrency] = useState('USD');
-  const [targetCurrency, setTargetCurrency] = useState('TWD');
-  const [loading, setLoading] = useState(true);
-  const [calcDisplay, setCalcDisplay] = useState('0');
-
-  const fetchRates = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
-      const data = await res.json();
-      if (data.result === 'success') setRates(data.rates || {});
-    } catch (err) { console.error(err); } finally { setLoading(false); }
-  };
-
-  useEffect(() => { if(auth) fetchRates(); }, [baseCurrency]);
-
-  const handleCalcInput = (val) => {
-    if (val === 'C') setCalcDisplay('0');
-    else if (val === '=') {
-        try {
-            const cleanDisplay = calcDisplay.replace(/[^-+*/.0-9]/g, '');
-            if (!cleanDisplay) { setCalcDisplay('0'); return; }
-            const result = new Function(`return ${cleanDisplay}`)();
-            setCalcDisplay(String(parseFloat(Number(result).toFixed(8))));
-        } catch (e) { setCalcDisplay('Error'); }
-    } else setCalcDisplay(prev => (prev === '0' || prev === 'Error') ? val : prev + val);
-  };
-
-  const convertedAmount = useMemo(() => {
-    const rate = rates[targetCurrency] || 0;
-    return (parentAmount * rate).toFixed(2);
-  }, [parentAmount, targetCurrency, rates]);
-
-  return (
-    <div className="animate-fade-in space-y-8 w-full max-w-5xl mx-auto pb-10">
-      <div className="bg-white rounded-[3.5rem] shadow-2xl border border-slate-100 overflow-hidden transition-all p-8 md:p-14">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-8 items-center">
-          <div className="md:col-span-3">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">輸入金額</label>
-            <div className="relative"><DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
-              <input type="number" value={parentAmount} onChange={e => setParentAmount(parseFloat(e.target.value) || 0)} className="w-full pl-14 pr-4 py-6 bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-3xl outline-none transition-all text-2xl font-black shadow-inner" />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2"><select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)} className="bg-white border shadow-sm rounded-xl px-2 py-1 text-xs font-black outline-none">{Object.keys(currencyNames).map(curr => <option key={curr} value={curr}>{currencyNames[curr]}</option>)}</select></div>
-            </div>
-          </div>
-          <div className="flex justify-center md:col-span-1"><button onClick={() => {const t = baseCurrency; setBaseCurrency(targetCurrency); setTargetCurrency(t);}} className="bg-blue-50 p-4 rounded-full text-blue-600 shadow-inner hover:bg-blue-600 hover:text-white transition-all duration-500 active:scale-90 group shadow-md"><ArrowLeftRight className="md:rotate-0 rotate-90" size={28} /></button></div>
-          <div className="md:col-span-3">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">轉換結果</label>
-            <div className="w-full pl-8 pr-6 py-5 bg-blue-600 rounded-[2rem] text-white flex items-center justify-between shadow-xl shadow-blue-100">
-              <div><span className="text-3xl font-black tracking-tight">{convertedAmount}</span><p className="text-blue-100 text-[10px] mt-1 font-bold">{currencyNames[targetCurrency]}</p></div>
-              <select value={targetCurrency} onChange={e => setTargetCurrency(e.target.value)} className="bg-blue-700 text-white border-none rounded-xl px-3 py-1.5 text-xs font-black outline-none">{Object.keys(currencyNames).map(curr => <option key={curr} value={curr}>{currencyNames[curr]}</option>)}</select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 text-white p-8 md:p-12 rounded-[4rem] shadow-2xl border border-slate-800">
-          <div className="flex items-center gap-3 mb-8 px-2"><div className="p-3 bg-blue-600 rounded-2xl"><Calculator size={24} /></div><h4 className="font-black text-2xl tracking-tight">旅程小計算機</h4></div>
-          <div className="bg-black/40 p-8 rounded-[2.5rem] mb-10 text-right shadow-inner border border-white/5 overflow-hidden"><span className="text-5xl md:text-6xl font-black font-mono tracking-tighter text-white block truncate leading-tight">{calcDisplay}</span></div>
-          <div className="grid grid-cols-4 gap-4 md:gap-6">
-              {['7','8','9','/','4','5','6','*','1','2','3','-','0','.','C','+'].map(btn => (<button key={btn} onClick={() => handleCalcInput(btn)} className={`py-6 md:py-8 rounded-[1.5rem] font-black text-3xl transition-all shadow-sm active:scale-95 ${isNaN(btn) && btn !== '.' ? 'bg-blue-600 text-white hover:bg-blue-50' : 'bg-white/5 hover:bg-white/10 border border-white/5'}`}>{btn}</button>))}
-              <button onClick={() => handleCalcInput('=')} className="col-span-2 py-8 bg-green-600 text-white rounded-[1.5rem] font-black text-2xl hover:bg-green-500 transition-all active:scale-95"><Equal size={32}/></button>
-              <button onClick={() => setParentAmount(parseFloat(calcDisplay) || 0)} className="col-span-2 py-8 bg-white text-slate-900 rounded-[1.5rem] font-black text-xl hover:bg-slate-100 transition-all shadow-xl active:scale-95">套用到金額</button>
-          </div>
-      </div>
-      {loading && <div className="fixed inset-0 bg-white/60 backdrop-blur-md z-[200] flex flex-col items-center justify-center"><Loader2 className="animate-spin text-blue-600 mb-2" size={48} /></div>}
-    </div>
-  );
-};
-
-// --- 主 App 組件 ---
-const App = () => {
-  const [view, setView] = useState('home');
-  const [activeTab, setActiveTab] = useState('itinerary');
-  const [user, setUser] = useState(null);
-  const [tripId, setTripId] = useState(null);
-  const [trips, setTrips] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeDay, setActiveDay] = useState(1);
-  const [tripInfo, setTripInfo] = useState({ country: '', city: '', startDate: '', duration: 3 });
-  const [itineraryData, setItineraryData] = useState({ days: {}, checklist: [], expenses: [] });
-  const [newSpot, setNewSpot] = useState({ time: '09:00', spot: '', note: '', imageUrl: '' });
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [aiStatus, setAiStatus] = useState({ type: '', message: '' });
-  const [editingTripId, setEditingTripId] = useState(null);
-  const [showAllNotes, setShowAllNotes] = useState(false); 
-  const [expandedItems, setExpandedItems] = useState({}); 
-  const [currencyAmount, setCurrencyAmount] = useState(1); // 共享匯率金額
-
-  // 🎨 樣式與 Favicon 注入
-  useEffect(() => {
-    if (!document.getElementById('tailwind-cdn')) {
-      const script = document.createElement('script'); script.id = 'tailwind-cdn'; script.src = 'https://cdn.tailwindcss.com'; document.head.appendChild(script);
-    }
-    const style = document.createElement('style'); style.id = 'premium-ui-engine-v2.7';
-    style.innerHTML = `
-      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-      html, body, #root { min-height: 100vh !important; width: 100% !important; background-color: #f8fafc !important; font-family: 'Noto Sans TC', sans-serif !important; margin: 0; padding: 0; }
-      #root { display: flex !important; flex-direction: column !important; align-items: center !important; }
-      .scrollbar-hide::-webkit-scrollbar { display: none; }
-      .premium-slider { scrollbar-width: thin; scrollbar-color: #2563eb #f1f5f9; }
-      .premium-slider::-webkit-scrollbar { height: 6px; }
-      .premium-slider::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-      .premium-slider::-webkit-scrollbar-thumb { background-color: #2563eb; border-radius: 10px; border: 2px solid #f1f5f9; }
-      @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
-    `; 
-    document.head.appendChild(style);
-
-    const setFavicon = () => {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-      link.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Cpath d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E";
-    };
-    setFavicon();
-  }, []);
-
-  // 🔐 登入邏輯
-  useEffect(() => {
-    if (!auth) return;
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
-        else await signInAnonymously(auth);
-      } catch (e) { await signInAnonymously(auth); }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setIsLoading(false); });
-    return () => unsubscribe();
-  }, []);
-
-  // 📊 資料監聽
-  useEffect(() => {
-    if (!user || !db) return;
-    const tripsRef = collection(db, 'artifacts', currentAppId, 'public', 'data', 'trips');
-    const unsub = onSnapshot(tripsRef, (snapshot) => {
-      const tripList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTrips(tripList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-    }, (err) => console.error("Trips error", err));
-    return () => unsub();
-  }, [user]);
-
-  useEffect(() => {
-    if (!user || !tripId || !db) return;
-    const itinRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'itineraries', tripId);
-    const unsubItin = onSnapshot(itinRef, (docSnap) => {
-      if (docSnap.exists()) {
-          const data = docSnap.data();
-          setItineraryData({ days: data.days || {}, checklist: data.checklist || [], expenses: data.expenses || [] });
-          setView('editor');
-      }
-    }, (err) => console.error("Itinerary error", err));
-
-    const tripRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'trips', tripId);
-    const unsubTrip = onSnapshot(tripRef, (docSnap) => { if (docSnap.exists()) setTripInfo(docSnap.data()); });
-    return () => { unsubItin(); unsubTrip(); };
-  }, [user, tripId]);
-
-  const updateItinField = async (field, value) => {
-    if (!user || !tripId || !db) return;
-    try { await updateDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'itineraries', tripId), { [field]: value }); } catch (err) { console.error(err); }
-  };
-
-  const moveDay = async (direction) => {
-    if (!user || !tripId || !db) return;
-    const days = { ...itineraryData.days };
-    const targetDay = activeDay + direction;
-    if (targetDay < 1 || targetDay > parseInt(tripInfo.duration || "0")) return;
-    const currentData = days[activeDay];
-    const targetData = days[targetDay];
-    days[activeDay] = targetData;
-    days[targetDay] = currentData;
-    await updateDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'itineraries', tripId), { days });
-    setActiveDay(targetDay);
-    setAiStatus({ type: 'success', message: `已調換行程順序` });
-  };
-
-  const handleCreateOrUpdate = async e => {
-    e.preventDefault(); if (!user || !db) return; setIsLoading(true);
-    try {
-        if (editingTripId) {
-          await updateDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'trips', editingTripId), { ...tripInfo });
-          setEditingTripId(null); setTripInfo({ country: '', city: '', startDate: '', duration: 3 });
-        } else {
-          const newId = crypto.randomUUID(); const days = {};
-          for (let i = 1; i <= Math.max(1, parseInt(tripInfo.duration)); i++) days[i] = { spots: [], title: '' };
-          await setDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'trips', newId), { ...tripInfo, creator: user.uid, createdAt: new Date().toISOString() });
-          await setDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'itineraries', newId), { days, checklist: [], expenses: [] });
-          setTripId(newId);
+        .word-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border-width: 2px;
+            position: relative;
+            min-height: 220px;
         }
-    } catch (e) { console.error(e); } finally { setIsLoading(false); }
-  };
+        
+        .word-card.playing {
+            border-color: #4f46e5 !important;
+            box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.3);
+            transform: scale(1.03);
+            background-color: #f5f3ff;
+        }
+        
+        #wordGrid.blind-mode { opacity: 0.05; filter: blur(20px); pointer-events: none; }
 
-  if (isLoading) return <div className="flex flex-col items-center justify-center h-screen bg-slate-50"><Loader2 className="animate-spin text-blue-600 mb-2" size={48} /><p className="text-slate-500 font-bold italic tracking-widest leading-none">正在啟動彥麟的冒險引擎...</p></div>;
+        /* UI 按鈕樣式 */
+        .ui-toggle-btn {
+            padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 800; border-radius: 0.8rem;
+            transition: all 0.2s ease; border: 2px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+            white-space: nowrap; cursor: pointer; background: white;
+        }
+        .toggle-on { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); }
+        .toggle-off { background-color: white !important; color: #94a3b8 !important; border-color: #f1f5f9 !important; }
 
-  return (
-    <div className="w-full flex flex-col items-center min-h-screen">
-      {aiStatus.message && ( <div className={`fixed top-4 z-[200] px-6 py-3 rounded-2xl shadow-2xl animate-fade-in flex items-center gap-3 border ${aiStatus.type === 'success' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-600'}`}> <span className="font-bold text-sm">{aiStatus.message}</span><button onClick={() => setAiStatus({ type: '', message: '' })}><X size={14}/></button> </div> )}
+        /* 複習節點 */
+        .review-node {
+            flex: 0 0 auto; width: 85px; text-align: center; padding: 12px 6px;
+            border-radius: 16px; border: 2px solid #f1f5f9; background: white;
+            transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center;
+        }
+        .review-node.done { background: #4f46e5; border-color: #4f46e5; color: white; }
+        .review-node.done .node-label, .review-node.done .node-date, .review-node.done .node-time { color: rgba(255,255,255,0.7) !important; }
+        .node-name { font-size: 11px; font-weight: 900; margin-bottom: 2px; }
+        .node-label { font-size: 9px; color: #94a3b8; font-weight: 700; margin-bottom: 2px; }
+        .node-date { font-size: 9px; font-weight: 800; }
+        .node-time { font-size: 8px; font-weight: 600; opacity: 0.8; }
+        
+        .date-today { color: #10b981; }
+        .date-past { color: #f43f5e; }
+        .date-future { color: #6366f1; }
 
-      {view === 'home' ? (
-        <div className="w-full max-w-5xl px-6 py-20 flex flex-col items-center animate-fade-in">
-          <div className="text-center mb-16"><div className="w-24 h-24 bg-blue-600 text-white rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl rotate-12 transition-transform hover:rotate-0 shadow-blue-200"><Plane size={48} /></div><h1 className="text-5xl font-black mb-4 tracking-tighter text-slate-900 uppercase">Travel Planner</h1><p className="text-slate-400 font-bold tracking-widest text-sm italic text-center">找回您的冒險之旅-彥麟製作</p></div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full items-start">
-            <div className="space-y-6"><h3 className="text-xl font-black text-slate-800 flex items-center gap-2">{editingTripId ? <Edit3 className="text-blue-600" /> : <Plus className="text-blue-600" />} {editingTripId ? '編輯旅程' : '建立新旅程'}</h3>
-              <form onSubmit={handleCreateOrUpdate} className="bg-white p-10 rounded-[3rem] shadow-xl space-y-8 border border-white shadow-slate-200">
-                <div className="grid grid-cols-2 gap-6"><div className="space-y-2"><label className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">國家</label><input required placeholder="如: 日本" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={tripInfo.country} onChange={e => setTripInfo({...tripInfo, country: e.target.value})} /></div><div className="space-y-2"><label className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">城市</label><input required placeholder="如: 東京" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={tripInfo.city} onChange={e => setTripInfo({...tripInfo, city: e.target.value})} /></div></div>
-                <div className="grid grid-cols-2 gap-6"><div className="space-y-2"><label className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">出發日期</label><input required type="date" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:ring-4 focus:ring-blue-500/10 shadow-sm" value={tripInfo.startDate} onChange={e => setTripInfo({...tripInfo, startDate: e.target.value})} /></div><div className="space-y-2"><label className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">天數</label><input required type="number" min="1" max="14" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:ring-4 focus:ring-blue-500/10 shadow-sm" value={tripInfo.duration} onChange={e => setTripInfo({...tripInfo, duration: e.target.value})} /></div></div>
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-3xl font-black shadow-2xl transition-all">{editingTripId ? '儲存修改' : '開始規劃'}</button>
-                {editingTripId && <button type="button" onClick={() => { setEditingTripId(null); setTripInfo({country:'', city:'', startDate:'', duration:3}); }} className="w-full text-slate-400 font-bold py-2">取消</button>}
-              </form>
-            </div>
-            <div className="space-y-6"><h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><Calendar className="text-blue-600" /> 旅程清單 ({trips.length})</h3>
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-hide">
-                {trips.map(trip => (<div key={trip.id} onClick={() => setTripId(trip.id)} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex items-center justify-between"><div className="flex items-center gap-5"><div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm"><Globe size={24} /></div><div><h4 className="text-xl font-black text-slate-800 tracking-tight">{trip.city} 之旅</h4><p className="text-[10px] font-bold text-slate-400 mt-1">{trip.country} · {trip.startDate}</p></div></div><div className="flex items-center gap-1"><ChevronRight className="text-slate-200 group-hover:text-blue-600" /></div></div>))}
-              </div>
-            </div>
-          </div>
-          <div className="mt-12 text-slate-300 text-[10px] font-bold uppercase tracking-widest text-center">{VERSION_INFO}</div>
+        /* 🌟 優化：加大的漂亮模式切換按鈕 */
+        .card-mode-toggle {
+            position: absolute; top: 14px; right: 14px;
+            padding: 8px 14px; background: white;
+            border-radius: 16px; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+            color: #6366f1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #f1f5f9; z-index: 20;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .card-mode-toggle:hover { 
+            transform: scale(1.05); border-color: #4f46e5; background: #f5f3ff;
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.15);
+        }
+        .card-mode-toggle:active { transform: scale(0.95); }
+        .card-mode-toggle span { font-size: 11px; font-weight: 900; text-transform: uppercase; }
+
+        .note-field {
+            background-color: #fffbeb; border: 2px dashed #fde68a; border-radius: 0.8rem;
+            padding: 0.7rem; font-size: 0.85rem; color: #92400e; width: 100%;
+            margin-top: 1rem; outline: none; font-weight: 600; resize: none;
+            min-height: 60px; line-height: 1.5; display: block;
+        }
+        .edit-input {
+            background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.8rem;
+            padding: 0.5rem 0.9rem; width: 100%; font-weight: 700; outline: none; color: #1e293b;
+        }
+
+        .answer-slot {
+            width: 42px; height: 42px; border-bottom: 4px solid #4f46e5;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 24px; color: #4f46e5; margin: 0 3px;
+        }
+
+        .block-letter {
+            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px;
+            font-weight: 900; font-size: 20px; transition: all 0.2s; cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+            color: #1e293b;
+        }
+        .block-letter:active { transform: translateY(4px); box-shadow: 0 0 0 #cbd5e1; }
+        .block-letter.used { opacity: 0.2; pointer-events: none; }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
+
+    <!-- 英聽懸浮狀態條 -->
+    <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500 font-bold">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white font-bold"><i data-lucide="headphones" class="w-5 h-5"></i></div>
+            <div class="max-w-[150px]"><p class="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">朗讀中</p><p id="floatingStatusText" class="text-sm font-black text-slate-700 truncate">準備中...</p></div>
         </div>
-      ) : (
-        <div className="w-full flex flex-col items-center pb-24 animate-fade-in">
-          <nav className="w-full h-20 bg-white/90 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-50">
-            <div className="font-black text-blue-600 text-2xl flex items-center gap-3 cursor-pointer group" onClick={() => window.location.reload()}><div className="p-2 bg-blue-600 text-white rounded-2xl shadow-lg"><Plane size={24} className="rotate-45" /></div><span className="tracking-tighter uppercase">Traveler</span></div>
-            <div className="hidden md:flex bg-slate-100 p-1.5 rounded-2xl gap-1">
-              <button onClick={() => setActiveTab('itinerary')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'itinerary' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>行程</button>
-              <button onClick={() => setActiveTab('weather')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'weather' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>天氣</button>
-              <button onClick={() => setActiveTab('expenses')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'expenses' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>費用</button>
-              <button onClick={() => setActiveTab('checklist')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'checklist' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>清單</button>
-              <button onClick={() => setActiveTab('currency')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'currency' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>匯率</button>
-            </div>
-            <div className="text-right"><div className="font-black text-slate-800 text-xl leading-none">{tripInfo.city} 之旅</div><div className="text-[11px] text-slate-400 font-bold uppercase mt-1 inline-block bg-slate-50 px-2 py-0.5 rounded-full">{tripInfo.startDate}</div></div>
-          </nav>
-          
-          <main className="w-full max-w-5xl p-6 md:p-12">
-            {activeTab === 'itinerary' ? (
-              <div className="space-y-12">
-                <div className="flex gap-4 overflow-x-auto pb-4 premium-slider flex-nowrap px-2">
-                  {Object.keys(itineraryData?.days || {}).map(day => (
-                    <button key={day} onClick={() => {setActiveDay(parseInt(day)); setEditingId(null);}} className={`shrink-0 w-28 h-28 rounded-3xl font-black transition-all border flex flex-col items-center justify-center gap-1 shadow-sm ${activeDay === parseInt(day) ? 'bg-blue-600 text-white border-blue-600 shadow-xl scale-105' : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'}`}>
-                      <span className="text-xs uppercase opacity-60">Day</span><span className="text-3xl leading-none">{day}</span>
-                      <span className="text-[10px] mt-1 font-bold">{getFormattedDate(tripInfo.startDate, parseInt(day)).slice(5)}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-end gap-4">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-6xl font-black text-slate-900 tracking-tighter italic leading-none shrink-0">Day {activeDay}</h2>
-                      <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                        <button onClick={() => moveDay(-1)} disabled={activeDay === 1} className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-colors"><ArrowLeft size={20}/></button>
-                        <div className="w-px h-6 bg-slate-200 my-auto"></div>
-                        <button onClick={() => moveDay(1)} disabled={activeDay === parseInt(tripInfo.duration || "0")} className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-colors"><ArrowRight size={20}/></button>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-lg text-slate-400 font-bold ml-1 mb-1 block">({getFormattedDate(tripInfo.startDate, activeDay)} {getDayOfWeek(tripInfo.startDate, activeDay)})</span>
-                      <input className="text-3xl md:text-4xl font-black text-blue-600 bg-transparent outline-none border-b-2 border-transparent focus:border-blue-200 placeholder:text-slate-200 w-full" placeholder="今日主題..." value={itineraryData?.days?.[activeDay]?.title || ''} onChange={e => updateItinField(`days.${activeDay}.title`, e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="flex justify-center md:justify-start">
-                    <button onClick={() => setShowAllNotes(!showAllNotes)} className={`flex items-center gap-2 px-5 py-2 rounded-2xl text-xs font-black transition-all shadow-sm border ${showAllNotes ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50'}`}>
-                      {showAllNotes ? <EyeOff size={16} /> : <Eye size={16} />} {showAllNotes ? '隱藏全部備註' : '顯示全部備註'}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white p-8 md:p-12 rounded-[4rem] shadow-sm border border-slate-100">
-                  <form onSubmit={async e => { 
-                    e.preventDefault(); 
-                    const current = itineraryData?.days?.[activeDay]?.spots || []; 
-                    await updateItinField(`days.${activeDay}.spots`, [...current, { ...newSpot, id: Date.now().toString() }]); 
-                    setNewSpot({ time: '09:00', spot: '', note: '', imageUrl: '' }); 
-                  }} className="mb-12 space-y-4 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 shadow-inner">
-                    <div className="flex gap-3 flex-wrap md:flex-nowrap">
-                      <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border w-full md:w-auto shadow-sm">
-                        <Clock size={18} className="text-blue-500" />
-                        <input type="time" value={newSpot.time} onChange={e => setNewSpot({...newSpot, time: e.target.value})} className="bg-transparent font-black outline-none w-24" />
-                      </div>
-                      <input placeholder="想在那裡留下足跡？" required value={newSpot.spot} onChange={e => setNewSpot({...newSpot, spot: e.target.value})} className="flex-1 p-3 bg-white border rounded-xl font-bold outline-none shadow-sm" />
-                    </div>
-                    <div className="flex gap-3 flex-wrap md:flex-nowrap">
-                      <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border w-full md:w-auto shadow-sm text-xs font-bold text-slate-400">
-                        <ImageIcon size={18} />
-                        <input placeholder="圖片網址 (選填)" value={newSpot.imageUrl} onChange={e => setNewSpot({...newSpot, imageUrl: e.target.value})} className="bg-transparent outline-none w-full md:w-48" />
-                      </div>
-                      <textarea placeholder="詳細備註..." value={newSpot.note} onChange={e => setNewSpot({...newSpot, note: e.target.value})} className="flex-1 p-3 bg-white border rounded-xl font-medium h-20 resize-none text-sm shadow-sm" />
-                      <button type="submit" className="bg-slate-900 text-white px-8 rounded-xl font-black active:scale-95 shadow-lg flex items-center justify-center"><Plus size={24}/></button>
-                    </div>
-                  </form>
-
-                  <div className="space-y-8 relative before:content-[''] before:absolute before:left-[35px] before:top-4 before:bottom-4 before:w-1.5 before:bg-slate-50 before:rounded-full">
-                    {(itineraryData?.days?.[activeDay]?.spots || []).map((item, idx) => {
-                      const isExpanded = showAllNotes || !!expandedItems[item.id];
-                      return (
-                        <div key={item.id} className="relative pl-20 group">
-                          <div className="absolute left-[-15px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-                            <button onClick={() => { const spots = [...itineraryData.days[activeDay].spots]; if (idx > 0) { [spots[idx], spots[idx-1]] = [spots[idx-1], spots[idx]]; updateItinField(`days.${activeDay}.spots`, spots); } }} className="text-slate-200 hover:text-blue-600 transition-colors"><ArrowUp size={20}/></button>
-                            <div className="w-16 h-16 bg-white border-8 border-slate-50 rounded-[1.5rem] flex items-center justify-center text-[11px] font-black text-blue-600 shadow-md group-hover:scale-110 transition-transform">{item.time}</div>
-                            <button onClick={() => { const spots = [...itineraryData.days[activeDay].spots]; if (idx < (itineraryData.days[activeDay].spots?.length - 1)) { [spots[idx], spots[idx+1]] = [spots[idx+1], spots[idx]]; updateItinField(`days.${activeDay}.spots`, spots); } }} className="text-slate-200 hover:text-blue-600 transition-colors"><ArrowDown size={20}/></button>
-                          </div>
-                          <div onClick={() => setExpandedItems(prev => ({...prev, [item.id]: !prev[item.id]}))} className={`p-10 bg-white border rounded-[3rem] transition-all cursor-pointer ${editingId === item.id ? 'border-blue-600 shadow-2xl ring-8 ring-blue-50' : 'border-slate-100 hover:shadow-2xl shadow-sm'}`}>
-                            {editingId === item.id ? ( 
-                              <div className="space-y-4 animate-fade-in" onClick={e => e.stopPropagation()}>
-                                <div className="flex gap-2">
-                                  <input type="time" value={editData.time} onChange={e => setEditData({...editData, time: e.target.value})} className="p-3 border rounded-xl font-black w-32 bg-slate-50 outline-none" />
-                                  <input value={editData.spot} onChange={e => setEditData({...editData, spot: e.target.value})} className="flex-1 p-3 border rounded-xl font-black bg-slate-50 outline-none" />
-                                </div>
-                                <input placeholder="圖片網址..." value={editData.imageUrl || ''} onChange={e => setEditData({...editData, imageUrl: e.target.value})} className="w-full p-3 border rounded-xl bg-slate-50 outline-none text-xs font-bold" />
-                                <textarea value={editData.note} onChange={e => setEditData({...editData, note: e.target.value})} className="w-full p-3 border rounded-xl h-24 bg-slate-50 outline-none text-sm" />
-                                <div className="flex justify-end gap-3"><button onClick={() => setEditingId(null)} className="text-sm font-bold text-slate-400 px-4">取消</button><button onClick={async () => { const spots = itineraryData.days[activeDay].spots.map(s => s.id === editingId ? editData : s); await updateItinField(`days.${activeDay}.spots`, spots); setEditingId(null); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-black shadow-lg">儲存</button></div>
-                              </div>
-                            ) : ( <div className="flex justify-between items-start gap-4">
-                                <div className="space-y-4 flex-1">
-                                  <div className="flex items-center gap-4 flex-wrap">
-                                    <h4 className="text-3xl font-black text-slate-800 leading-tight tracking-tight">{item.spot}</h4>
-                                    <div className="flex gap-2">
-                                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.spot)}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all inline-flex items-center gap-1.5 text-xs font-black shadow-sm"><MapPin size={14} /> 地圖</a>
-                                      {(item.note || item.imageUrl) && (
-                                        <div className={`px-2 py-1.5 rounded-lg flex items-center gap-1.5 text-[10px] font-black uppercase ${isExpanded ? 'bg-blue-100 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
-                                          <StickyNote size={12}/> {isExpanded ? '已展開' : '細節資訊'}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  {(item.note || item.imageUrl) && isExpanded && (
-                                    <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 animate-fade-in space-y-4" onClick={e => e.stopPropagation()}>
-                                      {item.imageUrl && (
-                                        <div className="relative group/img overflow-hidden rounded-2xl border border-white shadow-sm max-w-md">
-                                          <img src={item.imageUrl} alt={item.spot} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; }} onClick={(e) => { e.stopPropagation(); window.open(item.imageUrl, '_blank'); }} />
-                                        </div>
-                                      )}
-                                      <p className="text-slate-500 text-sm italic whitespace-pre-wrap leading-relaxed">{renderTextWithLinks(item.note) || "暫無文字說明..."}</p>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all"><button onClick={(e) => { e.stopPropagation(); setEditingId(item.id); setEditData({...item}); }} className="p-3 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"><Edit3 size={20} /></button><button onClick={async (e) => { e.stopPropagation(); if(confirm('刪除景點？')) { const updated = itineraryData.days[activeDay].spots.filter(s => s.id !== item.id); await updateItinField(`days.${activeDay}.spots`, updated); } }} className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"><Trash2 size={20}/></button></div>
-                              </div> )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {(!itineraryData?.days?.[activeDay]?.spots?.length) && ( <div className="py-24 text-center border-4 border-dashed border-slate-50 rounded-[3rem]"><Calendar className="text-slate-100 mx-auto mb-6" size={80} /><p className="text-slate-300 font-black text-xl italic text-center">今天還沒有安排任何景點！</p></div> )}
-                  </div>
-                </div>
-              </div>
-            ) : activeTab === 'weather' ? <WeatherMaster tripInfo={tripInfo} /> : activeTab === 'checklist' ? <ChecklistMaster itineraryData={itineraryData} updateItinField={updateItinField} /> : activeTab === 'expenses' ? <ExpenseMaster itineraryData={itineraryData} updateItinField={updateItinField} /> : <CurrencyMaster parentAmount={currencyAmount} setParentAmount={setCurrencyAmount} /> }
-          </main>
-
-          <div className="md:hidden fixed bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-xl rounded-[2.5rem] p-3 flex justify-around items-center z-[100] shadow-2xl">
-            <button onClick={() => setActiveTab('itinerary')} className={`p-4 rounded-2xl transition-all ${activeTab === 'itinerary' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'text-slate-500'}`}><Calendar size={20} /></button>
-            <button onClick={() => setActiveTab('weather')} className={`p-4 rounded-2xl transition-all ${activeTab === 'weather' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'text-slate-500'}`}><Sun size={20} /></button>
-            <button onClick={() => setActiveTab('expenses')} className={`p-4 rounded-2xl transition-all ${activeTab === 'expenses' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'text-slate-500'}`}><Wallet size={20} /></button>
-            <button onClick={() => setActiveTab('checklist')} className={`p-4 rounded-2xl transition-all ${activeTab === 'checklist' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'text-slate-500'}`}><ListChecks size={20} /></button>
-            <button onClick={() => setActiveTab('currency')} className={`p-4 rounded-2xl transition-all ${activeTab === 'currency' ? 'bg-blue-600 text-white scale-110 shadow-lg' : 'text-slate-500'}`}><Coins size={20} /></button>
-          </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.togglePause()" class="p-3 bg-indigo-50 text-indigo-600 rounded-full active:scale-90 border border-indigo-100"><i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i></button>
+            <button onclick="window.stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full active:scale-90 font-bold"><i data-lucide="square" class="w-5 h-5"></i></button>
         </div>
-      )}
     </div>
-  );
-};
 
-export default App;
+    <!-- 1. 登入畫面 -->
+    <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 font-bold">
+            <div id="loginMainView">
+                <div class="mb-8 text-center">
+                    <div class="app-logo-wrapper"><div class="app-logo-glow"></div><svg viewBox="0 0 100 100" class="relative w-full h-full drop-shadow-lg"><defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4f46e5" /><stop offset="100%" style="stop-color:#6366f1" /></linearGradient></defs><path d="M20,30 Q50,20 80,30 L80,75 Q50,65 20,75 Z" fill="url(#logoGrad)" /><text x="50" y="60" text-anchor="middle" font-family="Arial" font-weight="900" font-size="28" fill="#ffffff">A</text></svg></div>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-800 mb-1">單字大師</h1>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition</p>
+                </div>
+                <div class="space-y-4">
+                    <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 hover:bg-black text-white font-black py-4 rounded-[1.2rem] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 text-md font-bold"><i data-lucide="user" class="w-5 h-5 text-white font-bold"></i> 使用帳號登入</button>
+                </div>
+                
+                <div class="mt-8 border-t pt-6">
+                    <button onclick="window.toggleAuthView('admin')" class="text-xs text-slate-400 font-bold underline decoration-dotted font-bold">管理者模式</button>
+                    <p class="mt-4 text-[10px] text-slate-300 font-black tracking-wider uppercase">最後更新：2026-02-01 22:45</p>
+                </div>
+            </div>
+            
+            <div id="customLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-2 text-xs font-black hover:text-indigo-600 font-bold transition-colors"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
+                <h2 class="text-2xl font-bold mb-6 text-slate-800 font-bold">學生登入</h2>
+                <div class="space-y-4">
+                    <input type="text" id="customUser" placeholder="使用者帳號" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all">
+                    <input type="password" id="customPass" placeholder="登入密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all">
+                    <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black active:scale-95 shadow-xl font-bold">確認進入</button>
+                </div>
+            </div>
+
+            <div id="adminLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black font-bold"><i data-lucide="arrow-left" class="w-4 h-4 font-bold"></i> 返回</button>
+                <h2 class="text-2xl font-black mb-6 text-slate-800 font-bold">管理中心</h2>
+                <div class="space-y-4">
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-black active:scale-95 font-bold">授權進入</button>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2 font-bold"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>處理中...</span></div>
+        </div>
+    </div>
+
+    <!-- 2. 使用者練習介面 -->
+    <div id="appScreen" class="hidden font-bold">
+        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600 rounded-xl shadow-lg text-white font-bold"><i data-lucide="graduation-cap" class="w-6 h-6 font-bold"></i></div>
+                <span class="text-xl font-black uppercase tracking-tighter text-slate-800">單字大師</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-black border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4 font-bold"></i> 發佈連結</button>
+                <span id="userNameDisplay" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 font-bold"></span>
+                <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-bold">登出</button>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 font-bold font-bold">
+            <div class="lg:col-span-4 space-y-8">
+                <div id="addUnitSection" class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 font-bold font-bold"><i data-lucide="file-plus-2" class="text-indigo-600 w-6 h-6 font-bold"></i> 新增單元</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="unitNameInput" placeholder="單元名稱" class="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-bold">
+                        <textarea id="wordsInput" placeholder="格式: 單字-定義" rows="5" class="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold"></textarea>
+                        <button onclick="window.importWords()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg active:scale-95 transition-all font-bold">儲存單元</button>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 font-bold font-bold"><i data-lucide="book-open" class="text-indigo-600 w-6 h-6 font-bold"></i> 課程單元</h2>
+                    <div id="unitList" class="space-y-3 max-h-[450px] overflow-y-auto pr-2 scrollbar-thin text-slate-700"></div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-8 font-bold">
+                <!-- 控制面板 -->
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-6 space-y-6 font-bold font-bold">
+                    <div class="flex flex-wrap items-center justify-between gap-4 font-bold">
+                        <div class="flex bg-slate-100 p-1.5 rounded-xl border-2 border-slate-200 overflow-hidden font-bold">
+                            <button onclick="window.setGlobalMode('both')" class="ui-toggle-btn rounded-lg" id="btn-both">中英</button>
+                            <button onclick="window.setGlobalMode('en')" class="ui-toggle-btn rounded-lg ml-1" id="btn-en">英文</button>
+                            <button onclick="window.setGlobalMode('zh')" class="ui-toggle-btn rounded-lg ml-1" id="btn-zh">中文</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 font-bold">
+                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn font-bold">音節</button>
+                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn font-bold">母音</button>
+                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn font-bold">掌握度</button>
+                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn font-bold">筆記</button>
+                        </div>
+                    </div>
+                    <div class="border-t pt-6 grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
+                        <div class="space-y-4">
+                            <div class="flex flex-wrap items-center gap-3 font-bold font-bold">
+                                <div class="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-xl border-2 border-amber-100 text-amber-700 font-black">
+                                    <span class="text-[10px] uppercase font-black">範圍</span>
+                                    <input type="number" id="audioRangeStart" value="1" min="1" class="w-10 bg-transparent text-md outline-none">
+                                    <span class="text-amber-300 font-bold">~</span>
+                                    <input type="number" id="audioRangeEnd" value="20" min="1" class="w-10 bg-transparent text-md outline-none font-bold">
+                                </div>
+                                <div class="flex gap-3 bg-slate-50 px-4 py-2 rounded-xl border-2 border-slate-200 font-black">
+                                    <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="checkbox" id="audioVisualSync" checked class="w-4 h-4 rounded text-indigo-600" onchange="window.handleSyncCheck('sync')"><span class="text-xs font-bold text-slate-500 font-bold">同步</span></label>
+                                    <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="checkbox" id="audioBlindMode" class="w-4 h-4 rounded text-rose-600" onchange="window.handleSyncCheck('blind')"><span class="text-xs font-bold text-slate-500 font-bold font-bold">盲聽</span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 font-black">
+                            <button onclick="window.startAutoPlay()" class="py-4 bg-indigo-600 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold"><i data-lucide="play" class="w-5 h-5 font-bold font-bold"></i>英聽</button>
+                            <button onclick="window.startRangeQuiz('block')" class="py-4 bg-amber-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold font-bold"><i data-lucide="layout-grid" class="w-5 h-5 font-bold font-bold font-bold"></i>積木</button>
+                            <button onclick="window.startRangeQuiz('dictation')" class="py-4 bg-rose-500 text-white rounded-2xl text-[10px] shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center gap-1 font-bold font-bold"><i data-lucide="keyboard" class="w-5 h-5 font-bold font-bold font-bold"></i>聽寫</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 艾賓浩斯追蹤看板 -->
+                <div id="reviewTrackingArea" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 mb-6 font-bold font-bold">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 font-bold">
+                        <div class="flex items-center gap-3">
+                            <h4 class="text-base font-black text-slate-800 flex items-center gap-2 font-bold font-bold"><i data-lucide="calendar-check" class="text-indigo-600 w-5 h-5 font-bold font-bold"></i> 複習追蹤</h4>
+                            <span id="reviewCountDisplay" class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full font-bold">未選</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 font-bold">
+                            <input type="date" id="baseDateInput" onchange="window.updateBaseDateTime()" class="bg-transparent text-xs font-bold outline-none text-slate-600 cursor-pointer font-bold">
+                            <input type="time" id="baseTimeInput" onchange="window.updateBaseDateTime()" class="bg-transparent text-xs font-bold outline-none text-slate-600 cursor-pointer font-bold">
+                        </div>
+                    </div>
+                    <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 scrollbar-hide font-bold font-bold font-bold"></div>
+                </div>
+
+                <div id="unitHeader" class="mb-6 px-4 flex justify-between items-end border-b-2 border-slate-100 pb-4 font-bold">
+                    <div><h3 id="activeUnitTitle" class="text-3xl font-black tracking-tight italic text-slate-800 font-bold font-bold font-bold">請選單元</h3><p id="unitStats" class="text-slate-400 font-medium mt-1 text-sm font-bold font-bold"></p></div>
+                    <select id="sortSelect" onchange="window.handleSortChange(this.value)" class="bg-transparent text-sm font-black outline-none cursor-pointer border-b-2 border-indigo-500 text-indigo-600 pb-1 font-bold">
+                        <option value="original">原始順序</option><option value="random">隨機</option><option value="az">A-Z</option><option value="rating">掌握度</option>
+                    </select>
+                </div>
+
+                <div id="wordGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12 transition-all duration-500 font-bold"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 測驗 Modal -->
+    <div id="quizModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl font-bold font-bold font-bold">
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative overflow-hidden text-slate-800">
+            <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all font-bold font-bold font-bold"><i data-lucide="x"></i></button>
+            <div class="mb-6 font-bold"><span id="quizBadge" class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest font-bold font-bold">挑戰模式</span><div class="flex justify-center items-center gap-4 mt-6 text-slate-800 font-bold"><h3 id="quizZh" class="text-4xl font-black font-bold"></h3><button id="quizSpeakBtn" class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl active:scale-90 shadow-sm font-bold font-bold"><i data-lucide="volume-2" class="w-7 h-7 font-bold"></i></button></div><p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 font-bold font-bold"></p></div>
+            <div id="blockQuizContent" class="hidden font-bold"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px] items-center font-bold font-bold"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold font-bold"></div></div>
+            <div id="dictationQuizContent" class="hidden space-y-6 text-slate-800"><input type="text" id="quizInput" placeholder="輸入單字並檢查..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl outline-none text-2xl font-black uppercase focus:border-indigo-500 font-bold font-bold"><button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 font-bold font-bold font-bold font-bold">檢查答案</button></div>
+            <div class="mt-8 text-center font-bold font-bold font-bold font-bold font-bold"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black shadow-lg font-bold font-bold font-bold"><span>下一題</span> <i data-lucide="arrow-right" class="w-4 h-4"></i></button></div>
+        </div>
+    </div>
+    
+    <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl z-[300] flex items-center gap-3 border border-white/10 font-bold font-bold font-bold"><i data-lucide="bell" class="w-4 h-4 text-indigo-400 font-bold font-bold"></i><span id="notificationText"></span></div>
+
+    <!-- Firebase SDK & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDYxUj8FG0KCQIkuBZNjqENH9K8aLDHsYQ", authDomain: "my-vocab-app-852b4.firebaseapp.com", projectId: "my-vocab-app-852b4", storageBucket: "my-vocab-app-852b4.firebasestorage.app", messagingSenderId: "79896462245", appId: "1:79896462245:web:1ece173ddc5a6d05781e4c", measurementId: "G-HSMRF8W6SW" };
+        const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        const STAGES = [
+            { id: "s1", name: "第一次", offsetH: 0, label: "立即" }, { id: "s2", name: "第二次", offsetH: 0.5, label: "30分後" }, { id: "s3", name: "第三次", offsetH: 12, label: "12小時後" },
+            { id: "d1", name: "1天後", offsetH: 24, label: "中期" }, { id: "d2", name: "2天後", offsetH: 48, label: "中期" }, { id: "d4", name: "4天後", offsetH: 96, label: "中期" },
+            { id: "d7", name: "7天後", offsetH: 168, label: "中長期" }, { id: "d15", name: "15天後", offsetH: 360, label: "中長期" },
+            { id: "m1", name: "1個月後", offsetH: 720, label: "長期" }, { id: "m3", name: "3個月後", offsetH: 2160, label: "長期" }, { id: "m6", name: "6個月後", offsetH: 4320, label: "終極" }
+        ];
+
+        const state = { 
+            units: [], activeUnitId: null, globalMode: 'both', userLabel: null,
+            isAudioPlaying: false, isPaused: false, displayedWords: [], isGuestMode: false,
+            quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: [],
+            showSyllables: false, showVowels: false, showRating: false, showNote: false,
+            voice: null, stableDisplayList: null, editingUnitId: null, editingWordId: null,
+            quizLetters: []
+        };
+
+        // --- 核心工具 ---
+        window.showAppUI = (name) => { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = name; lucide.createIcons(); };
+        window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
+        window.showNotification = (t) => { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); };
+
+        // --- 測驗與挑戰邏輯 ---
+        const renderBlock = () => {
+            const currentItem = state.quizQueue[state.quizIndex];
+            if (!currentItem) return;
+            const clean = currentItem.en.toLowerCase().replace(/[^a-z0-9]/g, '');
+            document.getElementById('blockAnswerArea').innerHTML = clean.split('').map((_, i) => `<div class="answer-slot font-bold font-bold">${state.currentAnswer[i] || ''}</div>`).join('');
+            document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="window.handleQuizBlockClick(${i}, '${l}')" class="block-letter ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''} font-bold">${l}</button>`).join('');
+        };
+
+        const setupQuiz = () => {
+            const item = state.quizQueue[state.quizIndex];
+            if (!item) return;
+            document.getElementById('quizZh').innerText = item.zh;
+            document.getElementById('quizProgress').innerText = `題目：${state.quizIndex + 1} / ${state.quizQueue.length}`;
+            document.getElementById('btnNextQuiz').classList.add('hidden');
+            const clean = item.en.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (state.quizType === 'block') {
+                document.getElementById('blockQuizContent').classList.remove('hidden');
+                document.getElementById('dictationQuizContent').classList.add('hidden');
+                state.quizLetters = clean.split('').sort(() => Math.random() - 0.5);
+                state.currentAnswer = []; state.usedIndexes = []; renderBlock();
+            } else {
+                document.getElementById('blockQuizContent').classList.add('hidden');
+                document.getElementById('dictationQuizContent').classList.remove('hidden');
+                const i = document.getElementById('quizInput'); i.value = ""; setTimeout(() => i.focus(), 100);
+            }
+            window.speak(item.en); lucide.createIcons();
+        };
+
+        window.startRangeQuiz = (type) => {
+            if (state.displayedWords.length === 0) return window.showNotification("此單元無單字");
+            const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1), e = Math.min(state.displayedWords.length, parseInt(document.getElementById('audioRangeEnd').value) || 20);
+            state.quizQueue = state.displayedWords.slice(s - 1, e); state.quizType = type; state.quizIndex = 0;
+            document.getElementById('quizModal').classList.remove('hidden'); setupQuiz();
+        };
+
+        window.handleQuizBlockClick = (i, c) => {
+            const item = state.quizQueue[state.quizIndex];
+            const clean = item.en.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (c === clean[state.currentAnswer.length]) {
+                state.currentAnswer.push(c); state.usedIndexes.push(i); renderBlock();
+                if (state.currentAnswer.length === clean.length) {
+                    if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
+                    else { window.showNotification("挑戰成功！完美達成"); setTimeout(window.closeQuiz, 1200); }
+                }
+            } else {
+                const slots = document.querySelectorAll('.answer-slot');
+                slots[state.currentAnswer.length]?.classList.add('animate-shake', 'text-rose-500');
+                setTimeout(() => slots[state.currentAnswer.length]?.classList.remove('animate-shake', 'text-rose-500'), 400);
+            }
+        };
+
+        window.checkDictationAnswer = () => {
+            const i = document.getElementById('quizInput').value.trim().toLowerCase().replace(/[^a-z0-9]/g, ''), t = state.quizQueue[state.quizIndex].en.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (i === t) {
+                if (state.quizIndex < state.quizQueue.length - 1) document.getElementById('btnNextQuiz').classList.remove('hidden');
+                else { window.showNotification("正確！挑戰成功"); setTimeout(window.closeQuiz, 1200); }
+            } else {
+                const inp = document.getElementById('quizInput'); inp.classList.add('animate-shake', 'border-rose-500');
+                setTimeout(() => inp.classList.remove('animate-shake', 'border-rose-500'), 400);
+            }
+        };
+
+        window.nextQuizItem = () => { state.quizIndex++; setupQuiz(); };
+        window.closeQuiz = () => { document.getElementById('quizModal').classList.add('hidden'); window.speechSynthesis.cancel(); };
+
+        // --- 登入與同步 ---
+        window.loginWithCustom = async function() {
+            const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
+            if (!u || !p) return;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            try {
+                if (!auth.currentUser) await signInAnonymously(auth);
+                const accountSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
+                if (accountSnap.exists() && accountSnap.data().password === p) {
+                    sessionStorage.setItem('custom_user_session', u);
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_records', u), { displayName: u, lastSeen: Date.now() }, { merge: true });
+                    location.reload(); 
+                } else window.showNotification("錯誤：帳號或密碼不正確");
+            } catch (e) { window.showNotification("伺服器連線失敗"); } finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
+        };
+        window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
+
+        // --- 智慧複習 ---
+        window.updateBaseDateTime = async () => {
+            const date = document.getElementById('baseDateInput').value, time = document.getElementById('baseTimeInput').value || "09:00";
+            if (!state.activeUnitId || !date) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: date, baseTime: time });
+            window.showNotification("複習計畫已更新");
+        };
+
+        window.renderReviewTracking = () => {
+            const container = document.getElementById('reviewNodes'), counter = document.getElementById('reviewCountDisplay'), dateInp = document.getElementById('baseDateInput'), timeInp = document.getElementById('baseTimeInput');
+            const u = state.units.find(u => u.id === state.activeUnitId);
+            if (!u || !container) return;
+            const progress = u.reviewProgress || {}, baseDate = u.baseDate || "", baseTime = u.baseTime || "09:00";
+            if(dateInp) dateInp.value = baseDate; if(timeInp) timeInp.value = baseTime;
+            const doneCount = STAGES.filter(s => progress[s.id]).length;
+            counter.innerText = doneCount === 0 ? "未開始" : `已完成 ${doneCount}/11`;
+            const now = new Date();
+            container.innerHTML = STAGES.map(stage => {
+                const isDone = !!progress[stage.id];
+                let dateStr = "", timeStr = "", dateClass = "date-future";
+                if (baseDate) {
+                    const startTs = new Date(`${baseDate}T${baseTime}`).getTime();
+                    const targetTs = startTs + (stage.offsetH * 60 * 60 * 1000);
+                    const d = new Date(targetTs);
+                    dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                    timeStr = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                    if (targetTs < now.getTime() && !isDone) dateClass = "date-past";
+                    else if (d.toDateString() === now.toDateString()) dateClass = "date-today";
+                }
+                return `<div onclick="window.toggleReviewStage('${stage.id}')" class="review-node ${isDone ? 'done' : ''}">
+                    <div class="node-label">${stage.label}</div><div class="node-name">${stage.name}</div><div class="node-date ${dateClass}">${dateStr}</div><div class="node-time ${isDone ? '' : 'opacity-40'}">${timeStr}</div>
+                    ${isDone ? '<i data-lucide="check-circle-2" class="w-3 h-3 mt-1"></i>' : '<i data-lucide="circle" class="w-3 h-3 mt-1 opacity-20"></i>'}
+                </div>`;
+            }).join(''); lucide.createIcons();
+        };
+
+        window.toggleReviewStage = async (sid) => {
+            const u = state.units.find(u => u.id === state.activeUnitId); if (!u) return;
+            if (!u.reviewProgress) u.reviewProgress = {};
+            u.reviewProgress[sid] = u.reviewProgress[sid] ? null : Date.now();
+            window.renderReviewTracking();
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: u.reviewProgress });
+        };
+
+        // --- 渲染功能 ---
+        function formatSyllables(w) {
+            if (!w || w.includes(" ") || w.length <= 3) return w;
+            const vs = "aeiouy", isV = (c) => vs.includes(c.toLowerCase());
+            let chunks = [], i = 0, o = w.toLowerCase();
+            while (i < o.length) {
+                let char = o[i], type = isV(char) ? 'V' : 'C', cluster = char;
+                while (i + 1 < o.length && (isV(o[i+1]) === isV(char))) cluster += o[++i];
+                chunks.push({ type, val: cluster }); i++;
+            }
+            if (chunks.length > 2 && chunks[chunks.length-1].val === 'e' && chunks[chunks.length-2].type === 'C' && !chunks[chunks.length-2].val.endsWith('l')) chunks[chunks.length-2].val += chunks.pop().val;
+            let res = "";
+            for (let k = 0; k < chunks.length; k++) {
+                res += chunks[k].val;
+                if (chunks[k].type === 'V' && k < chunks.length - 1) {
+                    let nC = chunks[k+1], nV = chunks[k+2];
+                    if (nC && nC.type === 'C' && nV && nV.type === 'V') {
+                        const dig = ["th", "sh", "ch", "ph", "ck", "qu", "tr", "st", "gh"];
+                        if (nC.val.length > 1 && !dig.includes(nC.val.substring(0, 2))) { res += nC.val[0] + "·"; nC.val = nC.val.substring(1); } else res += "·";
+                    }
+                }
+            }
+            return res.replace(/·$/, "");
+        }
+
+        window.renderWords = () => {
+            const g = document.getElementById('wordGrid'), u = state.units.find(x => x.id == state.activeUnitId);
+            if (!u || !g) return;
+            if (state.stableDisplayList) state.stableDisplayList = state.stableDisplayList.map(sw => u.words.find(w => w.id === sw.id) || sw);
+            else {
+                let list = [...(u.words || [])], sort = document.getElementById('sortSelect').value;
+                if (sort === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
+                else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+                else if (sort === 'random') list.sort(() => Math.random() - 0.5);
+                state.stableDisplayList = list;
+            }
+            state.displayedWords = state.stableDisplayList;
+            document.getElementById('activeUnitTitle').innerText = u.name;
+            document.getElementById('unitStats').innerText = `共 ${state.displayedWords.length} 單字`;
+            ['both','en','zh'].forEach(m => { const b = document.getElementById(`btn-${m}`); if(b) b.className = `ui-toggle-btn ${state.globalMode === m ? 'toggle-on' : 'toggle-off'}`; });
+            const sBtn = (id, cond, text) => { const b = document.getElementById(id); if(b) { b.className = `ui-toggle-btn ${cond ? 'toggle-on' : 'toggle-off'}`; b.innerText = text + (cond ? ' ON' : ' OFF'); } };
+            sBtn('toggle-syllables-btn', state.showSyllables, '音節'); sBtn('toggle-vowels-btn', state.showVowels, '母音'); sBtn('toggle-rating-btn', state.showRating, '掌握度'); sBtn('toggle-note-btn', state.showNote, '筆記');
+            
+            g.innerHTML = state.displayedWords.map((w, idx) => {
+                const mode = w.localMode || state.globalMode;
+                const isWordEditing = state.editingWordId === w.id;
+                const highlight = (t) => { if (!t) return ""; let p = state.showSyllables ? formatSyllables(t) : t; if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-bold">${m}</span>`); return p; };
+                const modeLabel = mode === 'both' ? '中英' : mode === 'en' ? '僅英' : '僅中';
+                return `
+                <div onclick="window.speak('${w.en}')" class="word-card bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 card-${mode} hover:shadow-xl transition-all font-bold">
+                    <span style="position:absolute; top:-10px; left:-10px; width:26px; height:26px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#cbd5e1;">${idx+1}</span>
+                    
+                    <!-- 🌟 切換按鈕加大優化 -->
+                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}')" class="card-mode-toggle font-bold">
+                        <i data-lucide="languages" class="w-5 h-5"></i>
+                        <span>${modeLabel}</span>
+                    </button>
+
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="space-y-2 flex-1 font-bold">
+                            ${isWordEditing ? `<input id="edit-en-${w.id}" class="edit-input mb-2" value="${w.en}" onclick="event.stopPropagation()"><input id="edit-zh-${w.id}" class="edit-input" value="${w.zh}" onclick="event.stopPropagation()">` : 
+                            `<h4 class="word-en text-4xl font-black text-slate-800 tracking-tight">${highlight(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-xl">${w.zh}</p>`}
+                        </div>
+                        <div class="flex flex-col gap-1.5 font-bold pt-8">
+                            ${isWordEditing ? `<button onclick="event.stopPropagation(); window.saveEditedWord('${w.id}')" class="p-3 bg-emerald-500 text-white rounded-xl font-bold"><i data-lucide="check"></i></button>` : 
+                            `${!state.isGuestMode ? `<button onclick="event.stopPropagation(); window.toggleEditWord('${w.id}')" class="p-2 text-slate-400 hover:text-indigo-500 transition-colors font-bold"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}`}
+                        </div>
+                    </div>
+                    ${state.showNote ? `<textarea class="note-field font-bold" placeholder="備註..." onclick="event.stopPropagation()" onblur="window.updateNote('${w.id}', this.value)">${w.note || ''}</textarea>` : ''}
+                    ${state.showRating ? `<div class="rating-section pt-6 border-t border-slate-50 flex items-center justify-between font-bold font-bold"><span class="text-xs font-black text-slate-300">熟練度</span><div class="flex gap-2 font-bold font-bold">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="w-10 h-10 rounded-xl text-sm font-black ${w.rating == n ? window.getRatingColor(n) : 'bg-slate-100 text-slate-400'} transition-all">${n}</button>`).join('')}</div></div>` : ''}
+                </div>`}).join(''); lucide.createIcons(); window.renderReviewTracking();
+        };
+
+        // --- 全域指令 ---
+        window.setActiveUnit = (id) => { state.activeUnitId = id; state.stableDisplayList = null; state.editingWordId = null; window.renderWords(); renderUnitList(); };
+        window.handleSortChange = (v) => { state.stableDisplayList = null; window.renderWords(); };
+        window.updateRating = async (id, n) => { const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); if (w) { w.rating = n; window.renderWords(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } };
+        window.updateNote = async (id, val) => { const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); if (w && w.note !== val) { w.note = val; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } };
+        window.setGlobalMode = (m) => { state.globalMode = m; const u = state.units.find(u => u.id === state.activeUnitId); if (u) u.words.forEach(w => delete w.localMode); window.renderWords(); };
+        window.cycleWordMode = (id) => { if(state.editingWordId) return; const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); const c = w.localMode || state.globalMode; w.localMode = c === 'both' ? 'en' : c === 'en' ? 'zh' : 'both'; window.renderWords(); };
+        window.toggleFeature = (f) => { state['show' + f.charAt(0).toUpperCase() + f.slice(1)] = !state['show' + f.charAt(0).toUpperCase() + f.slice(1)]; window.renderWords(); };
+        window.handleSyncCheck = (m) => { const s = document.getElementById('audioVisualSync'), b = document.getElementById('audioBlindMode'); if (m === 'sync' && s.checked) b.checked = false; if (m === 'blind' && b.checked) s.checked = false; };
+        window.toggleEditWord = (id) => { state.editingWordId = (state.editingWordId === id) ? null : id; window.renderWords(); };
+        window.saveEditedWord = async (id) => {
+            const enIn = document.getElementById(`edit-en-${id}`), zhIn = document.getElementById(`edit-zh-${id}`);
+            if (!enIn || !zhIn) return;
+            const unit = state.units.find(u => u.id === state.activeUnitId), word = unit.words.find(w => w.id === id);
+            if (word) { word.en = enIn.value.trim(); word.zh = zhIn.value.trim(); state.editingWordId = null; window.renderWords(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: unit.words }); window.showNotification("修正成功"); }
+        };
+        window.editUnitName = (id) => { state.editingUnitId = id; renderUnitList(); };
+        window.saveUnitName = async (id) => { const input = document.getElementById(`input-unit-${id}`); if (input && input.value.trim()) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: input.value.trim() }); state.editingUnitId = null; window.showNotification("名稱已修改"); } };
+        window.toggleUnitPublish = async (id, s) => { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { isPublished: !s }); window.showNotification(!s ? "已發佈" : "已隱藏"); };
+        window.deleteUnit = async (id) => { if (confirm("確定刪除此單元嗎？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
+        window.publishGuestLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); window.showNotification("連結已複製"); };
+
+        function renderUnitList() {
+            const el = document.getElementById('unitList'); if (!el) return;
+            el.innerHTML = state.units.map(u => {
+                const isSelected = state.activeUnitId === u.id, isEditing = state.editingUnitId === u.id;
+                return `<div onclick="window.setActiveUnit('${u.id}')" class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'bg-white border-slate-100 hover:border-indigo-200'}">
+                    <div class="flex-1 truncate mr-2 font-black">${isEditing ? `<input id="input-unit-${u.id}" class="w-full border rounded px-1 text-sm font-bold" value="${u.name}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter') window.saveUnitName('${u.id}')">` : u.name}</div>
+                    <div class="flex gap-1.5 font-bold">${!state.isGuestMode ? `
+                        ${isEditing ? `<button onclick="event.stopPropagation(); window.saveUnitName('${u.id}')" class="text-emerald-500"><i data-lucide="check" class="w-4 h-4"></i></button>` : `<button onclick="event.stopPropagation(); window.editUnitName('${u.id}')" class="text-slate-400 hover:text-indigo-500 font-bold"><i data-lucide="pencil" class="w-4 h-4"></i></button>`}
+                        <button onclick="event.stopPropagation(); window.toggleUnitPublish('${u.id}', ${u.isPublished || false})" class="${u.isPublished ? 'text-indigo-600' : 'text-slate-300'}"><i data-lucide="${u.isPublished ? 'eye' : 'eye-off'}" class="w-4 h-4"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="text-rose-400 font-bold"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div>
+                </div>`}).join(''); lucide.createIcons();
+        }
+
+        window.getRatingColor = (n) => ({ 1: 'bg-emerald-500 text-white shadow-sm', 2: 'bg-teal-400 text-white shadow-sm', 3: 'bg-amber-400 text-white shadow-sm', 4: 'bg-orange-500 text-white shadow-sm', 5: 'bg-rose-500 text-white shadow-sm' }[n]);
+        window.speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); if (state.voice) u.voice = state.voice; u.lang = 'en-US'; u.rate = 0.9; window.speechSynthesis.speak(u); };
+        window.togglePause = () => { state.isPaused = !state.isPaused; const icon = document.getElementById('pauseIcon'); if (state.isPaused) { icon.setAttribute('data-lucide', 'play'); window.speechSynthesis.pause(); } else { icon.setAttribute('data-lucide', 'pause'); window.speechSynthesis.resume(); } lucide.createIcons(); };
+        window.startAutoPlay = async () => { if (state.isAudioPlaying) return; const list = state.displayedWords; if (list.length === 0) return; state.isAudioPlaying = true; state.isPaused = false; document.getElementById('floatingAudioBar').classList.add('opacity-100', 'pointer-events-auto');
+            for (let w of list) { if (!state.isAudioPlaying) break; document.getElementById('floatingStatusText').innerText = w.en; while (state.isPaused) { await new Promise(r => setTimeout(r, 200)); if (!state.isAudioPlaying) return; } window.speak(w.en); await new Promise(r => setTimeout(r, 2200)); await new Promise(r => setTimeout(r, 2000)); } window.stopAutoPlay();
+        };
+        window.stopAutoPlay = () => { state.isAudioPlaying = false; state.isPaused = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); };
+
+        window.importWords = async () => {
+            const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if (!n || !t) return;
+            const words = t.split('\n').map(l => { const p = l.split(/[-－]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), note: '', rating: 3 } : null; }).filter(x => x);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, isPublished: true, reviewProgress: {}, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00" });
+            document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; window.showNotification("儲存成功");
+        };
+
+        // --- 🚀 啟動邏輯 ---
+        onAuthStateChanged(auth, async (user) => {
+            const params = new URLSearchParams(window.location.search), viewType = params.get('view'), guestId = params.get('id');
+            const customSess = sessionStorage.getItem('custom_user_session'), adminSess = sessionStorage.getItem('admin_session');
+            if (viewType === 'guest' && guestId) {
+                state.isGuestMode = true; state.userLabel = guestId; document.getElementById('addUnitSection').classList.add('hidden'); document.getElementById('btnPublishGuest').classList.add('hidden'); window.showAppUI("訪客模式");
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), (snap) => { state.units = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.ownerId === guestId && u.isPublished === true); if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id; renderUnitList(); window.renderWords(); });
+            } else if (adminSess === 'true') window.showAppUI("管理中心");
+            else if (customSess) {
+                state.userLabel = customSess; window.showAppUI(customSess);
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), (snap) => { state.units = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.ownerId === customSess); if (!state.activeUnitId && state.units.length > 0) state.activeUnitId = state.units[0].id; renderUnitList(); window.renderWords(); });
+            } else { document.getElementById('authScreen').classList.remove('hidden'); lucide.createIcons(); }
+            if (!user && !customSess && !adminSess) await signInAnonymously(auth);
+        });
+
+        const initV = () => { const v = window.speechSynthesis.getVoices(); state.voice = v.find(i => i.lang === 'en-US' && i.name.includes('Google')) || v.find(i => i.lang.startsWith('en')) || null; };
+        window.speechSynthesis.onvoiceschanged = initV; initV();
+    </script>
+</body>
+</html>
