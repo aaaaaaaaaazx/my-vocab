@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 9.5 (全功能修復版)</title>
+    <title>單字大師 - Eternal Edition 9.6 (目錄分享版)</title>
     
     <!-- PWA & Mobile Meta -->
     <meta name="theme-color" content="#4f46e5">
@@ -161,14 +161,14 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black tracking-tight text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 9.5</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 9.6</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 hover:bg-black text-white font-black py-4 rounded-[1.2rem] shadow-lg flex items-center justify-center gap-3 text-md"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
                 </div>
                 <div class="mt-8 border-t pt-6">
                     <button onclick="window.toggleAuthView('admin')" class="text-xs text-slate-400 font-bold underline decoration-dotted">管理者模式</button>
-                    <p class="mt-4 text-[10px] text-slate-300 font-black tracking-wider uppercase">最後更新：2026-02-23 20:30</p>
+                    <p class="mt-4 text-[10px] text-slate-300 font-black tracking-wider uppercase font-bold">最後更新：2026-02-23 20:45</p>
                 </div>
             </div>
             
@@ -196,7 +196,7 @@
     </div>
 
     <!-- 2. 使用者練習介面 -->
-    <div id="appScreen" class="hidden">
+    <div id="appScreen" class="hidden font-bold">
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-indigo-600 rounded-xl shadow-lg text-white font-bold"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
@@ -204,9 +204,9 @@
             </div>
             <div class="flex items-center gap-4">
                 <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-black">管理者後台</button>
-                <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-black border border-emerald-100"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
+                <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-black border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
                 <span id="userNameDisplay" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200"></span>
-                <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
+                <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-bold">登出</button>
             </div>
         </nav>
 
@@ -269,8 +269,8 @@
                                 </div>
                             </div>
                             <div class="flex gap-4 p-1.5 bg-slate-100 rounded-xl border">
-                                <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="audioVisualSync" checked onchange="window.handleSyncModeChange('sync')" class="w-4 h-4 rounded text-indigo-600"><span class="text-xs font-bold text-slate-600">同步</span></label>
-                                <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="audioBlindMode" onchange="window.handleSyncModeChange('blind')" class="w-4 h-4 rounded text-rose-600"><span class="text-xs font-bold text-slate-600">盲聽</span></label>
+                                <label class="flex items-center gap-1.5 cursor-pointer font-bold"><input type="checkbox" id="audioVisualSync" checked onchange="window.handleSyncModeChange('sync')" class="w-4 h-4 rounded text-indigo-600"><span class="text-xs font-bold text-slate-600">同步</span></label>
+                                <label class="flex items-center gap-1.5 cursor-pointer font-bold"><input type="checkbox" id="audioBlindMode" onchange="window.handleSyncModeChange('blind')" class="w-4 h-4 rounded text-rose-600"><span class="text-xs font-bold text-slate-600">盲聽</span></label>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2 font-black">
@@ -319,7 +319,7 @@
                 <button onclick="window.logout()" class="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold">登出</button>
             </div>
         </nav>
-        <main class="max-w-7xl mx-auto px-8 py-10">
+        <main class="max-w-7xl mx-auto px-8 py-10 font-bold">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="settings-card text-center">
                     <h3 class="text-xl font-black mb-6">建立學生帳號</h3>
@@ -358,7 +358,7 @@
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative font-bold">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full font-bold"><i data-lucide="x"></i></button>
             <div class="mb-6"><span class="px-4 py-1.5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase">測驗挑戰</span><h3 id="quizZh" class="text-4xl font-black mt-6"></h3><p id="quizProgress" class="text-xs text-slate-400 font-black mt-2"></p></div>
-            <div id="blockQuizContent" class="hidden"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px]"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl"></div></div>
+            <div id="blockQuizContent" class="hidden"><div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px]"></div><div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl font-bold"></div></div>
             <div id="dictationQuizContent" class="hidden space-y-6"><input type="text" id="quizInput" placeholder="拼出正確單字..." class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black uppercase outline-none focus:border-indigo-500"><button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black">檢查</button></div>
             <div class="mt-8"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black">下一題</button></div>
         </div>
@@ -367,15 +367,15 @@
     <!-- 管理者詳情 Modal -->
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100 font-bold">
-            <div class="p-8 border-b flex justify-between items-center bg-slate-50">
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50 font-bold">
                 <h4 id="detailUserTitle" class="font-black text-2xl font-bold">學生數據預覽</h4>
-                <button onclick="window.closeAdminDetail()" class="text-slate-400 p-2 hover:bg-slate-200 rounded-full font-bold"><i data-lucide="x"></i></button>
+                <button onclick="window.closeAdminDetail()" class="text-slate-400 p-2 hover:bg-slate-200 rounded-full font-bold font-bold"><i data-lucide="x"></i></button>
             </div>
-            <div class="p-6 bg-indigo-50 border-b">
+            <div class="p-6 bg-indigo-50 border-b font-bold">
                 <div class="flex flex-wrap items-center gap-4">
                     <div class="min-w-[150px]"><label class="block text-[10px] font-black text-indigo-400 mb-1">來源帳號</label><select id="sourceAccountSelect" onchange="window.updateSourceUnitList()" class="w-full bg-white border-2 border-indigo-100 rounded-xl px-4 py-2 text-sm font-bold"></select></div>
                     <div class="flex-1"><label class="block text-[10px] font-black text-indigo-400 mb-1">選取單元</label><select id="masterUnitSelect" class="w-full bg-white border-2 border-indigo-100 rounded-xl px-4 py-2 text-sm font-bold"></select></div>
-                    <button onclick="window.assignUnitToStudent()" class="px-8 py-2 bg-indigo-600 text-white rounded-xl font-black text-sm mt-4">複製單元</button>
+                    <button onclick="window.assignUnitToStudent()" class="px-8 py-2 bg-indigo-600 text-white rounded-xl font-black text-sm mt-4 font-bold">複製單元</button>
                 </div>
             </div>
             <div id="detailContent" class="p-8 overflow-y-auto space-y-4"></div>
@@ -447,8 +447,12 @@
             else if (sort === 'random') list.sort(() => Math.random() - 0.5);
             else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
+            document.getElementById('activeUnitTitle').innerText = u.name;
             
-            const updateBtn = (id, active) => { const b = document.getElementById(id); if(b) active ? b.classList.add('active') : b.classList.remove('active'); };
+            const updateBtn = (id, active) => { 
+                const b = document.getElementById(id); 
+                if(b) active ? b.classList.add('active') : b.classList.remove('active'); 
+            };
             ['both','en','zh'].forEach(m => updateBtn(`btn-${m}`, state.globalMode === m));
             ['syllables', 'vowels', 'rating', 'note'].forEach(f => updateBtn(`toggle-${f}-btn`, state['show'+f.charAt(0).toUpperCase()+f.slice(1)]));
 
@@ -459,14 +463,11 @@
                     if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, (m) => `<span class="text-rose-600 font-black">${m}</span>`);
                     return p;
                 };
-                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en}')" class="word-card card-${mode} hover:shadow-xl transition-all">
+                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en}')" class="word-card card-${mode} hover:shadow-xl transition-all font-bold">
                     <span style="position:absolute; top:-10px; left:-10px; width:22px; height:22px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#cbd5e1; z-index:10;">${idx+1}</span>
                     <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}')" class="card-mode-toggle"><span>${mode==='both'?'中英':mode==='en'?'僅英':'僅中'}</span></button>
-                    <div class="pr-20">
-                        <h4 class="word-en text-4xl font-black text-slate-800 tracking-tight leading-tight">${highlight(w.en)}</h4>
-                        <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
-                    </div>
-                    <div class="mt-auto pt-4 flex items-center justify-between">
+                    <div class="pr-20"><h4 class="word-en text-4xl font-black text-slate-800 tracking-tight leading-tight">${highlight(w.en)}</h4><p class="word-zh text-indigo-600 font-bold text-xl mt-1 font-bold">${w.zh}</p></div>
+                    <div class="mt-auto pt-4 flex items-center justify-between font-bold">
                         <button class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="volume-2" class="w-5 h-5"></i></button>
                         ${state.showRating ? `<div class="flex gap-1">${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n})" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}</div>` : ''}
                     </div>
@@ -481,33 +482,33 @@
                 const isOpen = state.openFolders.has(folder.id);
                 const folderUnits = state.units.filter(u => u.folderId === folder.id);
                 html += `
-                <div class="mb-2">
+                <div class="mb-2 font-bold">
                     <div class="folder-header" onclick="window.toggleFolder('${folder.id}')">
                         <div class="flex items-center gap-2"><i data-lucide="${isOpen ? 'folder-open' : 'folder'}" class="w-4 h-4 text-amber-500"></i><span class="text-sm font-bold">${folder.name}</span></div>
-                        <div class="flex items-center gap-2 font-bold"><span class="text-[10px] bg-slate-200 px-1.5 rounded-full">${folderUnits.length}</span><button onclick="event.stopPropagation(); window.deleteFolder('${folder.id}')" class="text-slate-300 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>
+                        ${!state.isGuestMode ? `<div class="flex items-center gap-2"><span class="text-[10px] bg-slate-200 px-1.5 rounded-full">${folderUnits.length}</span><button onclick="event.stopPropagation(); window.deleteFolder('${folder.id}')" class="text-slate-300 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>` : ''}
                     </div>
-                    ${isOpen ? `<div class="folder-content">${folderUnits.map(u => `
+                    ${isOpen ? `<div class="folder-content font-bold">${folderUnits.map(u => `
                         <div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId === u.id ? 'active' : ''}">
                             <span class="truncate flex-1 font-bold">${u.name}</span>
-                            <div class="flex gap-1 items-center">
+                            ${!state.isGuestMode ? `<div class="flex gap-1 items-center">
                                 <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
                                 <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                            </div>
+                            </div>` : ''}
                         </div>`).join('')}</div>` : ''}
                 </div>`;
             });
             const uncategorized = state.units.filter(u => !u.folderId);
             if (uncategorized.length > 0) {
-                html += `<div class="mt-4 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">未分類</div>`;
+                if(state.folders.length > 0) html += `<div class="mt-4 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">未分類</div>`;
                 html += uncategorized.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId === u.id ? 'active' : ''}">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
-                        <div class="flex gap-1 items-center">
-                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
+                        ${!state.isGuestMode ? `<div class="flex gap-1 items-center">
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100 font-bold"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100 font-bold"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        </div>` : ''}
                     </div>`).join('');
             }
-            container.innerHTML = html || `<p class="text-center py-6 text-slate-300 text-xs">尚無單元</p>`;
+            container.innerHTML = html || `<p class="text-center py-6 text-slate-300 text-xs font-bold">尚無單元</p>`;
             lucide.createIcons();
         };
 
@@ -565,12 +566,25 @@
             }).join(''); lucide.createIcons();
         };
 
+        // --- 初始化與數據 ---
         onAuthStateChanged(auth, async (user) => {
+            const params = new URLSearchParams(window.location.search);
+            const viewType = params.get('view'), guestId = params.get('id');
             const adminSess = sessionStorage.getItem('admin_session'), customSess = sessionStorage.getItem('custom_user_session');
-            if (!user) { await signInAnonymously(auth); return; }
-            if (adminSess === 'true') { state.userLabel = 'yljh'; window.showAdminDashboard(); syncData(); }
-            else if (customSess) { state.userLabel = customSess; window.showAppUI(customSess); syncData(); }
-            else document.getElementById('authScreen').classList.remove('hidden');
+
+            if (viewType === 'guest' && guestId) {
+                state.isGuestMode = true; state.userLabel = guestId;
+                document.getElementById('addUnitSection').classList.add('hidden');
+                document.getElementById('btnPublishGuest').classList.add('hidden');
+                window.showAppUI("訪客目錄瀏覽"); syncData();
+            } else if (!user) { 
+                await signInAnonymously(auth); 
+                return; 
+            } else {
+                if (adminSess === 'true') { state.userLabel = 'yljh'; window.showAdminDashboard(); syncData(); }
+                else if (customSess) { state.userLabel = customSess; window.showAppUI(customSess); syncData(); }
+                else document.getElementById('authScreen').classList.remove('hidden');
+            }
             lucide.createIcons();
         });
 
@@ -586,21 +600,22 @@
             });
         }
 
+        // --- 工具功能 ---
         window.setGlobalMode = (m) => { state.globalMode = m; if(state.activeUnitId) { const u = state.units.find(x => x.id === state.activeUnitId); if(u) u.words.forEach(w => delete w.localMode); } window.renderWords(); };
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; window.renderWords(); };
         window.cycleWordMode = (id) => { const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); const c = w.localMode || state.globalMode; w.localMode = c === 'both' ? 'en' : c === 'en' ? 'zh' : 'both'; window.renderWords(); };
-        window.updateRating = async (id, n) => { const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); if (w) { w.rating = n; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); window.renderWords(); } };
-        window.updateNote = async (id, val) => { const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); if (w && w.note !== val) { w.note = val; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } };
+        window.updateRating = async (id, n) => { if(state.isGuestMode) return; const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); if (w) { w.rating = n; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); window.renderWords(); } };
+        window.updateNote = async (id, val) => { if(state.isGuestMode) return; const u = state.units.find(u => u.id === state.activeUnitId), w = u.words.find(w => w.id === id); if (w && w.note !== val) { w.note = val; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); } };
         window.togglePause = () => { state.isPaused = !state.isPaused; const icon = document.getElementById('pauseIcon'); icon.setAttribute('data-lucide', state.isPaused ? 'play' : 'pause'); lucide.createIcons(); if(state.isPaused) window.speechSynthesis.pause(); else window.speechSynthesis.resume(); };
         window.stopAutoPlay = () => { state.isAudioPlaying = false; state.isPaused = false; window.speechSynthesis.cancel(); document.getElementById('floatingAudioBar').classList.remove('opacity-100', 'pointer-events-auto'); document.getElementById('wordGrid').classList.remove('blind-mode'); document.querySelectorAll('.word-card').forEach(c => c.classList.remove('playing')); };
         window.createNewFolder = async () => { const n = prompt("資料夾名稱："); if (!n) return; await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel }); window.showNotification("資料夾已建立"); };
         window.deleteFolder = async (id) => { if (confirm("刪除資料夾？單元將變為未分類。")) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); const batch = state.units.filter(u => u.folderId === id); for (let u of batch) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', u.id), { folderId: null }); } };
-        window.openMoveModal = (id) => { state.movingUnitId = id; const s = document.getElementById('targetFolderSelect'); s.innerHTML = `<option value="">(無)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join(''); document.getElementById('moveFolderModal').classList.remove('hidden'); };
+        window.openMoveModal = (id) => { state.movingUnitId = id; const s = document.getElementById('targetFolderSelect'); s.innerHTML = `<option value="">(無資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join(''); document.getElementById('moveFolderModal').classList.remove('hidden'); };
         window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); window.showNotification("已移動"); };
         window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
         window.toggleFolder = (id) => { if (state.openFolders.has(id)) state.openFolders.delete(id); else state.openFolders.add(id); window.renderUnitList(); };
-        window.updateBaseDateTime = async () => { const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if (state.activeUnitId && d) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); window.renderReviewTracking(); };
-        window.toggleReviewStage = async (sid) => { const u = state.units.find(u => u.id === state.activeUnitId); if (!u) return; if (!u.reviewProgress) u.reviewProgress = {}; u.reviewProgress[sid] = u.reviewProgress[sid] ? null : Date.now(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: u.reviewProgress }); window.renderReviewTracking(); };
+        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if (state.activeUnitId && d) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); window.renderReviewTracking(); };
+        window.toggleReviewStage = async (sid) => { if(state.isGuestMode) return; const u = state.units.find(u => u.id === state.activeUnitId); if (!u) return; if (!u.reviewProgress) u.reviewProgress = {}; u.reviewProgress[sid] = u.reviewProgress[sid] ? null : Date.now(); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: u.reviewProgress }); window.renderReviewTracking(); };
         window.showNotification = (t) => { const el = document.getElementById('notification'); document.getElementById('notificationText').innerText = t; el.classList.replace('translate-y-20', 'translate-y-0'); el.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => { el.classList.replace('translate-y-0', 'translate-y-20'); el.classList.replace('opacity-100', 'opacity-0'); }, 4000); };
         window.loginWithCustom = async function() { const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim(); if (!u || !p) return; document.getElementById('loadingIndicator').classList.remove('hidden'); try { await signInAnonymously(auth); const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u)); if (snap.exists() && snap.data().password === p) { sessionStorage.setItem('custom_user_session', u); location.reload(); } else window.showNotification("帳密錯誤"); } catch (e) { window.showNotification("連線失敗"); } finally { document.getElementById('loadingIndicator').classList.add('hidden'); } };
         window.importWords = async () => { const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if (!n || !t) return; const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substr(2,5), en: p[0].trim(), zh: p[1].trim(), rating: 3, note: "" } : null; }).filter(x => x); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, isPublished: true, folderId: null }); document.getElementById('unitNameInput').value = ''; document.getElementById('wordsInput').value = ''; window.showNotification("儲存成功"); };
@@ -608,7 +623,7 @@
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m === 'main' ? 'loginMainView' : m + 'LoginView').classList.remove('hidden'); lucide.createIcons(); };
         window.showAppUI = (name) => { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = name; lucide.createIcons(); };
-        window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("模板製作"); syncData(); };
+        window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("管理員 (製作)"); document.getElementById('btnBackToAdmin').classList.remove('hidden'); syncData(); };
         window.showAdminDashboard = () => { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.remove('hidden'); onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), (snap) => { state.allAccounts = snap.docs.map(d => d.id); document.getElementById('adminUserTable').innerHTML = state.allAccounts.map(id => `<tr class="border-b"><td class="px-6 py-4 font-bold">${id}</td><td class="px-6 py-4 text-right"> <button onclick="window.adminDetail('${id}', '${id}')" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">管理</button> <button onclick="window.deleteAccount('${id}')" class="text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button> </td></tr>`).join(''); lucide.createIcons(); document.getElementById('sourceAccountSelect').innerHTML = `<option value="">來源...</option>` + ['yljh', ...state.allAccounts].map(id => `<option value="${id}">${id==='yljh'?'管理員':id}</option>`).join(''); }); onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), (snap) => { state.allUnitsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })); }); };
         window.adminDetail = async (uid, name) => { state.currentAdminViewUid = uid; document.getElementById('adminDetailModal').classList.remove('hidden'); document.getElementById('detailUserTitle').innerText = `${name} 練習紀錄`; const filtered = state.allUnitsCache.filter(u => u.ownerId === uid); document.getElementById('detailContent').innerHTML = filtered.map(u => `<div class="bg-slate-100 p-4 rounded-xl border font-bold"><h6>${u.name}</h6><div class="text-[10px] mt-1 text-slate-500">${u.words.map(w => w.en).join(', ')}</div></div>`).join('') || '尚未有單元。'; lucide.createIcons(); };
         window.assignUnitToStudent = async (uId) => { const unitId = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; if (!unitId || !target) return; const source = state.allUnitsCache.find(u => u.id === unitId); const newId = 'u' + Date.now(); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', newId), { ...source, ownerId: target, reviewProgress: {}, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00" }); window.showNotification("分派成功"); window.adminDetail(target, target); };
@@ -626,6 +641,9 @@
         window.closeQuiz = () => { document.getElementById('quizModal').classList.add('hidden'); window.speechSynthesis.cancel(); };
         window.publishGuestLink = () => { if (!state.userLabel) return; const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const el = document.createElement('textarea'); el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); window.showNotification("連結已複製！"); };
 
+        const initAuth = async () => {
+            // Placeholder for auth initialization if needed
+        };
     </script>
 </body>
 </html>
