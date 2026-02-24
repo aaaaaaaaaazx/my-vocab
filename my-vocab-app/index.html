@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 14.0 (完整修正版)</title>
+    <title>單字大師 - Eternal Edition 14.1 (登入修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,6 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
+        /* 模式控制：中英、僅英、僅中 */
         .card-both .word-en, .card-both .word-zh { display: block !important; }
         .card-en .word-en { display: block !important; }
         .card-en .word-zh { display: none !important; }
@@ -43,14 +44,33 @@
             padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 800; border-radius: 0.75rem;
             transition: all 0.2s ease; border: 2px solid #f1f5f9;
             display: flex; align-items: center; justify-content: center; gap: 0.3rem;
-            cursor: pointer; background: white; color: #64748b;
+            white-space: nowrap; cursor: pointer; background: white;
+            color: #64748b;
         }
         .ui-toggle-btn.active { 
             background-color: #4f46e5 !important; 
             color: white !important; 
             border-color: #4f46e5 !important; 
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); 
         }
+
+        .card-mode-toggle {
+            position: absolute; top: 15px; right: 15px;
+            padding: 5px 12px; background: #f8fafc;
+            border-radius: 99px; display: flex; align-items: center;
+            justify-content: center; gap: 4px;
+            color: #6366f1; transition: all 0.2s;
+            border: 1.5px solid #e2e8f0; z-index: 30;
+        }
+        .card-mode-toggle:hover { background: #eff6ff; border-color: #3b82f6; }
+        .card-mode-toggle span { font-size: 10px; font-weight: 800; }
+
+        .rate-btn { transition: all 0.2s; width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 900; }
+        .rate-1 { background-color: #059669 !important; color: white; }
+        .rate-2 { background-color: #10b981 !important; color: white; }
+        .rate-3 { background-color: #f59e0b !important; color: white; }
+        .rate-4 { background-color: #f97316 !important; color: white; }
+        .rate-5 { background-color: #ef4444 !important; color: white; }
 
         .review-node {
             flex: 0 0 auto; width: 110px; text-align: center; padding: 14px 8px;
@@ -61,7 +81,7 @@
         .review-node.overdue { border-color: #f43f5e; background: #fff1f2; animation: border-pulse 1.5s infinite; }
         .review-node.upcoming { border-color: #e2e8f0; color: #94a3b8; }
         @keyframes border-pulse { 0% { border-color: #f43f5e; } 50% { border-color: #fda4af; } 100% { border-color: #f43f5e; } }
-
+        
         #reviewNodes::-webkit-scrollbar, #unitTreeList::-webkit-scrollbar { height: 8px; width: 6px; }
         #reviewNodes::-webkit-scrollbar-thumb, #unitTreeList::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
@@ -79,6 +99,12 @@
         }
         .unit-item.active { background: #4f46e5 !important; color: white !important; }
 
+        .note-field {
+            background-color: #fffbeb; border: 1px dashed #fde68a; border-radius: 0.8rem;
+            padding: 0.7rem; font-size: 0.85rem; color: #92400e; width: 100%;
+            margin-top: 1rem; outline: none; font-weight: 600; resize: none; min-height: 60px;
+        }
+
         .answer-slot {
             width: 40px; height: 45px; border-bottom: 3px solid #4f46e5;
             display: flex; align-items: center; justify-content: center;
@@ -94,7 +120,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
 
-    <!-- 英聽懸浮狀態列 -->
+    <!-- 英聽狀態列 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
         <div class="flex items-center gap-4 pl-2">
             <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white font-bold"><i data-lucide="headphones" class="w-5 h-5"></i></div>
@@ -104,19 +130,19 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="window.togglePause()" class="p-3 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100"><i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i></button>
+            <button onclick="window.togglePause()" class="p-3 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 font-bold"><i data-lucide="pause" id="pauseIcon" class="w-5 h-5"></i></button>
             <button onclick="window.stopAutoPlay()" class="p-3 bg-rose-500 text-white rounded-full shadow-lg"><i data-lucide="square" class="w-5 h-5"></i></button>
         </div>
     </div>
 
     <!-- 1. 登入畫面 -->
-    <div id="authScreen" class="flex items-center justify-center min-h-screen p-4 text-center">
+    <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-slate-100">
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 14.0</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 14.1</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -124,26 +150,26 @@
                 </div>
             </div>
             
-            <div id="customLoginView" class="hidden text-left">
-                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-xs font-black font-bold"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
+            <div id="customLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-xs font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6 text-slate-800">學生登入</h2>
                 <div class="space-y-4">
-                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 font-bold">
-                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500 font-bold">
-                    <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">確認進入</button>
+                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500">
+                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-indigo-500">
+                    <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg">確認進入</button>
                 </div>
             </div>
 
-            <div id="adminLoginView" class="hidden text-left">
-                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black font-bold"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
+            <div id="adminLoginView" class="hidden text-left font-bold">
+                <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理中心</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
-                    <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold">授權進入</button>
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">授權進入</button>
                 </div>
             </div>
-            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>正在連線雲端...</span></div>
+            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>處理中...</span></div>
         </div>
     </div>
 
@@ -163,7 +189,6 @@
         </nav>
 
         <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 font-bold">
-            <!-- 側邊欄 -->
             <aside class="lg:col-span-4 space-y-6">
                 <div id="addUnitSection" class="settings-card">
                     <div class="flex justify-between items-center mb-4">
@@ -182,13 +207,12 @@
                 </div>
             </aside>
             
-            <!-- 主內容區 -->
             <section class="lg:col-span-8 space-y-6">
                 <div class="settings-card space-y-6">
                     <div class="flex flex-wrap items-center justify-between gap-4 font-bold">
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] font-black text-slate-400 uppercase mr-2">顯示模式</span>
-                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <div class="flex bg-slate-100 p-1 rounded-xl font-bold">
                                 <button onclick="window.setGlobalMode('both')" class="ui-toggle-btn" id="btn-both">中英</button>
                                 <button onclick="window.setGlobalMode('en')" class="ui-toggle-btn ml-1" id="btn-en">英文</button>
                                 <button onclick="window.setGlobalMode('zh')" class="ui-toggle-btn ml-1" id="btn-zh">中文</button>
@@ -225,7 +249,7 @@
                 <div id="reviewTrackingArea" class="settings-card font-bold font-bold">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div class="flex flex-col">
-                            <h4 class="text-sm font-black text-slate-800 flex items-center gap-2 font-bold"><i data-lucide="brain" class="text-indigo-600 w-4 h-4"></i> 記憶曲線追蹤</h4>
+                            <h4 class="text-sm font-black text-slate-800 flex items-center gap-2 font-bold"><i data-lucide="brain" class="text-indigo-600 w-4 h-4 font-bold"></i> 記憶曲線追蹤</h4>
                             <p id="reviewSummary" class="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">點擊節點標記完成</p>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border font-bold font-bold">
@@ -281,7 +305,7 @@
         </main>
     </div>
 
-    <!-- Modal 彈窗集 -->
+    <!-- Modal 彈窗 -->
     <div id="adminDetailModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col font-bold">
             <div class="p-8 border-b flex justify-between items-center bg-slate-50">
@@ -314,20 +338,20 @@
         </div>
     </div>
 
-    <div id="moveFolderModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-8 font-bold font-bold">
-            <h4 class="text-xl font-black mb-6 text-slate-800 font-bold font-bold">移動至資料夾</h4>
+    <div id="moveFolderModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm font-bold">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-8 font-bold">
+            <h4 class="text-xl font-black mb-6 text-slate-800 font-bold font-bold font-bold">移動至資料夾</h4>
             <select id="targetFolderSelect" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 mb-6 font-bold outline-none font-bold"></select>
             <div class="flex gap-3 font-bold font-bold">
                 <button onclick="window.closeMoveModal()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-500 font-bold">取消</button>
-                <button onclick="window.confirmMoveUnit()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold font-bold">確認</button>
+                <button onclick="window.confirmMoveUnit()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold font-bold font-bold">確認</button>
             </div>
         </div>
     </div>
 
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl z-[400] flex items-center gap-3 border border-white/10 font-bold"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold font-bold"></span></div>
 
-    <!-- Firebase SDK & App Logic -->
+    <!-- 邏輯腳本 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -349,7 +373,7 @@
             isAudioPlaying: false, isPaused: false, displayedWords: [], 
             showSyllables: false, showVowels: false, showRating: false, showNote: false,
             openFolders: new Set(), allUnitsCache: [], isGuestMode: false,
-            quizQueue: [], quizIndex: 0, quizType: 'block', currentAnswer: [], usedIndexes: [], quizLetters: []
+            quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: []
         };
 
         // --- 音節切割演算法 ---
@@ -399,7 +423,6 @@
             let list = [...(u.words || [])], sort = document.getElementById('sortSelect').value;
             if (sort === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
             else if (sort === 'random') list.sort(() => Math.random() - 0.5);
-            else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
             state.displayedWords = list;
             document.getElementById('activeUnitTitle').innerText = u.name;
             const updateBtn = (id, act) => { const b = document.getElementById(id); b && (act ? b.classList.add('active') : b.classList.remove('active')); };
@@ -420,51 +443,39 @@
             state.folders.forEach(f => {
                 const open = state.openFolders.has(f.id);
                 const uS = state.units.filter(u => u.folderId === f.id);
-                html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
-                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500"></i><span class="text-sm font-bold font-bold font-bold">${f.name}</span></div>
-                    <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3 text-rose-400"></i></button>
-                    </div>
-                </div>${open ? `<div class="folder-content font-bold font-bold">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
-                    <span class="truncate flex-1 font-bold">${u.name}</span>
-                    <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                        <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
-                    </div>
-                </div>`).join('')}</div>` : ''}</div>`;
+                html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')"><span>${f.name}</span><i data-lucide="chevron-${open?'down':'right'}" class="w-3 h-3"></i></div>
+                    ${open ? `<div class="folder-content font-bold">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
+                        <span class="truncate flex-1 font-bold">${u.name}</span>
+                        <div class="flex gap-1">
+                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
-            if (unc.length) {
-                html += `<div class="mt-4 mb-1 text-[10px] font-black text-slate-400 uppercase pl-2 font-bold font-bold">未分類</div>` + unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
-                    <span class="truncate flex-1 font-bold font-bold font-bold">${u.name}</span>
-                    <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3 font-bold"></i></button>
-                        <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100 font-bold"><i data-lucide="folder-input" class="w-3.5 h-3.5 font-bold"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100 font-bold font-bold"><i data-lucide="trash-2" class="w-3.5 h-3.5 font-bold"></i></button>
-                    </div>
-                </div>`).join('');
-            }
-            container.innerHTML = html || `<p class="text-center py-6 text-slate-300 text-xs">尚無單元</p>`;
-            lucide.createIcons();
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
+                <span class="truncate flex-1 font-bold">${u.name}</span>
+                <div class="flex gap-1">
+                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="p-1 opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                </div>
+            </div>`).join('');
+            container.innerHTML = html; lucide.createIcons();
         };
 
-        // --- 登入與啟動監聽 ---
+        // --- 登入與初始化 ---
         onAuthStateChanged(auth, async (user) => {
             const params = new URLSearchParams(window.location.search);
             const viewType = params.get('view'), guestId = params.get('id');
             if (!user) { await signInAnonymously(auth); return; }
             if (viewType === 'guest' && guestId) {
-                state.isGuestMode = true; state.userLabel = guestId;
-                document.getElementById('addUnitSection').classList.add('hidden');
-                document.getElementById('btnPublishGuest').classList.add('hidden');
-                window.showAppUI("訪客目錄瀏覽"); syncData();
+                state.isGuestMode = true; state.userLabel = guestId; window.showAppUI("訪客目錄"); syncData();
             } else if (sessionStorage.getItem('admin_session')) {
                 state.userLabel = 'yljh'; window.showAdminDashboard(); syncData();
             } else if (sessionStorage.getItem('custom_user_session')) {
-                state.userLabel = sessionStorage.getItem('custom_user_session');
-                window.showAppUI(state.userLabel); syncData();
+                state.userLabel = sessionStorage.getItem('custom_user_session'); window.showAppUI(state.userLabel); syncData();
             } else { document.getElementById('authScreen').classList.remove('hidden'); }
         });
 
@@ -480,7 +491,7 @@
             });
         }
 
-        // --- 掛載全域函式 (修正登入無反應) ---
+        // --- 修復登入函式 ---
         window.toggleAuthView = (m) => {
             ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(m + (m==='main'?'':'LoginView')).classList.remove('hidden'); lucide.createIcons();
@@ -494,7 +505,7 @@
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists() && snap.data().password === p) {
                     sessionStorage.setItem('custom_user_session', u); location.reload();
-                } else alert("帳號或密碼錯誤");
+                } else alert("帳密錯誤");
             } catch(e) { alert("連線失敗"); } finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
 
@@ -504,45 +515,7 @@
             else alert("驗證失敗");
         };
 
-        // --- 英聽控制 (修正暫停功能與隱藏單字) ---
-        window.startAutoPlay = async () => {
-            if (state.isAudioPlaying) return;
-            const startIdx = Math.max(0, (parseInt(document.getElementById('audioRangeStart').value) || 1) - 1);
-            const endIdx = Math.min(state.displayedWords.length, (parseInt(document.getElementById('audioRangeEnd').value) || 20));
-            const playList = state.displayedWords.slice(startIdx, endIdx);
-            if (!playList.length) return alert("範圍內無單字");
-
-            state.isAudioPlaying = true; state.isPaused = false;
-            document.getElementById('floatingAudioBar').classList.replace('opacity-0', 'opacity-100');
-            document.getElementById('floatingAudioBar').classList.remove('pointer-events-none');
-
-            for (let i = 0; i < playList.length; i++) {
-                if (!state.isAudioPlaying) break;
-                // 暫停等待邏輯
-                while (state.isPaused) { await new Promise(r => setTimeout(r, 200)); if (!state.isAudioPlaying) return; }
-                
-                document.getElementById('floatingStatusText').innerText = `正在聽力練習 (${i+1}/${playList.length})`;
-                window.speak(playList[i].en);
-                await new Promise(r => setTimeout(r, 2500));
-            }
-            window.stopAutoPlay();
-        };
-
-        window.togglePause = () => {
-            state.isPaused = !state.isPaused;
-            const icon = document.getElementById('pauseIcon');
-            icon.setAttribute('data-lucide', state.isPaused ? 'play' : 'pause');
-            lucide.createIcons();
-            if (state.isPaused) window.speechSynthesis.pause(); else window.speechSynthesis.resume();
-        };
-
-        window.stopAutoPlay = () => {
-            state.isAudioPlaying = false; window.speechSynthesis.cancel();
-            document.getElementById('floatingAudioBar').classList.replace('opacity-100', 'opacity-0');
-            document.getElementById('floatingAudioBar').classList.add('pointer-events-none');
-        };
-
-        // --- 記憶曲線修正 ---
+        // --- 記憶曲線修復 ---
         window.renderReviewTracking = () => {
             const u = state.units.find(x => x.id == state.activeUnitId);
             if (!u) return;
@@ -574,33 +547,64 @@
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
         };
 
-        // --- 編輯功能 (名稱、資料夾、移動) ---
+        // --- 英聽控制 (暫停與隱藏單字) ---
+        window.startAutoPlay = async () => {
+            if (state.isAudioPlaying) return;
+            const startIdx = Math.max(0, (parseInt(document.getElementById('audioRangeStart').value) || 1) - 1);
+            const endIdx = Math.min(state.displayedWords.length, 20);
+            const playList = state.displayedWords.slice(startIdx, endIdx);
+            if (!playList.length) return;
+
+            state.isAudioPlaying = true; state.isPaused = false;
+            document.getElementById('floatingAudioBar').classList.replace('opacity-0', 'opacity-100');
+            document.getElementById('floatingAudioBar').classList.remove('pointer-events-none');
+
+            for (let i = 0; i < playList.length; i++) {
+                if (!state.isAudioPlaying) break;
+                while (state.isPaused) { await new Promise(r => setTimeout(r, 200)); if (!state.isAudioPlaying) return; }
+                document.getElementById('floatingStatusText').innerText = `正在播放 (${i+1}/${playList.length})`;
+                window.speak(playList[i].en);
+                await new Promise(r => setTimeout(r, 2500));
+            }
+            window.stopAutoPlay();
+        };
+
+        window.togglePause = () => {
+            state.isPaused = !state.isPaused;
+            const icon = document.getElementById('pauseIcon');
+            icon.setAttribute('data-lucide', state.isPaused ? 'play' : 'pause');
+            lucide.createIcons();
+            if (state.isPaused) window.speechSynthesis.pause(); else window.speechSynthesis.resume();
+        };
+
+        window.stopAutoPlay = () => {
+            state.isAudioPlaying = false; window.speechSynthesis.cancel();
+            document.getElementById('floatingAudioBar').classList.replace('opacity-100', 'opacity-0');
+            document.getElementById('floatingAudioBar').classList.add('pointer-events-none');
+        };
+
+        // --- 其它編輯功能 ---
         window.renameUnit = async (id) => {
-            const n = prompt("輸入新的單元名稱：");
+            const n = prompt("新單元名稱：");
             if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n });
         };
-
         window.renameFolder = async (id) => {
-            const n = prompt("輸入新的資料夾名稱：");
+            const n = prompt("新資料夾名稱：");
             if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n });
         };
-
         window.openMoveModal = (id) => {
             state.movingUnitId = id;
             const s = document.getElementById('targetFolderSelect');
-            s.innerHTML = `<option value="">(無資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            s.innerHTML = `<option value="">(無)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             document.getElementById('moveFolderModal').classList.remove('hidden');
         };
-
         window.confirmMoveUnit = async () => {
             const fid = document.getElementById('targetFolderSelect').value || null;
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid });
             document.getElementById('moveFolderModal').classList.add('hidden');
         };
 
-        window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
-
-        // --- 其它基礎功能 ---
+        // --- 通用掛載 ---
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
         window.showAppUI = (n) => { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = n; };
         window.setActiveUnit = (id) => { state.activeUnitId = id; window.renderWords(); window.renderUnitList(); };
@@ -608,12 +612,15 @@
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; window.renderWords(); };
         window.cycleWordMode = (id) => { const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); const cur = w.localMode || state.globalMode; w.localMode = cur==='both'?'en':cur==='en'?'zh':'both'; window.renderWords(); };
         window.updateRating = async (id, n) => { if(state.isGuestMode) return; const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); w.rating = n; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); window.renderWords(); };
+        window.updateNote = async (id, v) => { if(state.isGuestMode) return; const u = state.units.find(x => x.id == state.activeUnitId), w = u.words.find(x => x.id == id); w.note = v; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words }); };
+        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = "09:00"; if(state.activeUnitId && d) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); };
         window.importWords = async () => { const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if(!n || !t) return; const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random(), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; }).filter(x => x); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {} }); };
         window.deleteUnit = async (id) => { if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
         window.createNewFolder = async () => { const n = prompt("資料夾名稱："); if(n) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel }); };
         window.toggleFolder = (id) => { state.openFolders.has(id) ? state.openFolders.delete(id) : state.openFolders.add(id); window.renderUnitList(); };
         window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("管理者製作模式"); syncData(); };
         window.handleSyncModeChange = (mode) => { const s = document.getElementById('audioVisualSync'), b = document.getElementById('audioBlindMode'); if(mode==='sync'&&s.checked) b.checked=false; if(mode==='blind'&&b.checked) s.checked=false; };
+        window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("連結已複製"); };
 
         // 測驗邏輯
         window.startRangeQuiz = (type) => { const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value)||1), e = Math.min(state.displayedWords.length, 20); state.quizQueue = state.displayedWords.slice(s-1, e); if(!state.quizQueue.length) return; state.quizType = type; state.quizIndex = 0; document.getElementById('quizModal').classList.remove('hidden'); window.setupQuiz(); };
@@ -623,8 +630,6 @@
         window.checkDictationAnswer = () => { if(document.getElementById('quizInput').value.trim().toLowerCase() === state.quizQueue[state.quizIndex].en.toLowerCase()) { (state.quizIndex < state.quizQueue.length-1) ? document.getElementById('btnNextQuiz').classList.remove('hidden') : setTimeout(window.closeQuiz, 1000); } };
         window.nextQuizItem = () => { state.quizIndex++; window.setupQuiz(); };
         window.closeQuiz = () => document.getElementById('quizModal').classList.add('hidden');
-
-        // 管理者分派
         window.showAdminDashboard = () => { document.getElementById('appScreen').classList.add('hidden'); document.getElementById('adminScreen').classList.remove('hidden'); onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), snap => {
             document.getElementById('adminUserTable').innerHTML = snap.docs.map(d => `<tr class="border-b"><td>${d.id}</td><td class="text-right pr-12"><button onclick="window.adminDetail('${d.id}','${d.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs">詳情</button></td></tr>`).join('');
             document.getElementById('sourceAccountSelect').innerHTML = `<option value="yljh">管理者模板</option>` + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
@@ -633,6 +638,7 @@
         window.assignUnitToStudent = async () => { const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; if(!uid || !target) return; const src = state.allUnitsCache.find(u => u.id === uid); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { ...src, ownerId: target, reviewProgress: {} }); alert("已匯入分派"); };
         window.adminDetail = (uid, n) => { state.currentAdminViewUid = uid; document.getElementById('adminDetailModal').classList.remove('hidden'); document.getElementById('detailUserTitle').innerText = n; const fil = state.allUnitsCache.filter(u => u.ownerId === uid); document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm"><h6>${u.name}</h6></div>`).join('') || '無數據'; };
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
+        window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
     </script>
 </body>
 </html>
