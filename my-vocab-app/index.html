@@ -120,7 +120,7 @@
     <!-- 英聽狀態條 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
         <div class="flex items-center gap-4 pl-2">
-            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white font-bold"><i data-lucide="headphones" class="w-5 h-5"></i></div>
+            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white"><i data-lucide="headphones" class="w-5 h-5"></i></div>
             <div>
                 <p class="text-[10px] font-black text-indigo-600 uppercase">英聽練習中</p>
                 <p id="floatingStatusText" class="text-sm font-black text-slate-700">準備中...</p>
@@ -151,8 +151,8 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-xs font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6 text-slate-800">學生登入</h2>
                 <div class="space-y-4">
-                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none">
-                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none">
+                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none font-bold">
+                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none font-bold">
                     <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg">確認進入</button>
                 </div>
             </div>
@@ -161,12 +161,12 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理中心</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
                     <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">授權進入</button>
                 </div>
             </div>
-            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>核心同步中...</span></div>
+            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2 font-bold"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>核心同步中...</span></div>
         </div>
     </div>
 
@@ -178,9 +178,9 @@
                 <span class="text-xl font-black text-slate-800 uppercase tracking-tighter">單字大師</span>
             </div>
             <div class="flex items-center gap-4">
-                <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs">管理者後台</button>
+                <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold">管理者後台</button>
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
-                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border font-bold"></span>
+                <span id="userNameDisplay" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
                 <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
             </div>
         </nav>
@@ -194,8 +194,8 @@
                         <button onclick="window.createNewFolder()" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"><i data-lucide="folder-plus" class="w-4 h-4"></i></button>
                     </div>
                     <div class="space-y-3">
-                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm">
-                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm"></textarea>
+                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold">
+                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold"></textarea>
                         <button onclick="window.importWords()" class="w-full py-3 bg-indigo-600 text-white font-black rounded-xl shadow-md">儲存單元</button>
                     </div>
                 </div>
@@ -218,10 +218,10 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn">音節</button>
-                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn">母音</button>
-                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn">掌握度</button>
-                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn">筆記</button>
+                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn font-bold">音節</button>
+                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn font-bold">母音</button>
+                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn font-bold">掌握度</button>
+                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn font-bold">筆記</button>
                         </div>
                     </div>
 
@@ -274,7 +274,7 @@
                     <div class="flex items-center gap-3">
                         <div class="relative">
                             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="搜尋單字..." class="pl-9 pr-3 py-1.5 bg-white border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm transition-all w-32 focus:w-48 text-slate-700 font-bold">
+                            <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="全單字本搜尋..." class="pl-9 pr-3 py-1.5 bg-white border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm transition-all w-36 focus:w-48 text-slate-700 font-bold shadow-sm">
                         </div>
                         <select id="sortSelect" onchange="window.handleSortChange()" class="bg-transparent text-sm border-b-2 border-indigo-500 text-indigo-600 pb-1 outline-none font-bold">
                             <option value="original">原始順序</option><option value="random">隨機</option><option value="az">A-Z</option><option value="rating">掌握度</option>
@@ -448,67 +448,82 @@
         window.handleSortChange = () => { window.renderWords(true); };
 
         window.renderWords = (forceSort = true) => {
-            const g = document.getElementById('wordGrid'), u = state.units.find(x => x.id == state.activeUnitId);
-            if (!u || !g) return;
-            
-            // 1. 維護基準的完整排序列表 (不被搜尋干擾)
-            if (forceSort || !state.baseSortedWords || state.baseSortedWords.length === 0 || state.lastUnitId !== state.activeUnitId) {
-                state.lastUnitId = state.activeUnitId;
-                let list = [...(u.words || [])], sortVal = document.getElementById('sortSelect').value;
-                if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
-                else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
-                else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
-                state.baseSortedWords = list;
-            } else {
-                // 不重新排序，僅更新現有單字內容 (處理編輯或評分)
-                let updatedBase = state.baseSortedWords.map(dw => {
-                    const fresh = u.words.find(fw => fw.id === dw.id);
-                    return fresh ? { ...fresh } : null;
-                }).filter(x => x !== null);
-                
-                // 將新加入的單字加到底部
-                const existingIds = new Set(updatedBase.map(w => w.id));
-                const newWords = (u.words || []).filter(w => !existingIds.has(w.id));
-                state.baseSortedWords = [...updatedBase, ...newWords];
-            }
-            
-            // 2. 套用搜尋過濾，產生最終顯示列表
+            const g = document.getElementById('wordGrid');
             const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            
             if (query) {
-                state.displayedWords = state.baseSortedWords.filter(w => w.en.toLowerCase().includes(query) || w.zh.includes(query));
+                // 搜尋模式：跨所有單元搜尋
+                let allMatched = [];
+                state.units.forEach(u => {
+                    (u.words || []).forEach(w => {
+                        if (w.en.toLowerCase().includes(query) || w.zh.includes(query)) {
+                            allMatched.push({ ...w, _unitId: u.id, _unitName: u.name });
+                        }
+                    });
+                });
+                state.displayedWords = allMatched;
+                document.getElementById('activeUnitTitle').innerText = `搜尋結果 (${allMatched.length} 個單字)`;
+                document.getElementById('reviewTrackingArea').classList.add('hidden');
             } else {
+                // 正常單元模式
+                const u = state.units.find(x => x.id == state.activeUnitId);
+                if (!u || !g) return;
+                document.getElementById('reviewTrackingArea').classList.remove('hidden');
+
+                if (forceSort || !state.baseSortedWords || state.baseSortedWords.length === 0 || state.lastUnitId !== state.activeUnitId) {
+                    state.lastUnitId = state.activeUnitId;
+                    let list = [...(u.words || [])].map(w => ({ ...w, _unitId: u.id, _unitName: u.name }));
+                    let sortVal = document.getElementById('sortSelect').value;
+                    if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
+                    else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
+                    else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
+                    state.baseSortedWords = list;
+                } else {
+                    let updatedBase = state.baseSortedWords.map(dw => {
+                        const fresh = u.words.find(fw => fw.id === dw.id);
+                        return fresh ? { ...fresh, _unitId: u.id, _unitName: u.name } : null;
+                    }).filter(x => x !== null);
+                    
+                    const existingIds = new Set(updatedBase.map(w => w.id));
+                    const newWords = (u.words || []).filter(w => !existingIds.has(w.id)).map(w => ({ ...w, _unitId: u.id, _unitName: u.name }));
+                    state.baseSortedWords = [...updatedBase, ...newWords];
+                }
                 state.displayedWords = [...state.baseSortedWords];
+                document.getElementById('activeUnitTitle').innerText = u.name;
             }
 
-            document.getElementById('activeUnitTitle').innerText = u.name;
             const updateBtn = (id, act) => { const b = document.getElementById(id); b && (act ? b.classList.add('active') : b.classList.remove('active')); };
             ['both','en','zh'].forEach(m => updateBtn(`btn-${m}`, state.globalMode === m));
             ['syllables', 'vowels', 'rating', 'note'].forEach(f => updateBtn(`toggle-${f}-btn`, state['show'+f.charAt(0).toUpperCase()+f.slice(1)]));
             
+            if(!g) return;
             g.innerHTML = state.displayedWords.map((w, idx) => {
                 const mode = w.localMode || state.globalMode;
-                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
+                const unitBadge = query ? `<span class="absolute top-4 left-10 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md font-bold">${w._unitName}</span>` : '';
+                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
                 <span style="position:absolute; top:-10px; left:-10px; width:22px; height:22px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#cbd5e1; z-index:10;">${idx+1}</span>
-                
+                ${unitBadge}
                 <div class="absolute top-4 right-4">
-                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}')" class="card-mode-toggle font-bold"><span>切換</span></button>
+                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}', '${w._unitId}')" class="card-mode-toggle font-bold"><span>切換</span></button>
                 </div>
                 
-                <h4 class="word-en text-4xl font-black">${window.highlightText(w.en)}</h4>
+                <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
                 <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
                 
                 <div class="absolute bottom-4 right-4">
-                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
                 </div>
 
                 ${state.showRating ? `
                 <div class="flex gap-1 mt-auto pt-4">
-                    ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}',${n})" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} font-bold">${n}</button>`).join('')}
+                    ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} font-bold">${n}</button>`).join('')}
                 </div>` : ''}
                 
                 ${state.showNote ? `
-                <textarea class="note-field font-bold mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}',this.value)" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
-            </div>`}).join(''); lucide.createIcons(); window.renderReviewTracking();
+                <textarea class="note-field font-bold mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
+            </div>`}).join(''); 
+            lucide.createIcons(); 
+            if(!query) window.renderReviewTracking();
         };
 
         window.renderUnitList = () => {
@@ -518,13 +533,13 @@
                 const open = state.openFolders.has(f.id);
                 const uS = state.units.filter(u => u.folderId === f.id);
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
-                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500"></i><span>${f.name}</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
                     <div class="flex gap-1">
                         <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
                         <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                     </div>
                 </div>
-                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''}">
+                ${open ? `<div class="folder-content font-bold">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
                         <div class="flex gap-1">
                             <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
@@ -534,7 +549,7 @@
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
-            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''}">
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
                 <div class="flex gap-1">
                     <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
@@ -597,44 +612,57 @@
         
         window.setGlobalMode = (m) => { state.globalMode = m; const u = state.units.find(x => x.id == state.activeUnitId); if (u && u.words) u.words.forEach(w => delete w.localMode); window.renderWords(false); };
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; window.renderWords(false); };
-        window.setActiveUnit = (id) => { state.activeUnitId = id; window.renderWords(true); window.renderUnitList(); };
+        window.setActiveUnit = (id) => { 
+            state.activeUnitId = id; 
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = ''; // 清空搜尋
+            window.renderWords(true); 
+            window.renderUnitList(); 
+        };
 
-        window.updateRating = async (id, n) => {
+        window.updateRating = async (id, n, unitId) => {
             if (state.isGuestMode) return;
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == id);
+            const targetUnitId = unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == id);
             if (w) {
                 w.rating = n;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
             }
         };
 
-        window.updateNote = async (id, v) => {
+        window.updateNote = async (id, v, unitId) => {
             if (state.isGuestMode) return;
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == id);
+            const targetUnitId = unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == id);
             if (w) {
                 w.note = v;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
             }
         };
 
-        window.cycleWordMode = (id) => {
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == id);
-            const cur = w.localMode || state.globalMode;
-            if (cur === 'both') w.localMode = 'en';
-            else if (cur === 'en') w.localMode = 'zh';
-            else w.localMode = 'both';
-            window.renderWords(false);
+        window.cycleWordMode = (id, unitId) => {
+            const targetUnitId = unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == id);
+            if (w) {
+                const cur = w.localMode || state.globalMode;
+                if (cur === 'both') w.localMode = 'en';
+                else if (cur === 'en') w.localMode = 'zh';
+                else w.localMode = 'both';
+                window.renderWords(false);
+            }
         };
 
-        window.openWordEdit = (id) => {
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == id);
+        window.openWordEdit = (id, unitId) => {
+            const targetUnitId = unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == id);
             if (!w) return;
             state.editingWordId = id;
+            state.editingUnitId = targetUnitId;
             document.getElementById('editWordEn').value = w.en;
             document.getElementById('editWordZh').value = w.zh;
             document.getElementById('wordEditModal').classList.remove('hidden');
@@ -644,11 +672,12 @@
             if (state.isGuestMode) return;
             const en = document.getElementById('editWordEn').value.trim(), zh = document.getElementById('editWordZh').value.trim();
             if (!en || !zh) return;
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            const w = u.words.find(x => x.id == state.editingWordId);
+            const targetUnitId = state.editingUnitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == state.editingWordId);
             if (w) {
                 w.en = en; w.zh = zh;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
                 window.closeWordEdit();
             }
