@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 16.6 (測驗提示切換版)</title>
+    <title>單字大師 - Eternal Edition 16.7 (訪客唯讀版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -115,7 +115,7 @@
         .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 font-bold">
+<body class="bg-slate-50 min-h-screen text-slate-800">
 
     <!-- 英聽狀態條 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
@@ -139,11 +139,11 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.6</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.7</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
-                    <button onclick="window.toggleAuthView('admin')" class="w-full border-2 py-4 rounded-2xl text-slate-500 hover:bg-slate-50 transition-all">管理者模式</button>
+                    <button onclick="window.toggleAuthView('admin')" class="w-full border-2 py-4 rounded-2xl text-slate-500 hover:bg-slate-50 transition-all font-bold">管理者模式</button>
                 </div>
             </div>
             
@@ -180,7 +180,7 @@
             <div class="flex items-center gap-4">
                 <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs">管理者後台</button>
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
-                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
+                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border font-bold"></span>
                 <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
             </div>
         </nav>
@@ -386,7 +386,7 @@
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl"></div>
             </div>
             <div id="dictationQuizContent" class="hidden space-y-6">
-                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all">
+                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all font-bold">
                 <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black">檢查</button>
             </div>
             <div class="mt-8"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black">下一題</button></div>
@@ -451,7 +451,7 @@
         window.highlightText = (t) => {
             let syl = state.showSyllables ? getSyllables(t) : [t];
             let p = syl.join('·');
-            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, m => `<span class="text-rose-600">${m}</span>`);
+            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, m => `<span class="text-rose-600 font-bold">${m}</span>`);
             return p;
         };
 
@@ -587,18 +587,21 @@
                 <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
                 <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
                 
+                <!-- 🚀 編輯按鈕與星星按鈕放一起 -->
                 <div class="absolute bottom-4 right-4 flex gap-2">
+                    ${!state.isGuestMode ? `
                     <button onclick="event.stopPropagation(); window.toggleStar('${w.id}', '${w._unitId}')" class="p-1.5 ${w.starred ? 'bg-amber-50 text-amber-500' : 'bg-slate-100 text-slate-400'} rounded-lg hover:bg-amber-50 hover:text-amber-500 transition-all"><i data-lucide="star" class="w-4 h-4 ${w.starred ? 'fill-current' : ''}"></i></button>
                     <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                    ` : (w.starred ? `<span class="p-1.5 bg-amber-50 text-amber-500 rounded-lg"><i data-lucide="star" class="w-4 h-4 fill-current"></i></span>` : '')}
                 </div>
 
                 ${state.showRating ? `
                 <div class="flex gap-1 mt-auto pt-4 pr-20">
-                    ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
+                    ${[1,2,3,4,5].map(n => `<button ${state.isGuestMode ? 'disabled' : `onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')"`} class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} ${state.isGuestMode ? 'cursor-default opacity-80' : ''}">${n}</button>`).join('')}
                 </div>` : ''}
                 
                 ${state.showNote ? `
-                <textarea class="note-field mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
+                <textarea class="note-field mt-2" placeholder="備註..." ${state.isGuestMode ? 'readonly' : `onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')"`} onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
             </div>`}).join(''); 
             lucide.createIcons(); 
             if(!query && !state.showAllNotesMode) window.renderReviewTracking();
@@ -611,35 +614,38 @@
                 const open = state.openFolders.has(f.id);
                 const uS = state.units.filter(u => u.folderId === f.id);
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
-                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500"></i><span>${f.name}</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
+                    ${!state.isGuestMode ? `
                     <div class="flex gap-1 items-center">
                         <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
                         <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
                         <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                         <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
-                    </div>
+                    </div>` : ''}
                 </div>
                 ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
+                        ${!state.isGuestMode ? `
                         <div class="flex gap-1 items-center">
                             <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
                             <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
                             <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                             <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
                             <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
-                        </div>
+                        </div>` : ''}
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
             html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
+                ${!state.isGuestMode ? `
                 <div class="flex gap-1 items-center">
                     <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
                     <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
                     <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
                     <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
                     <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
-                </div>
+                </div>` : ''}
             </div>`).join('');
             container.innerHTML = html; lucide.createIcons();
         };
@@ -650,7 +656,13 @@
             const viewType = params.get('view'), guestId = params.get('id');
             if (!user) { await signInAnonymously(auth); return; }
             if (viewType === 'guest' && guestId) {
-                state.isGuestMode = true; state.userLabel = guestId; window.showAppUI("訪客目錄"); syncData();
+                state.isGuestMode = true; state.userLabel = guestId; 
+                document.getElementById('addUnitSection').classList.add('hidden');
+                document.getElementById('btnPublishGuest').classList.add('hidden');
+                window.showAppUI("訪客唯讀模式"); 
+                syncData();
+                document.getElementById('baseDateInput').disabled = true;
+                document.getElementById('baseTimeInput').disabled = true;
             } else if (sessionStorage.getItem('admin_session')) {
                 state.userLabel = 'yljh'; window.showAdminDashboard(); syncData();
             } else if (sessionStorage.getItem('custom_user_session')) {
@@ -887,7 +899,7 @@
                 const isDone = !!u.reviewProgress?.[s.id];
                 const isOverdue = !isDone && baseTime > 0 && now > targetTime;
                 const statusClass = isDone ? 'done' : (isOverdue ? 'overdue' : 'upcoming');
-                return `<div class="review-node ${statusClass}" onclick="window.toggleReviewStage('${s.id}')">
+                return `<div class="review-node ${statusClass}" ${!state.isGuestMode ? `onclick="window.toggleReviewStage('${s.id}')"` : ''}>
                     <span style="font-size:9px; font-weight:800;">${s.label}後</span>
                     <span style="font-size:11px; font-weight:900;">${s.name}</span>
                 </div>`;
@@ -932,12 +944,17 @@
             // 重置星星標註按鈕狀態
             const btnMark = document.getElementById('btnMarkUnfam');
             if (btnMark) {
-                if (item.starred) {
-                    btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500"></i> 取消標註`;
-                    btnMark.className = "px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-sm font-bold transition-all flex items-center gap-1";
+                if (state.isGuestMode) {
+                    btnMark.classList.add('hidden');
                 } else {
-                    btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4"></i> 標註不熟`;
-                    btnMark.className = "px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1";
+                    btnMark.classList.remove('hidden');
+                    if (item.starred) {
+                        btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500"></i> 取消標註`;
+                        btnMark.className = "px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-sm font-bold transition-all flex items-center gap-1";
+                    } else {
+                        btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4"></i> 標註不熟`;
+                        btnMark.className = "px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1";
+                    }
                 }
             }
 
@@ -1096,12 +1113,18 @@
 
         // 其它掛載 (加入 order 屬性支援移動)
         window.importWords = async () => { if(state.isGuestMode) return; const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if(!n || !t) return; const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random(), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; }).filter(x => x); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); };
-        window.deleteUnit = async (id) => { if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
-        window.deleteFolder = async (id) => { if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
-        window.createNewFolder = async () => { const n = prompt("資料夾名稱："); if(n) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel, order: Date.now() }); };
+        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
+        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
+        window.createNewFolder = async () => { if(state.isGuestMode) return; const n = prompt("資料夾名稱："); if(n) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel, order: Date.now() }); };
         window.toggleFolder = (id) => { state.openFolders.has(id) ? state.openFolders.delete(id) : state.openFolders.add(id); window.renderUnitList(); };
         window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("管理者製作模式"); syncData(); };
-        window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("連結已複製"); };
+        
+        window.publishGuestLink = () => { 
+            const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; 
+            const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); 
+            window.open(url, '_blank'); // 🚀 直接在新分頁開啟
+        };
+
         window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = "09:00"; if(state.activeUnitId && d) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); };
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
         window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
