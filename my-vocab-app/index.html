@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 16.0 (搜尋強化版)</title>
+    <title>單字大師 - Eternal Edition 16.2 (排序移動版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -115,7 +115,7 @@
         .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-50 min-h-screen text-slate-800 font-bold">
 
     <!-- 英聽狀態條 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
@@ -139,7 +139,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.0</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.2</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -151,8 +151,8 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-xs font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-bold mb-6 text-slate-800">學生登入</h2>
                 <div class="space-y-4">
-                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none font-bold">
-                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none font-bold">
+                    <input type="text" id="customUser" placeholder="帳號 ID" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none">
+                    <input type="password" id="customPass" placeholder="密碼" class="w-full px-5 py-4 bg-slate-50 border-2 rounded-xl focus:border-indigo-500 outline-none">
                     <button onclick="window.loginWithCustom()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg">確認進入</button>
                 </div>
             </div>
@@ -161,12 +161,12 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理中心</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
                     <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">授權進入</button>
                 </div>
             </div>
-            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2 font-bold"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>核心同步中...</span></div>
+            <div id="loadingIndicator" class="hidden mt-6 text-sm text-slate-400 flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div><span>核心同步中...</span></div>
         </div>
     </div>
 
@@ -178,9 +178,9 @@
                 <span class="text-xl font-black text-slate-800 uppercase tracking-tighter">單字大師</span>
             </div>
             <div class="flex items-center gap-4">
-                <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold">管理者後台</button>
+                <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs">管理者後台</button>
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
-                <span id="userNameDisplay" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
+                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
                 <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
             </div>
         </nav>
@@ -194,13 +194,18 @@
                         <button onclick="window.createNewFolder()" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"><i data-lucide="folder-plus" class="w-4 h-4"></i></button>
                     </div>
                     <div class="space-y-3">
-                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold">
-                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold"></textarea>
+                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm">
+                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm"></textarea>
                         <button onclick="window.importWords()" class="w-full py-3 bg-indigo-600 text-white font-black rounded-xl shadow-md">儲存單元</button>
                     </div>
                 </div>
                 <div class="settings-card">
-                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">單元目錄</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">單元目錄</h2>
+                        <button onclick="window.showAllNotes()" class="text-[10px] bg-amber-50 border border-amber-200 text-amber-600 px-2 py-1 rounded-md hover:bg-amber-100 transition-all flex items-center gap-1 shadow-sm font-bold">
+                            <i data-lucide="book-open-check" class="w-3 h-3"></i> 彙整筆記
+                        </button>
+                    </div>
                     <div id="unitTreeList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
                 </div>
             </aside>
@@ -218,10 +223,10 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn font-bold">音節</button>
-                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn font-bold">母音</button>
-                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn font-bold">掌握度</button>
-                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn font-bold">筆記</button>
+                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn">音節</button>
+                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn">母音</button>
+                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn">掌握度</button>
+                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn">筆記</button>
                         </div>
                     </div>
 
@@ -256,7 +261,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div class="flex flex-col">
                             <h4 class="text-sm font-black text-slate-800 flex items-center gap-2"><i data-lucide="brain" class="text-indigo-600 w-4 h-4"></i> 記憶曲線追蹤</h4>
-                            <p id="reviewSummary" class="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter font-bold">點擊節點標記完成</p>
+                            <p id="reviewSummary" class="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter">點擊節點標記完成</p>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border font-bold">
                             <span class="text-[10px] text-slate-400 font-black">起始:</span>
@@ -268,7 +273,7 @@
                     <div id="reviewNodes" class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-2"></div>
                 </div>
 
-                <!-- 🚀 新增搜尋列與排序整合區塊 -->
+                <!-- 搜尋列與排序整合區塊 -->
                 <div class="flex flex-wrap justify-between items-end px-2 gap-4">
                     <h3 id="activeUnitTitle" class="text-2xl font-black italic text-slate-800">請選單元</h3>
                     <div class="flex items-center gap-3">
@@ -400,7 +405,8 @@
             isAudioPlaying: false, isPaused: false, displayedWords: [], baseSortedWords: [], lastUnitId: null,
             showSyllables: false, showVowels: false, showRating: false, showNote: false,
             openFolders: new Set(), allUnitsCache: [], isGuestMode: false,
-            quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: []
+            quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: [],
+            showAllNotesMode: false
         };
 
         // --- 音節切割 ---
@@ -447,12 +453,37 @@
         window.handleSearch = () => { window.renderWords(false); };
         window.handleSortChange = () => { window.renderWords(true); };
 
+        window.showAllNotes = () => {
+            state.showAllNotesMode = true;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            window.renderWords();
+        };
+
         window.renderWords = (forceSort = true) => {
             const g = document.getElementById('wordGrid');
             const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
             
-            if (query) {
-                // 搜尋模式：跨所有單元搜尋
+            if (state.showAllNotesMode) {
+                let allNotes = [];
+                state.units.forEach(u => {
+                    (u.words || []).forEach(w => {
+                        if (w.note && w.note.trim() !== '') {
+                            allNotes.push({ ...w, _unitId: u.id, _unitName: u.name });
+                        }
+                    });
+                });
+                
+                if (query) {
+                    allNotes = allNotes.filter(w => w.en.toLowerCase().includes(query) || w.zh.includes(query));
+                }
+                
+                allNotes.sort((a,b) => a.en.localeCompare(b.en));
+                state.displayedWords = allNotes;
+                document.getElementById('activeUnitTitle').innerText = `📝 筆記彙整 (${allNotes.length} 個單字)`;
+                document.getElementById('reviewTrackingArea').classList.add('hidden');
+                
+            } else if (query) {
                 let allMatched = [];
                 state.units.forEach(u => {
                     (u.words || []).forEach(w => {
@@ -465,7 +496,6 @@
                 document.getElementById('activeUnitTitle').innerText = `搜尋結果 (${allMatched.length} 個單字)`;
                 document.getElementById('reviewTrackingArea').classList.add('hidden');
             } else {
-                // 正常單元模式
                 const u = state.units.find(x => x.id == state.activeUnitId);
                 if (!u || !g) return;
                 document.getElementById('reviewTrackingArea').classList.remove('hidden');
@@ -499,10 +529,11 @@
             if(!g) return;
             g.innerHTML = state.displayedWords.map((w, idx) => {
                 const mode = w.localMode || state.globalMode;
-                const unitBadge = query ? `<span class="absolute top-4 left-10 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md font-bold">${w._unitName}</span>` : '';
+                const unitBadge = (query || state.showAllNotesMode) ? `<span class="absolute top-4 left-10 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md font-bold shadow-sm">${w._unitName}</span>` : '';
                 return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
                 <span style="position:absolute; top:-10px; left:-10px; width:22px; height:22px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#cbd5e1; z-index:10;">${idx+1}</span>
                 ${unitBadge}
+                
                 <div class="absolute top-4 right-4">
                     <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}', '${w._unitId}')" class="card-mode-toggle font-bold"><span>切換</span></button>
                 </div>
@@ -523,9 +554,10 @@
                 <textarea class="note-field font-bold mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
             </div>`}).join(''); 
             lucide.createIcons(); 
-            if(!query) window.renderReviewTracking();
+            if(!query && !state.showAllNotesMode) window.renderReviewTracking();
         };
 
+        // 🚀 核心更新：加入排序邏輯與上下箭頭按鈕
         window.renderUnitList = () => {
             const container = document.getElementById('unitTreeList'); if (!container) return;
             let html = "";
@@ -534,27 +566,33 @@
                 const uS = state.units.filter(u => u.folderId === f.id);
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
                     <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
-                    <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                     </div>
                 </div>
-                ${open ? `<div class="folder-content font-bold">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
+                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
-                        <div class="flex gap-1">
-                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        <div class="flex gap-1 items-center">
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                         </div>
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
-            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id?'active':''} font-bold">
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
-                <div class="flex gap-1">
-                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                <div class="flex gap-1 items-center">
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                 </div>
             </div>`).join('');
             container.innerHTML = html; lucide.createIcons();
@@ -575,13 +613,18 @@
             lucide.createIcons();
         });
 
+        // 🚀 修改 syncData 支援排序功能
         function syncData() {
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'folders'), snap => {
-                state.folders = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(f => f.ownerId === state.userLabel);
+                state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                    .filter(f => f.ownerId === state.userLabel)
+                    .sort((a,b) => (a.order || 0) - (b.order || 0));
                 window.renderUnitList();
             });
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), snap => {
-                state.units = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(u => u.ownerId === state.userLabel);
+                state.units = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                    .filter(u => u.ownerId === state.userLabel)
+                    .sort((a,b) => (a.order || 0) - (b.order || 0));
                 if (!state.activeUnitId && state.units.length) state.activeUnitId = state.units[0].id;
                 window.renderWords(false);
                 window.renderUnitList();
@@ -612,10 +655,12 @@
         
         window.setGlobalMode = (m) => { state.globalMode = m; const u = state.units.find(x => x.id == state.activeUnitId); if (u && u.words) u.words.forEach(w => delete w.localMode); window.renderWords(false); };
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; window.renderWords(false); };
+        
         window.setActiveUnit = (id) => { 
             state.activeUnitId = id; 
+            state.showAllNotesMode = false;
             const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = ''; // 清空搜尋
+            if (searchInput) searchInput.value = ''; 
             window.renderWords(true); 
             window.renderUnitList(); 
         };
@@ -683,6 +728,39 @@
             }
         };
         window.closeWordEdit = () => document.getElementById('wordEditModal').classList.add('hidden');
+
+        // 🚀 資料夾/單元 上下移動與編輯
+        window.moveFolder = async (id, dir) => {
+            if (state.isGuestMode) return;
+            const list = [...state.folders];
+            const idx = list.findIndex(f => f.id === id);
+            if (idx < 0) return;
+            const swapIdx = idx + dir;
+            if (swapIdx >= 0 && swapIdx < list.length) {
+                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
+                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
+                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[swapIdx].id), { order: currentOrder });
+            }
+        };
+        
+        window.moveUnit = async (id, dir) => {
+            if (state.isGuestMode) return;
+            const u = state.units.find(x => x.id === id);
+            if (!u) return;
+            const list = state.units.filter(x => x.folderId === u.folderId);
+            const idx = list.findIndex(x => x.id === id);
+            if (idx < 0) return;
+            const swapIdx = idx + dir;
+            if (swapIdx >= 0 && swapIdx < list.length) {
+                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
+                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
+                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[swapIdx].id), { order: currentOrder });
+            }
+        };
 
         window.renameUnit = async (id) => { const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
         window.renameFolder = async (id) => { const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
@@ -762,7 +840,7 @@
             if (progressEl) progressEl.style.width = (doneCount / STAGES.length * 100) + '%';
         };
 
-        // --- 測驗功能完全修復 ---
+        // --- 測驗功能 ---
         window.startRangeQuiz = (type) => { 
             const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
             const e = Math.max(s, parseInt(document.getElementById('audioRangeEnd').value) || 20); 
@@ -865,11 +943,11 @@
             document.getElementById('quizModal').classList.add('hidden');
         };
 
-        // 其它掛載
-        window.importWords = async () => { if(state.isGuestMode) return; const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if(!n || !t) return; const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random(), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; }).filter(x => x); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {} }); };
+        // 其它掛載 (加入 order 屬性支援移動)
+        window.importWords = async () => { if(state.isGuestMode) return; const n = document.getElementById('unitNameInput').value.trim(), t = document.getElementById('wordsInput').value.trim(); if(!n || !t) return; const words = t.split('\n').map(l => { const p = l.split(/[,，]/); return p.length >= 2 ? { id: 'w'+Date.now()+Math.random(), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; }).filter(x => x); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); };
         window.deleteUnit = async (id) => { if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
         window.deleteFolder = async (id) => { if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
-        window.createNewFolder = async () => { const n = prompt("資料夾名稱："); if(n) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel }); };
+        window.createNewFolder = async () => { const n = prompt("資料夾名稱："); if(n) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', 'f'+Date.now()), { name: n, ownerId: state.userLabel, order: Date.now() }); };
         window.toggleFolder = (id) => { state.openFolders.has(id) ? state.openFolders.delete(id) : state.openFolders.add(id); window.renderUnitList(); };
         window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("管理者製作模式"); syncData(); };
         window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("連結已複製"); };
@@ -882,7 +960,7 @@
             document.getElementById('sourceAccountSelect').innerHTML = `<option value="yljh">管理者模板</option>` + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
         }); onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), snap => { state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})); }); };
         window.updateSourceUnitList = () => { const src = document.getElementById('sourceAccountSelect').value; const fil = state.allUnitsCache.filter(u => u.ownerId === src); document.getElementById('masterUnitSelect').innerHTML = fil.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); };
-        window.assignUnitToStudent = async () => { const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; if(!uid || !target) return; const src = state.allUnitsCache.find(u => u.id === uid); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { ...src, ownerId: target, reviewProgress: {} }); alert("已分派"); };
+        window.assignUnitToStudent = async () => { const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; if(!uid || !target) return; const src = state.allUnitsCache.find(u => u.id === uid); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { ...src, ownerId: target, reviewProgress: {}, order: Date.now() }); alert("已分派"); };
         window.adminDetail = (uid, n) => { state.currentAdminViewUid = uid; document.getElementById('adminDetailModal').classList.remove('hidden'); document.getElementById('detailUserTitle').innerText = n; const fil = state.allUnitsCache.filter(u => u.ownerId === uid); document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${u.name}</h6></div>`).join('') || '無資料'; };
     </script>
 </body>
