@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 16.2 (排序移動版)</title>
+    <title>單字大師 - Eternal Edition 16.5 (獨立標註星星版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -139,7 +139,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.2</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.5</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -161,8 +161,8 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理中心</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
                     <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">授權進入</button>
                 </div>
             </div>
@@ -180,7 +180,7 @@
             <div class="flex items-center gap-4">
                 <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs">管理者後台</button>
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
-                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
+                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border font-bold"></span>
                 <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
             </div>
         </nav>
@@ -194,8 +194,8 @@
                         <button onclick="window.createNewFolder()" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"><i data-lucide="folder-plus" class="w-4 h-4"></i></button>
                     </div>
                     <div class="space-y-3">
-                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm">
-                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm"></textarea>
+                        <input type="text" id="unitNameInput" placeholder="新單元名稱" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold">
+                        <textarea id="wordsInput" placeholder="格式: 單字,定義 (每行一組)" rows="3" class="w-full px-4 py-2 bg-slate-50 border-2 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold"></textarea>
                         <button onclick="window.importWords()" class="w-full py-3 bg-indigo-600 text-white font-black rounded-xl shadow-md">儲存單元</button>
                     </div>
                 </div>
@@ -223,10 +223,10 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn">音節</button>
-                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn">母音</button>
-                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn">掌握度</button>
-                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn">筆記</button>
+                            <button id="toggle-syllables-btn" onclick="window.toggleFeature('syllables')" class="ui-toggle-btn font-bold">音節</button>
+                            <button id="toggle-vowels-btn" onclick="window.toggleFeature('vowels')" class="ui-toggle-btn font-bold">母音</button>
+                            <button id="toggle-rating-btn" onclick="window.toggleFeature('rating')" class="ui-toggle-btn font-bold">掌握度</button>
+                            <button id="toggle-note-btn" onclick="window.toggleFeature('note')" class="ui-toggle-btn font-bold">筆記</button>
                         </div>
                     </div>
 
@@ -261,7 +261,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div class="flex flex-col">
                             <h4 class="text-sm font-black text-slate-800 flex items-center gap-2"><i data-lucide="brain" class="text-indigo-600 w-4 h-4"></i> 記憶曲線追蹤</h4>
-                            <p id="reviewSummary" class="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter">點擊節點標記完成</p>
+                            <p id="reviewSummary" class="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter font-bold">點擊節點標記完成</p>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border font-bold">
                             <span class="text-[10px] text-slate-400 font-black">起始:</span>
@@ -282,7 +282,12 @@
                             <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="全單字本搜尋..." class="pl-9 pr-3 py-1.5 bg-white border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm transition-all w-36 focus:w-48 text-slate-700 font-bold shadow-sm">
                         </div>
                         <select id="sortSelect" onchange="window.handleSortChange()" class="bg-transparent text-sm border-b-2 border-indigo-500 text-indigo-600 pb-1 outline-none font-bold">
-                            <option value="original">原始順序</option><option value="random">隨機</option><option value="az">A-Z</option><option value="rating">掌握度</option>
+                            <option value="original">原始順序</option>
+                            <option value="random">隨機</option>
+                            <option value="az">A-Z</option>
+                            <option value="rating">掌握度</option>
+                            <!-- 🚀 新增不熟(星星)排序 -->
+                            <option value="starred">不熟 (星星)</option>
                         </select>
                     </div>
                 </div>
@@ -368,13 +373,19 @@
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x"></i></button>
             <h3 id="quizZh" class="text-4xl font-black mt-6"></h3>
-            <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 mb-6"></p>
+            <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 mb-2"></p>
+            
+            <div class="flex justify-center gap-3 mt-4 mb-6">
+                <button onclick="window.showQuizWord()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center gap-1"><i data-lucide="eye" class="w-4 h-4"></i> 呈現單字</button>
+                <button id="btnMarkUnfam" onclick="window.markQuizUnfamiliar()" class="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1"><i data-lucide="star" class="w-4 h-4"></i> 標註不熟</button>
+            </div>
+
             <div id="blockQuizContent" class="hidden">
                 <div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-10 min-h-[50px]"></div>
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl"></div>
             </div>
             <div id="dictationQuizContent" class="hidden space-y-6">
-                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black uppercase outline-none focus:border-indigo-500 transition-all font-bold">
+                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all font-bold">
                 <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black">檢查</button>
             </div>
             <div class="mt-8"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black">下一題</button></div>
@@ -457,43 +468,76 @@
             state.showAllNotesMode = true;
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
-            window.renderWords();
+            window.renderWords(true);
         };
 
         window.renderWords = (forceSort = true) => {
             const g = document.getElementById('wordGrid');
             const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            const sortVal = document.getElementById('sortSelect').value;
             
             if (state.showAllNotesMode) {
-                let allNotes = [];
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if (w.note && w.note.trim() !== '') {
-                            allNotes.push({ ...w, _unitId: u.id, _unitName: u.name });
-                        }
+                if (forceSort || state.lastUnitId !== 'ALL_NOTES') {
+                    state.lastUnitId = 'ALL_NOTES';
+                    let allNotes = [];
+                    state.units.forEach(u => {
+                        (u.words || []).forEach(w => {
+                            if (w.note && w.note.trim() !== '') {
+                                allNotes.push({ ...w, _unitId: u.id, _unitName: u.name });
+                            }
+                        });
                     });
-                });
-                
-                if (query) {
-                    allNotes = allNotes.filter(w => w.en.toLowerCase().includes(query) || w.zh.includes(query));
+                    
+                    if (sortVal === 'az') allNotes.sort((a,b) => a.en.localeCompare(b.en));
+                    else if (sortVal === 'random') allNotes.sort(() => Math.random() - 0.5);
+                    else if (sortVal === 'rating') allNotes.sort((a,b) => b.rating - a.rating);
+                    else if (sortVal === 'starred') allNotes.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    
+                    state.baseSortedWords = allNotes;
+                } else {
+                    let updatedBase = state.baseSortedWords.map(dw => {
+                        const u = state.units.find(x => x.id === dw._unitId);
+                        const fresh = u ? u.words.find(fw => fw.id === dw.id) : null;
+                        return fresh ? { ...fresh, _unitId: dw._unitId, _unitName: dw._unitName } : null;
+                    }).filter(x => x !== null && x.note && x.note.trim() !== '');
+                    state.baseSortedWords = updatedBase;
                 }
                 
-                allNotes.sort((a,b) => a.en.localeCompare(b.en));
-                state.displayedWords = allNotes;
-                document.getElementById('activeUnitTitle').innerText = `📝 筆記彙整 (${allNotes.length} 個單字)`;
+                let displayNotes = state.baseSortedWords;
+                if (query) {
+                    displayNotes = displayNotes.filter(w => w.en.toLowerCase().includes(query) || w.zh.includes(query));
+                }
+                
+                state.displayedWords = displayNotes;
+                document.getElementById('activeUnitTitle').innerText = `📝 筆記彙整 (${displayNotes.length} 個單字)`;
                 document.getElementById('reviewTrackingArea').classList.add('hidden');
                 
             } else if (query) {
-                let allMatched = [];
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if (w.en.toLowerCase().includes(query) || w.zh.includes(query)) {
-                            allMatched.push({ ...w, _unitId: u.id, _unitName: u.name });
-                        }
+                if (forceSort || state.lastUnitId !== 'SEARCH') {
+                    state.lastUnitId = 'SEARCH';
+                    let allMatched = [];
+                    state.units.forEach(u => {
+                        (u.words || []).forEach(w => {
+                            if (w.en.toLowerCase().includes(query) || w.zh.includes(query)) {
+                                allMatched.push({ ...w, _unitId: u.id, _unitName: u.name });
+                            }
+                        });
                     });
-                });
-                state.displayedWords = allMatched;
-                document.getElementById('activeUnitTitle').innerText = `搜尋結果 (${allMatched.length} 個單字)`;
+                    if (sortVal === 'az') allMatched.sort((a,b) => a.en.localeCompare(b.en));
+                    else if (sortVal === 'random') allMatched.sort(() => Math.random() - 0.5);
+                    else if (sortVal === 'rating') allMatched.sort((a,b) => b.rating - a.rating);
+                    else if (sortVal === 'starred') allMatched.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    state.baseSortedWords = allMatched;
+                } else {
+                    let updatedBase = state.baseSortedWords.map(dw => {
+                        const u = state.units.find(x => x.id === dw._unitId);
+                        const fresh = u ? u.words.find(fw => fw.id === dw.id) : null;
+                        return fresh ? { ...fresh, _unitId: dw._unitId, _unitName: dw._unitName } : null;
+                    }).filter(x => x !== null);
+                    state.baseSortedWords = updatedBase;
+                }
+                state.displayedWords = state.baseSortedWords;
+                document.getElementById('activeUnitTitle').innerText = `搜尋結果 (${state.displayedWords.length} 個單字)`;
                 document.getElementById('reviewTrackingArea').classList.add('hidden');
             } else {
                 const u = state.units.find(x => x.id == state.activeUnitId);
@@ -503,10 +547,10 @@
                 if (forceSort || !state.baseSortedWords || state.baseSortedWords.length === 0 || state.lastUnitId !== state.activeUnitId) {
                     state.lastUnitId = state.activeUnitId;
                     let list = [...(u.words || [])].map(w => ({ ...w, _unitId: u.id, _unitName: u.name }));
-                    let sortVal = document.getElementById('sortSelect').value;
                     if (sortVal === 'az') list.sort((a,b) => a.en.localeCompare(b.en));
                     else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
                     else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
+                    else if (sortVal === 'starred') list.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
                     state.baseSortedWords = list;
                 } else {
                     let updatedBase = state.baseSortedWords.map(dw => {
@@ -541,12 +585,14 @@
                 <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
                 <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
                 
-                <div class="absolute bottom-4 right-4">
-                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                <!-- 🚀 編輯按鈕與星星按鈕放一起 -->
+                <div class="absolute bottom-4 right-4 flex gap-2">
+                    <button onclick="event.stopPropagation(); window.toggleStar('${w.id}', '${w._unitId}')" class="p-1.5 ${w.starred ? 'bg-amber-50 text-amber-500' : 'bg-slate-100 text-slate-400'} rounded-lg hover:bg-amber-50 hover:text-amber-500 transition-all"><i data-lucide="star" class="w-4 h-4 ${w.starred ? 'fill-current' : ''}"></i></button>
+                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                 </div>
 
                 ${state.showRating ? `
-                <div class="flex gap-1 mt-auto pt-4">
+                <div class="flex gap-1 mt-auto pt-4 pr-20">
                     ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} font-bold">${n}</button>`).join('')}
                 </div>` : ''}
                 
@@ -557,7 +603,6 @@
             if(!query && !state.showAllNotesMode) window.renderReviewTracking();
         };
 
-        // 🚀 核心更新：加入排序邏輯與上下箭頭按鈕
         window.renderUnitList = () => {
             const container = document.getElementById('unitTreeList'); if (!container) return;
             let html = "";
@@ -613,7 +658,6 @@
             lucide.createIcons();
         });
 
-        // 🚀 修改 syncData 支援排序功能
         function syncData() {
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'folders'), snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
@@ -663,6 +707,19 @@
             if (searchInput) searchInput.value = ''; 
             window.renderWords(true); 
             window.renderUnitList(); 
+        };
+
+        // 🚀 新增：星星獨立標註切換
+        window.toggleStar = async (id, unitId) => {
+            if (state.isGuestMode) return;
+            const targetUnitId = unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == id);
+            if (w) {
+                w.starred = !w.starred;
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
+                window.renderWords(false);
+            }
         };
 
         window.updateRating = async (id, n, unitId) => {
@@ -729,7 +786,7 @@
         };
         window.closeWordEdit = () => document.getElementById('wordEditModal').classList.add('hidden');
 
-        // 🚀 資料夾/單元 上下移動與編輯
+        // 資料夾/單元 上下移動與編輯
         window.moveFolder = async (id, dir) => {
             if (state.isGuestMode) return;
             const list = [...state.folders];
@@ -840,7 +897,7 @@
             if (progressEl) progressEl.style.width = (doneCount / STAGES.length * 100) + '%';
         };
 
-        // --- 測驗功能 ---
+        // 🚀 測驗功能 
         window.startRangeQuiz = (type) => { 
             const s = Math.max(1, parseInt(document.getElementById('audioRangeStart').value) || 1);
             const e = Math.max(s, parseInt(document.getElementById('audioRangeEnd').value) || 20); 
@@ -863,7 +920,19 @@
             document.getElementById('quizProgress').innerText = `${state.quizIndex + 1}/${state.quizQueue.length}`; 
             document.getElementById('btnNextQuiz').classList.add('hidden'); 
             
-            const cleanWord = item.en.trim();
+            // 🚀 重置星星標註按鈕狀態
+            const btnMark = document.getElementById('btnMarkUnfam');
+            if (btnMark) {
+                if (item.starred) {
+                    btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500"></i> 取消標註`;
+                    btnMark.className = "px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-sm font-bold transition-all flex items-center gap-1";
+                } else {
+                    btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4"></i> 標註不熟`;
+                    btnMark.className = "px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1";
+                }
+            }
+
+            const cleanWord = item.en.trim().toLowerCase(); 
 
             if (state.quizType === 'block') { 
                 document.getElementById('blockQuizContent').classList.remove('hidden'); 
@@ -881,17 +950,61 @@
                 setTimeout(() => inputEl.focus(), 100); 
             } 
             window.speak(cleanWord); 
+            lucide.createIcons();
+        };
+
+        window.showQuizWord = () => {
+            const cleanWord = state.quizQueue[state.quizIndex].en.trim().toLowerCase();
+            if (state.quizType === 'block') {
+                state.currentAnswer = cleanWord.split('');
+                state.usedIndexes = state.quizLetters.map((_, i) => i);
+                window.renderBlockQuiz();
+                document.getElementById('btnNextQuiz').classList.remove('hidden');
+            } else {
+                const inputEl = document.getElementById('quizInput');
+                inputEl.value = cleanWord;
+                inputEl.classList.remove('border-rose-500', 'animate-shake');
+                inputEl.classList.add('border-emerald-500');
+                document.getElementById('btnNextQuiz').classList.remove('hidden');
+            }
+        };
+
+        // 🚀 修改：標註不熟邏輯改為獨立的星星
+        window.markQuizUnfamiliar = async () => {
+            if (state.isGuestMode) return;
+            const item = state.quizQueue[state.quizIndex];
+            const targetUnitId = item._unitId || state.activeUnitId;
+            const u = state.units.find(x => x.id === targetUnitId);
+            const w = u?.words.find(x => x.id === item.id);
+            if (w) {
+                w.starred = !w.starred; // Toggle
+                item.starred = w.starred; // Update reference
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
+                
+                const btnMark = document.getElementById('btnMarkUnfam');
+                if (btnMark) {
+                    if (w.starred) {
+                        btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500"></i> 取消標註`;
+                        btnMark.className = "px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-sm font-bold transition-all flex items-center gap-1";
+                    } else {
+                        btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4"></i> 標註不熟`;
+                        btnMark.className = "px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1";
+                    }
+                    lucide.createIcons();
+                }
+                window.renderWords(false);
+            }
         };
 
         window.renderBlockQuiz = () => { 
-            const cleanWord = state.quizQueue[state.quizIndex].en.trim(); 
+            const cleanWord = state.quizQueue[state.quizIndex].en.trim().toLowerCase(); 
             document.getElementById('blockAnswerArea').innerHTML = cleanWord.split('').map((_, i) => `<div class="answer-slot">${state.currentAnswer[i] || ''}</div>`).join(''); 
             document.getElementById('blockPoolArea').innerHTML = state.quizLetters.map((l, i) => `<button onclick="window.handleQuizBlockClick(${i}, '${l.replace(/'/g, "\\'")}')" class="block-letter ${state.usedIndexes.includes(i) ? 'opacity-20 pointer-events-none' : ''}">${l}</button>`).join(''); 
         };
 
         window.handleQuizBlockClick = (i, c) => { 
-            const target = state.quizQueue[state.quizIndex].en.trim(); 
-            if (c.toLowerCase() === target[state.currentAnswer.length].toLowerCase()) { 
+            const target = state.quizQueue[state.quizIndex].en.trim().toLowerCase(); 
+            if (c === target[state.currentAnswer.length]) { 
                 state.currentAnswer.push(c); 
                 state.usedIndexes.push(i); 
                 window.renderBlockQuiz(); 
