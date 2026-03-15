@@ -616,35 +616,29 @@
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
                     <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
                     ${!state.isGuestMode ? `
-                    <div class="flex gap-1 items-center">
-                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                    <div class="flex gap-1">
+                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                     </div>` : ''}
                 </div>
-                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
+                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
                         ${!state.isGuestMode ? `
-                        <div class="flex gap-1 items-center">
-                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                        <div class="flex gap-1">
+                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                         </div>` : ''}
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
-            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
                 ${!state.isGuestMode ? `
-                <div class="flex gap-1 items-center">
-                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                <div class="flex gap-1">
+                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                 </div>` : ''}
             </div>`).join('');
             container.innerHTML = html; lucide.createIcons();
@@ -831,9 +825,10 @@
             }
         };
 
-        window.renameUnit = async (id) => { const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
-        window.renameFolder = async (id) => { const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
+        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
+        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
         window.openMoveModal = (id) => {
+            if(state.isGuestMode) return;
             state.movingUnitId = id;
             const s = document.getElementById('targetFolderSelect');
             s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
