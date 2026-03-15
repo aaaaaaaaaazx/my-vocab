@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 16.5 (獨立標註星星版)</title>
+    <title>單字大師 - Eternal Edition 16.6 (測驗提示切換版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -139,11 +139,11 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.5</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.6</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
-                    <button onclick="window.toggleAuthView('admin')" class="w-full border-2 py-4 rounded-2xl text-slate-500 hover:bg-slate-50 transition-all font-bold">管理者模式</button>
+                    <button onclick="window.toggleAuthView('admin')" class="w-full border-2 py-4 rounded-2xl text-slate-500 hover:bg-slate-50 transition-all">管理者模式</button>
                 </div>
             </div>
             
@@ -161,8 +161,8 @@
                 <button onclick="window.toggleAuthView('main')" class="text-slate-400 mb-6 flex items-center gap-1 text-sm font-black"><i data-lucide="arrow-left" class="w-4 h-4"></i> 返回</button>
                 <h2 class="text-2xl font-black mb-6 text-slate-800">管理中心</h2>
                 <div class="space-y-4">
-                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
-                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none font-bold">
+                    <input type="text" id="adminUser" placeholder="管理員 ID" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
+                    <input type="password" id="adminPass" placeholder="管理密碼" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none">
                     <button onclick="window.adminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">授權進入</button>
                 </div>
             </div>
@@ -180,7 +180,7 @@
             <div class="flex items-center gap-4">
                 <button id="btnBackToAdmin" onclick="window.showAdminDashboard()" class="hidden bg-slate-800 text-white px-4 py-2 rounded-xl text-xs">管理者後台</button>
                 <button id="btnPublishGuest" onclick="window.publishGuestLink()" class="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs border border-emerald-100 hover:bg-emerald-100 transition-all font-bold"><i data-lucide="share-2" class="w-4 h-4"></i> 發佈連結</button>
-                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border font-bold"></span>
+                <span id="userNameDisplay" class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border"></span>
                 <button onclick="window.logout()" class="text-xs font-black text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">登出</button>
             </div>
         </nav>
@@ -279,14 +279,13 @@
                     <div class="flex items-center gap-3">
                         <div class="relative">
                             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                            <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="全單字本搜尋..." class="pl-9 pr-3 py-1.5 bg-white border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm transition-all w-36 focus:w-48 text-slate-700 font-bold shadow-sm">
+                            <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="全單字本搜尋..." class="pl-9 pr-3 py-1.5 bg-white border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm transition-all w-36 focus:w-48 text-slate-700 shadow-sm font-bold">
                         </div>
                         <select id="sortSelect" onchange="window.handleSortChange()" class="bg-transparent text-sm border-b-2 border-indigo-500 text-indigo-600 pb-1 outline-none font-bold">
                             <option value="original">原始順序</option>
                             <option value="random">隨機</option>
                             <option value="az">A-Z</option>
                             <option value="rating">掌握度</option>
-                            <!-- 🚀 新增不熟(星星)排序 -->
                             <option value="starred">不熟 (星星)</option>
                         </select>
                     </div>
@@ -369,6 +368,7 @@
         </div>
     </div>
 
+    <!-- 🚀 測驗彈窗 -->
     <div id="quizModal" class="hidden fixed inset-0 z-[250] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-10 text-center relative">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x"></i></button>
@@ -376,8 +376,9 @@
             <p id="quizProgress" class="text-xs text-slate-400 font-black mt-2 mb-2"></p>
             
             <div class="flex justify-center gap-3 mt-4 mb-6">
-                <button onclick="window.showQuizWord()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center gap-1"><i data-lucide="eye" class="w-4 h-4"></i> 呈現單字</button>
-                <button id="btnMarkUnfam" onclick="window.markQuizUnfamiliar()" class="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-bold hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1"><i data-lucide="star" class="w-4 h-4"></i> 標註不熟</button>
+                <!-- 🚀 呈現/隱藏單字切換按鈕 -->
+                <button id="btnRevealWord" onclick="window.toggleQuizWord()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm transition-all flex items-center gap-1 hover:bg-slate-200 font-bold"><i data-lucide="eye" class="w-4 h-4"></i> 呈現單字</button>
+                <button id="btnMarkUnfam" onclick="window.markQuizUnfamiliar()" class="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm hover:bg-amber-50 hover:text-amber-500 transition-all flex items-center gap-1 font-bold"><i data-lucide="star" class="w-4 h-4"></i> 標註不熟</button>
             </div>
 
             <div id="blockQuizContent" class="hidden">
@@ -385,7 +386,7 @@
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-4 bg-slate-50 rounded-2xl"></div>
             </div>
             <div id="dictationQuizContent" class="hidden space-y-6">
-                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all font-bold">
+                <input type="text" id="quizInput" placeholder="拼出正確單字..." onkeydown="if(event.key === 'Enter') window.checkDictationAnswer()" class="w-full text-center px-6 py-5 bg-slate-100 border-2 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all">
                 <button onclick="window.checkDictationAnswer()" class="w-full py-5 bg-rose-500 text-white rounded-2xl font-black">檢查</button>
             </div>
             <div class="mt-8"><button onclick="window.nextQuizItem()" id="btnNextQuiz" class="hidden px-10 py-3 bg-emerald-500 text-white rounded-2xl font-black">下一題</button></div>
@@ -417,7 +418,8 @@
             showSyllables: false, showVowels: false, showRating: false, showNote: false,
             openFolders: new Set(), allUnitsCache: [], isGuestMode: false,
             quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: [],
-            showAllNotesMode: false
+            showAllNotesMode: false,
+            isRevealed: false, savedAnswer: null, savedUsedIndexes: null // 🚀 記錄顯示狀態
         };
 
         // --- 音節切割 ---
@@ -449,7 +451,7 @@
         window.highlightText = (t) => {
             let syl = state.showSyllables ? getSyllables(t) : [t];
             let p = syl.join('·');
-            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, m => `<span class="text-rose-600 font-bold">${m}</span>`);
+            if (state.showVowels) p = p.replace(/[aeiouAEIOU]/g, m => `<span class="text-rose-600">${m}</span>`);
             return p;
         };
 
@@ -573,7 +575,7 @@
             if(!g) return;
             g.innerHTML = state.displayedWords.map((w, idx) => {
                 const mode = w.localMode || state.globalMode;
-                const unitBadge = (query || state.showAllNotesMode) ? `<span class="absolute top-4 left-10 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md font-bold shadow-sm">${w._unitName}</span>` : '';
+                const unitBadge = (query || state.showAllNotesMode) ? `<span class="absolute top-4 left-10 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md shadow-sm font-bold">${w._unitName}</span>` : '';
                 return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
                 <span style="position:absolute; top:-10px; left:-10px; width:22px; height:22px; background:white; border:1px solid #e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#cbd5e1; z-index:10;">${idx+1}</span>
                 ${unitBadge}
@@ -585,7 +587,6 @@
                 <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
                 <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
                 
-                <!-- 🚀 編輯按鈕與星星按鈕放一起 -->
                 <div class="absolute bottom-4 right-4 flex gap-2">
                     <button onclick="event.stopPropagation(); window.toggleStar('${w.id}', '${w._unitId}')" class="p-1.5 ${w.starred ? 'bg-amber-50 text-amber-500' : 'bg-slate-100 text-slate-400'} rounded-lg hover:bg-amber-50 hover:text-amber-500 transition-all"><i data-lucide="star" class="w-4 h-4 ${w.starred ? 'fill-current' : ''}"></i></button>
                     <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
@@ -593,11 +594,11 @@
 
                 ${state.showRating ? `
                 <div class="flex gap-1 mt-auto pt-4 pr-20">
-                    ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} font-bold">${n}</button>`).join('')}
+                    ${[1,2,3,4,5].map(n => `<button onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')" class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'}">${n}</button>`).join('')}
                 </div>` : ''}
                 
                 ${state.showNote ? `
-                <textarea class="note-field font-bold mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
+                <textarea class="note-field mt-2" placeholder="備註..." onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')" onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
             </div>`}).join(''); 
             lucide.createIcons(); 
             if(!query && !state.showAllNotesMode) window.renderReviewTracking();
@@ -610,7 +611,7 @@
                 const open = state.openFolders.has(f.id);
                 const uS = state.units.filter(u => u.folderId === f.id);
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
-                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500"></i><span>${f.name}</span></div>
                     <div class="flex gap-1 items-center">
                         <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
                         <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
@@ -618,7 +619,7 @@
                         <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                     </div>
                 </div>
-                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
+                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
                         <div class="flex gap-1 items-center">
                             <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
@@ -630,7 +631,7 @@
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId);
-            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''}">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
                 <div class="flex gap-1 items-center">
                     <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
@@ -709,7 +710,6 @@
             window.renderUnitList(); 
         };
 
-        // 🚀 新增：星星獨立標註切換
         window.toggleStar = async (id, unitId) => {
             if (state.isGuestMode) return;
             const targetUnitId = unitId || state.activeUnitId;
@@ -920,7 +920,16 @@
             document.getElementById('quizProgress').innerText = `${state.quizIndex + 1}/${state.quizQueue.length}`; 
             document.getElementById('btnNextQuiz').classList.add('hidden'); 
             
-            // 🚀 重置星星標註按鈕狀態
+            // 🚀 每次新題目重置「呈現單字」狀態
+            state.isRevealed = false;
+            state.savedAnswer = null;
+            state.savedUsedIndexes = null;
+            const btnReveal = document.getElementById('btnRevealWord');
+            if (btnReveal) {
+                btnReveal.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> 呈現單字`;
+            }
+
+            // 重置星星標註按鈕狀態
             const btnMark = document.getElementById('btnMarkUnfam');
             if (btnMark) {
                 if (item.starred) {
@@ -946,30 +955,59 @@
                 document.getElementById('dictationQuizContent').classList.remove('hidden'); 
                 const inputEl = document.getElementById('quizInput');
                 inputEl.value = ""; 
-                inputEl.classList.remove('border-rose-500', 'border-emerald-500', 'animate-shake');
+                inputEl.classList.remove('border-rose-500', 'border-emerald-500', 'text-indigo-500', 'animate-shake');
                 setTimeout(() => inputEl.focus(), 100); 
             } 
             window.speak(cleanWord); 
             lucide.createIcons();
         };
 
-        window.showQuizWord = () => {
+        // 🚀 「呈現單字」的切換邏輯 (Toggle Reveal/Hide)
+        window.toggleQuizWord = () => {
             const cleanWord = state.quizQueue[state.quizIndex].en.trim().toLowerCase();
-            if (state.quizType === 'block') {
-                state.currentAnswer = cleanWord.split('');
-                state.usedIndexes = state.quizLetters.map((_, i) => i);
-                window.renderBlockQuiz();
-                document.getElementById('btnNextQuiz').classList.remove('hidden');
+            const btnReveal = document.getElementById('btnRevealWord');
+
+            if (!state.isRevealed) {
+                // 顯示答案 (Peek)
+                state.isRevealed = true;
+                if (btnReveal) {
+                    btnReveal.innerHTML = `<i data-lucide="eye-off" class="w-4 h-4"></i> 隱藏單字`;
+                }
+
+                if (state.quizType === 'block') {
+                    state.savedAnswer = [...state.currentAnswer];
+                    state.savedUsedIndexes = [...state.usedIndexes];
+                    state.currentAnswer = cleanWord.split('');
+                    state.usedIndexes = state.quizLetters.map((_, i) => i);
+                    window.renderBlockQuiz();
+                } else {
+                    const inputEl = document.getElementById('quizInput');
+                    state.savedAnswer = inputEl.value;
+                    inputEl.value = cleanWord;
+                    inputEl.classList.remove('border-rose-500', 'animate-shake');
+                    inputEl.classList.add('text-indigo-500'); // 提示顏色
+                }
             } else {
-                const inputEl = document.getElementById('quizInput');
-                inputEl.value = cleanWord;
-                inputEl.classList.remove('border-rose-500', 'animate-shake');
-                inputEl.classList.add('border-emerald-500');
-                document.getElementById('btnNextQuiz').classList.remove('hidden');
+                // 隱藏答案 (Hide)
+                state.isRevealed = false;
+                if (btnReveal) {
+                    btnReveal.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> 呈現單字`;
+                }
+
+                if (state.quizType === 'block') {
+                    state.currentAnswer = state.savedAnswer || [];
+                    state.usedIndexes = state.savedUsedIndexes || [];
+                    window.renderBlockQuiz();
+                } else {
+                    const inputEl = document.getElementById('quizInput');
+                    inputEl.value = state.savedAnswer || "";
+                    inputEl.classList.remove('text-indigo-500');
+                    inputEl.focus(); // 讓使用者繼續輸入
+                }
             }
+            lucide.createIcons();
         };
 
-        // 🚀 修改：標註不熟邏輯改為獨立的星星
         window.markQuizUnfamiliar = async () => {
             if (state.isGuestMode) return;
             const item = state.quizQueue[state.quizIndex];
@@ -977,8 +1015,8 @@
             const u = state.units.find(x => x.id === targetUnitId);
             const w = u?.words.find(x => x.id === item.id);
             if (w) {
-                w.starred = !w.starred; // Toggle
-                item.starred = w.starred; // Update reference
+                w.starred = !w.starred; 
+                item.starred = w.starred; 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 
                 const btnMark = document.getElementById('btnMarkUnfam');
@@ -1032,7 +1070,7 @@
             const inputVal = inputEl.value.trim().toLowerCase();
             
             if (inputVal === target) { 
-                inputEl.classList.remove('border-rose-500', 'animate-shake');
+                inputEl.classList.remove('border-rose-500', 'text-indigo-500', 'animate-shake');
                 inputEl.classList.add('border-emerald-500');
                 if (state.quizIndex < state.quizQueue.length - 1) {
                     document.getElementById('btnNextQuiz').classList.remove('hidden'); 
@@ -1048,7 +1086,7 @@
         window.nextQuizItem = () => { 
             state.quizIndex++; 
             const inputEl = document.getElementById('quizInput');
-            if (inputEl) inputEl.classList.remove('border-emerald-500');
+            if (inputEl) inputEl.classList.remove('border-emerald-500', 'text-indigo-500');
             window.setupQuiz(); 
         };
 
