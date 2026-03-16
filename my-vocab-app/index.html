@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 16.7 (訪客唯讀版)</title>
+    <title>單字大師 - Eternal Edition 16.8 (完整排序版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -139,7 +139,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.7</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 16.8</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -616,18 +616,22 @@
                 html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
                     <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
                     ${!state.isGuestMode ? `
-                    <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                     </div>` : ''}
                 </div>
                 ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                         <span class="truncate flex-1 font-bold">${u.name}</span>
                         ${!state.isGuestMode ? `
-                        <div class="flex gap-1">
-                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        <div class="flex gap-1 items-center">
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                         </div>` : ''}
                     </div>`).join('')}</div>` : ''}</div>`;
             });
@@ -635,10 +639,12 @@
             html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                 <span class="truncate flex-1 font-bold">${u.name}</span>
                 ${!state.isGuestMode ? `
-                <div class="flex gap-1">
-                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-30 hover:opacity-100"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                <div class="flex gap-1 items-center">
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                 </div>` : ''}
             </div>`).join('');
             container.innerHTML = html; lucide.createIcons();
