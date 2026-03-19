@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 17.2 (列印強化版)</title>
+    <title>單字大師 - Eternal Edition 17.3 (列印附加筆記版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -163,7 +163,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 17.2</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 17.3</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -429,6 +429,13 @@
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="5" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">5分</span></label>
                         <label class="flex items-center gap-1.5 bg-amber-50 px-3 py-2 rounded-xl cursor-pointer border border-amber-200 hover:bg-amber-100 w-full mt-1"><input type="checkbox" value="starred" checked class="w-4 h-4 text-amber-500"> <span class="text-sm font-bold text-amber-700">⭐ 包含已標註 (拼字熟練) 的單字</span></label>
                     </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer bg-indigo-50 p-3 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all">
+                        <input type="checkbox" id="printIncludeNote" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm font-bold text-indigo-700">📝 列印時包含單字筆記欄位</span>
+                    </label>
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -953,6 +960,7 @@
             const selectedUnitIds = Array.from(document.querySelectorAll('.print-unit-cb:checked')).map(cb => cb.value);
             const mode = document.getElementById('printDisplayMode').value;
             const checks = Array.from(document.querySelectorAll('#printRatingFilters input:checked')).map(i => i.value);
+            const includeNote = document.getElementById('printIncludeNote')?.checked;
 
             if (selectedUnitIds.length === 0) {
                 alert("請至少選擇一個列印範圍！");
@@ -1014,9 +1022,10 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%; text-align: center;">No.</th>
-                                ${mode === 'both' || mode === 'en' ? `<th style="width: 30%;">英文 (English)</th>` : ''}
-                                ${mode === 'both' || mode === 'zh' ? `<th style="width: 30%;">中文 (Chinese)</th>` : ''}
-                                ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.length > 1 ? `<th style="width: 15%; text-align: center;">來源單元</th>` : ''}
+                                ${mode === 'both' || mode === 'en' ? `<th>英文 (English)</th>` : ''}
+                                ${mode === 'both' || mode === 'zh' ? `<th>中文 (Chinese)</th>` : ''}
+                                ${includeNote ? `<th>筆記 (Notes)</th>` : ''}
+                                ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.length > 1 ? `<th style="text-align: center;">來源單元</th>` : ''}
                                 <th style="width: 20%; text-align: center;">複習 (6次)</th>
                             </tr>
                         </thead>
@@ -1039,6 +1048,7 @@
                     <td style="text-align: center;">${idx + 1}</td>
                     ${mode === 'both' || mode === 'en' ? `<td class="print-row-en">${w.en} ${w.starred ? '⭐' : ''}</td>` : ''}
                     ${mode === 'both' || mode === 'zh' ? `<td>${w.zh}</td>` : ''}
+                    ${includeNote ? `<td style="font-size: 0.85em; color: #444; white-space: pre-wrap; word-break: break-all;">${w.note || ''}</td>` : ''}
                     ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.length > 1 ? `<td style="text-align: center; font-size: 12px; color: #666;">${w._unitName}</td>` : ''}
                     <td style="text-align: center;">${reviewBoxes}</td>
                 </tr>`;
