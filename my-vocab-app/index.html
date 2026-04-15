@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 17.8 (連線與核心穩定版)</title>
+    <title>單字大師 - Eternal Edition 17.9 (終極資料修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -160,7 +160,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 17.8</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 17.9</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -434,7 +434,7 @@
         </div>
     </div>
 
-    <!-- 🚀 測驗彈窗 (完全除錯版：唯一的測驗 Modal) -->
+    <!-- 🚀 測驗彈窗 -->
     <div id="quizModal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 md:p-10 text-center relative overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-thin">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -833,20 +833,12 @@
         // --- 🚀 重構驗證與連線初始化 ---
         const initAuth = async () => {
             try {
-                // 檢查是否使用環境提供的預設 Firebase，若不同則直接使用匿名登入，避免 Token 不符錯誤 (auth/custom-token-mismatch)
-                let envProjectId = null;
-                if (typeof __firebase_config !== 'undefined') {
-                    try { envProjectId = JSON.parse(__firebase_config).projectId; } catch(e) {}
-                }
-                
-                if (envProjectId === firebaseConfig.projectId && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // 因為使用自訂 Firebase 專案 (my-vocab-app...)，直接使用匿名登入，
+                // 捨棄 Canvas 預設注入的 Token 避免 auth/custom-token-mismatch 錯誤
+                await signInAnonymously(auth);
             } catch (error) {
                 console.error("Auth Error:", error);
-                showNotification("驗證初始化失敗，請重新整理");
+                showNotification("連線初始化失敗，請檢查網路");
             }
         };
 
@@ -888,7 +880,6 @@
                 },
                 err => {
                     console.error("Folder Sync Error:", err);
-                    showNotification("讀取資料夾失敗，請確認權限");
                 }
             );
 
@@ -903,7 +894,6 @@
                 },
                 err => {
                     console.error("Unit Sync Error:", err);
-                    showNotification("讀取單字本失敗，請確認權限");
                 }
             );
         }
@@ -1663,6 +1653,42 @@
         window.closeQuiz = () => {
             document.getElementById('quizModal').classList.add('hidden');
             if (state.autoAdvanceTimer) clearTimeout(state.autoAdvanceTimer);
+        };
+        
+        window.showAdminDashboard = () => { 
+            document.getElementById('appScreen').classList.add('hidden'); 
+            document.getElementById('adminScreen').classList.remove('hidden'); 
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), snap => {
+                document.getElementById('adminUserTable').innerHTML = snap.docs.map(d => `<tr class="border-b"><td>${d.id}</td><td class="text-right pr-12"><button onclick="window.adminDetail('${d.id}','${d.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">詳情</button></td></tr>`).join('');
+                document.getElementById('sourceAccountSelect').innerHTML = `<option value="yljh">管理者模板</option>` + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
+                window.updateSourceUnitList();
+            }); 
+        };
+        window.updateSourceUnitList = async () => { 
+            const src = document.getElementById('sourceAccountSelect').value; 
+            if(!src) return; 
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'users', src, 'units')); 
+            state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+            document.getElementById('masterUnitSelect').innerHTML = state.allUnitsCache.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); 
+        };
+        window.assignUnitToStudent = async () => { 
+            const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; 
+            if(!uid || !target) return; 
+            const src = state.allUnitsCache.find(u => u.id === uid); 
+            if(src){ 
+                const newUnit = { ...src, reviewProgress: {}, order: Date.now(), ownerId: target }; 
+                delete newUnit.id; 
+                await setDoc(doc(db, 'artifacts', appId, 'users', target, 'units', 'u'+Date.now()), newUnit); 
+                showNotification("✅ 成功分派給學生！"); 
+                window.adminDetail(target, target); 
+            } 
+        };
+        window.adminDetail = async (uid, n) => { 
+            state.currentAdminViewUid = uid; 
+            document.getElementById('adminDetailModal').classList.remove('hidden'); 
+            document.getElementById('detailUserTitle').innerText = n; 
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units')); 
+            document.getElementById('detailContent').innerHTML = snap.docs.map(d => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${d.data().name}</h6></div>`).join('') || '無資料'; 
         };
     </script>
 </body>
