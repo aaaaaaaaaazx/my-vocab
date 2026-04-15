@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 17.9 (終極資料修復版)</title>
+    <title>單字大師 - Eternal Edition 18.0 (資料全面回歸版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -160,7 +160,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 17.9</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.0</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -434,7 +434,7 @@
         </div>
     </div>
 
-    <!-- 🚀 測驗彈窗 -->
+    <!-- 🚀 測驗彈窗 (完全除錯版：唯一的測驗 Modal) -->
     <div id="quizModal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 md:p-10 text-center relative overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-thin">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -833,9 +833,16 @@
         // --- 🚀 重構驗證與連線初始化 ---
         const initAuth = async () => {
             try {
-                // 因為使用自訂 Firebase 專案 (my-vocab-app...)，直接使用匿名登入，
-                // 捨棄 Canvas 預設注入的 Token 避免 auth/custom-token-mismatch 錯誤
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenErr) {
+                        console.warn("Custom Token rejected, falling back to anonymous", tokenErr);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("Auth Error:", error);
                 showNotification("連線初始化失敗，請檢查網路");
@@ -872,9 +879,10 @@
             if (!auth.currentUser) return;
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'users', state.userLabel, 'folders'), 
+                collection(db, 'artifacts', appId, 'public', 'data', 'folders'), 
                 snap => {
                     state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                        .filter(f => f.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     window.renderUnitList();
                 },
@@ -884,9 +892,10 @@
             );
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'users', state.userLabel, 'units'), 
+                collection(db, 'artifacts', appId, 'public', 'data', 'units'), 
                 snap => {
                     state.units = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                        .filter(u => u.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     if (!state.activeUnitId && state.units.length) state.activeUnitId = state.units[0].id;
                     window.renderWords(false);
@@ -968,7 +977,7 @@
             const w = u?.words.find(x => x.id == id);
             if (w) {
                 w.starred = !w.starred;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
             }
         };
@@ -980,7 +989,7 @@
             const w = u?.words.find(x => x.id == id);
             if (w) {
                 w.rating = n;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
             }
         };
@@ -992,7 +1001,7 @@
             const w = u?.words.find(x => x.id == id);
             if (w) {
                 w.note = v;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
             }
         };
 
@@ -1030,7 +1039,7 @@
             const w = u?.words.find(x => x.id == state.editingWordId);
             if (w) {
                 w.en = en; w.zh = zh;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
                 window.closeWordEdit();
             }
@@ -1048,8 +1057,8 @@
                 let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
                 let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
                 if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[swapIdx].id), { order: currentOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[swapIdx].id), { order: currentOrder });
             }
         };
         
@@ -1065,13 +1074,13 @@
                 let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
                 let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
                 if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[swapIdx].id), { order: currentOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[swapIdx].id), { order: currentOrder });
             }
         };
 
-        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id), { name: n }); };
-        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', id), { name: n }); };
+        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
+        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
         window.openMoveModal = (id) => {
             if(state.isGuestMode) return;
             state.movingUnitId = id;
@@ -1079,7 +1088,7 @@
             s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             document.getElementById('moveFolderModal').classList.remove('hidden');
         };
-        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
+        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
 
         // --- 🖨️ 列印功能 ---
         window.openPrintModal = () => {
@@ -1390,7 +1399,7 @@
             if (!u) return;
             const progress = u.reviewProgress || {};
             progress[sid] = progress[sid] ? null : Date.now();
-            await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { reviewProgress: progress });
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
         };
 
         window.renderReviewTracking = () => {
@@ -1542,7 +1551,7 @@
             if (w) {
                 w.starred = !w.starred; 
                 item.starred = w.starred; 
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 
                 const btnMark = document.getElementById('btnMarkUnfam');
                 if (btnMark) {
@@ -1667,8 +1676,8 @@
         window.updateSourceUnitList = async () => { 
             const src = document.getElementById('sourceAccountSelect').value; 
             if(!src) return; 
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'users', src, 'units')); 
-            state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'units')); 
+            state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(u => u.ownerId === src); 
             document.getElementById('masterUnitSelect').innerHTML = state.allUnitsCache.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); 
         };
         window.assignUnitToStudent = async () => { 
@@ -1678,7 +1687,7 @@
             if(src){ 
                 const newUnit = { ...src, reviewProgress: {}, order: Date.now(), ownerId: target }; 
                 delete newUnit.id; 
-                await setDoc(doc(db, 'artifacts', appId, 'users', target, 'units', 'u'+Date.now()), newUnit); 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), newUnit); 
                 showNotification("✅ 成功分派給學生！"); 
                 window.adminDetail(target, target); 
             } 
@@ -1687,8 +1696,9 @@
             state.currentAdminViewUid = uid; 
             document.getElementById('adminDetailModal').classList.remove('hidden'); 
             document.getElementById('detailUserTitle').innerText = n; 
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'users', uid, 'units')); 
-            document.getElementById('detailContent').innerHTML = snap.docs.map(d => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${d.data().name}</h6></div>`).join('') || '無資料'; 
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'units')); 
+            const fil = snap.docs.map(d => d.data()).filter(u => u.ownerId === uid);
+            document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${u.name}</h6></div>`).join('') || '無資料'; 
         };
     </script>
 </body>
