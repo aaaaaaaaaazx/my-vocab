@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 18.0 (資料全面回歸版)</title>
+    <title>單字大師 - Eternal Edition 18.1 (目錄自動展開與防走失版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -160,7 +160,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.0</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.1</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -571,7 +571,7 @@
             units: [], folders: [], activeUnitId: null, globalMode: 'both', userLabel: null,
             isAudioPlaying: false, isPaused: false, displayedWords: [], baseSortedWords: [], lastUnitId: null,
             showSyllables: false, showVowels: false, showRating: false, showNote: false, showSpellingMastery: false,
-            openFolders: new Set(), allUnitsCache: [], isGuestMode: false,
+            openFolders: new Set(), foldersInitialized: false, allUnitsCache: [], isGuestMode: false,
             practiceMode: '', practiceQueue: [], 
             quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: [],
             showAllNotesMode: false,
@@ -790,41 +790,47 @@
         window.renderUnitList = () => {
             const container = document.getElementById('unitTreeList'); if (!container) return;
             let html = "";
+            const validFolderIds = new Set(state.folders.map(f => f.id));
+            
             state.folders.forEach(f => {
                 const open = state.openFolders.has(f.id);
                 const uS = state.units.filter(u => u.folderId === f.id);
-                html += `<div class="mb-1"><div class="folder-header" onclick="window.toggleFolder('${f.id}')">
-                    <div class="flex items-center gap-2"><i data-lucide="${open?'folder-open':'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i><span>${f.name}</span></div>
+                html += `<div class="mb-1"><div class="folder-header select-none hover:bg-slate-100" onclick="window.toggleFolder('${f.id}')">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="${open ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4 text-slate-400"></i>
+                        <i data-lucide="${open ? 'folder-open' : 'folder'}" class="w-4 h-4 text-amber-500 font-bold"></i>
+                        <span>${f.name}</span>
+                    </div>
                     ${!state.isGuestMode ? `
                     <div class="flex gap-1 items-center">
-                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', -1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.moveFolder('${f.id}', 1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.renameFolder('${f.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-rose-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                     </div>` : ''}
                 </div>
                 ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                         <span class="truncate flex-1">${u.name}</span>
                         ${!state.isGuestMode ? `
                         <div class="flex gap-1 items-center">
-                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-rose-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                         </div>` : ''}
                     </div>`).join('')}</div>` : ''}</div>`;
             });
-            const unc = state.units.filter(u => !u.folderId);
+            const unc = state.units.filter(u => !u.folderId || !validFolderIds.has(u.folderId));
             html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
                 <span class="truncate flex-1">${u.name}</span>
                 ${!state.isGuestMode ? `
                 <div class="flex gap-1 items-center">
-                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
-                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', -1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.moveUnit('${u.id}', 1)" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.renameUnit('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.openMoveModal('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-slate-200"><i data-lucide="folder-input" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="event.stopPropagation(); window.deleteUnit('${u.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-rose-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                 </div>` : ''}
             </div>`).join('');
             container.innerHTML = html; lucide.createIcons();
@@ -884,6 +890,11 @@
                     state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
                         .filter(f => f.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
+                    
+                    if (!state.foldersInitialized) {
+                        state.folders.forEach(f => state.openFolders.add(f.id));
+                        state.foldersInitialized = true;
+                    }
                     window.renderUnitList();
                 },
                 err => {
@@ -1088,7 +1099,12 @@
             s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             document.getElementById('moveFolderModal').classList.remove('hidden');
         };
-        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
+        window.confirmMoveUnit = async () => { 
+            const fid = document.getElementById('targetFolderSelect').value || null; 
+            if (fid) state.openFolders.add(fid); // 自動展開目標資料夾
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); 
+            document.getElementById('moveFolderModal').classList.add('hidden'); 
+        };
 
         // --- 🖨️ 列印功能 ---
         window.openPrintModal = () => {
@@ -1700,6 +1716,52 @@
             const fil = snap.docs.map(d => d.data()).filter(u => u.ownerId === uid);
             document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${u.name}</h6></div>`).join('') || '無資料'; 
         };
+
+        // --- 🚀 重置與救援遺失功能的底部指令區 ---
+        window.importWords = async () => { 
+            if(state.isGuestMode) return; 
+            const n = document.getElementById('unitNameInput').value.trim();
+            const t = document.getElementById('wordsInput').value.trim(); 
+            if(!n || !t) return; 
+            const words = t.split('\n').map(l => { 
+                const p = l.split(/[,，]/); 
+                return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substring(2,7), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; 
+            }).filter(x => x); 
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
+            showNotification("✅ 單元已儲存");
+            document.getElementById('unitNameInput').value = '';
+            document.getElementById('wordsInput').value = '';
+        };
+        
+        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
+        
+        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
+        
+        window.createNewFolder = async () => { 
+            if(state.isGuestMode) return; 
+            const n = prompt("資料夾名稱："); 
+            if(n) { 
+                const fid = 'f'+Date.now();
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', fid), { name: n, ownerId: state.userLabel, order: Date.now() }); 
+                state.openFolders.add(fid);
+                showNotification("✅ 資料夾已建立"); 
+                window.renderUnitList();
+            } 
+        };
+        
+        window.toggleFolder = (id) => { 
+            state.openFolders.has(id) ? state.openFolders.delete(id) : state.openFolders.add(id); 
+            window.renderUnitList(); 
+        };
+        
+        window.switchToAppMode = () => { state.userLabel = 'yljh'; window.showAppUI("管理者製作模式"); syncData(); };
+        
+        window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); window.open(url, '_blank'); showNotification("訪客連結已複製"); };
+        
+        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
+        
+        window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
+        window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
     </script>
 </body>
 </html>
