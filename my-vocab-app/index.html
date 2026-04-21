@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 18.1 (目錄自動展開與防走失版)</title>
+    <title>單字大師 - Eternal Edition 18.2 (智能錯題追蹤版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -135,10 +135,8 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-bold">
 
-    <!-- 🖨️ 隱藏的列印容器 -->
     <div id="printContainer"></div>
 
-    <!-- 英聽狀態條 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
         <div class="flex items-center gap-4 pl-2">
             <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white"><i data-lucide="headphones" class="w-5 h-5"></i></div>
@@ -153,14 +151,13 @@
         </div>
     </div>
 
-    <!-- 1. 登入畫面 -->
     <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-slate-100">
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.1</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.2</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -191,7 +188,6 @@
         </div>
     </div>
 
-    <!-- 2. 主介面 -->
     <div id="appScreen" class="hidden">
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
             <div class="flex items-center gap-3">
@@ -207,7 +203,6 @@
         </nav>
 
         <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- 側邊欄 -->
             <aside class="lg:col-span-4 space-y-6">
                 <div id="addUnitSection" class="settings-card bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
@@ -223,15 +218,19 @@
                 <div class="settings-card bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">單元目錄</h2>
-                        <button onclick="window.showAllNotes()" class="text-[10px] bg-amber-50 border border-amber-200 text-amber-600 px-2 py-1 rounded-md hover:bg-amber-100 transition-all flex items-center gap-1 shadow-sm font-bold">
-                            <i data-lucide="book-open-check" class="w-3 h-3"></i> 彙整筆記
-                        </button>
+                        <div class="flex gap-1.5 flex-wrap justify-end">
+                            <button onclick="window.showMistakes()" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 px-2 py-1 rounded-md hover:bg-rose-100 transition-all flex items-center gap-1 shadow-sm font-bold">
+                                <i data-lucide="x-octagon" class="w-3 h-3"></i> 錯題本
+                            </button>
+                            <button onclick="window.showAllNotes()" class="text-[10px] bg-amber-50 border border-amber-200 text-amber-600 px-2 py-1 rounded-md hover:bg-amber-100 transition-all flex items-center gap-1 shadow-sm font-bold">
+                                <i data-lucide="book-open-check" class="w-3 h-3"></i> 彙整筆記
+                            </button>
+                        </div>
                     </div>
                     <div id="unitTreeList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin"></div>
                 </div>
             </aside>
             
-            <!-- 主內容 -->
             <section class="lg:col-span-8 space-y-6">
                 <div class="settings-card bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-6">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -300,6 +299,7 @@
                             <option value="az">A-Z</option>
                             <option value="rating">掌握度</option>
                             <option value="starred">拼字熟練 (星星)</option>
+                            <option value="mistakes">錯題次數</option>
                         </select>
                     </div>
                 </div>
@@ -309,7 +309,6 @@
         </main>
     </div>
 
-    <!-- 🚀 全域練習設定 Modal -->
     <div id="practiceModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto scrollbar-thin">
             <h4 id="practiceModalTitle" class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2"></h4>
@@ -350,6 +349,7 @@
                             <option value="random" selected>隨機亂數</option>
                             <option value="original">預設順序</option>
                             <option value="rating">不熟優先</option>
+                            <option value="mistakes">錯題次數優先</option>
                         </select>
                     </div>
                 </div>
@@ -386,7 +386,6 @@
         </div>
     </div>
 
-    <!-- 🖨️ 列印彈窗 -->
     <div id="printModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto scrollbar-thin">
             <h4 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2"><i data-lucide="printer" class="text-indigo-600"></i> 列印選項設定</h4>
@@ -409,7 +408,6 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">包含的掌握度與標註 (可複選)</label>
                     <div class="flex flex-wrap gap-2" id="printRatingFilters">
-                        <!-- Filters will be loaded identical to practiceModal -->
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="1" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">1分</span></label>
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="2" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">2分</span></label>
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="3" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">3分</span></label>
@@ -434,7 +432,6 @@
         </div>
     </div>
 
-    <!-- 🚀 測驗彈窗 (完全除錯版：唯一的測驗 Modal) -->
     <div id="quizModal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 md:p-10 text-center relative overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-thin">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -442,7 +439,6 @@
             <h3 id="quizZh" class="text-3xl md:text-4xl font-black mt-6 mb-2 text-slate-800"></h3>
             <p id="quizProgress" class="text-xs text-slate-400 font-black mb-6 tracking-widest uppercase"></p>
             
-            <!-- 輔助工具列 -->
             <div class="flex flex-wrap justify-center gap-3 mb-8">
                 <button onclick="window.playQuizAudio()" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
                     <i data-lucide="volume-2" class="w-4 h-4"></i> 聽發音
@@ -455,20 +451,17 @@
                 </button>
             </div>
 
-            <!-- 積木區 -->
             <div id="blockQuizContent" class="hidden">
                 <p id="blockFeedback" class="text-sm font-bold text-center h-5 mb-3 transition-all text-slate-400">請依序點擊積木拼出單字</p>
                 <div id="blockAnswerArea" class="flex flex-wrap justify-center gap-2 mb-8 min-h-[50px]"></div>
                 <div id="blockPoolArea" class="flex flex-wrap justify-center gap-3 p-5 bg-slate-50 rounded-2xl border-2 border-slate-100"></div>
             </div>
 
-            <!-- 聽寫區 -->
             <div id="dictationQuizContent" class="hidden space-y-4">
                 <p id="dictationFeedback" class="text-sm font-bold text-center h-5 transition-all text-slate-400">請輸入您聽到的英文單字</p>
                 <input type="text" id="quizInput" placeholder="在此輸入小寫英文..." onkeydown="if(event.key === 'Enter') window.handleQuizEnter()" autocomplete="off" spellcheck="false" class="w-full text-center px-6 py-5 bg-slate-50 border-2 border-slate-200 rounded-2xl text-2xl font-black lowercase outline-none focus:border-indigo-500 transition-all font-bold">
             </div>
             
-            <!-- 統一的繼續/送出區 -->
             <div class="mt-8 flex gap-3 max-w-sm mx-auto" id="quizActionArea">
                 <button id="btnSubmitQuiz" onclick="window.checkQuizAnswer()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">送出答案</button>
                 <button id="btnNextQuiz" onclick="window.nextQuizItem()" class="hidden flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all">繼續練習 ➔</button>
@@ -476,7 +469,6 @@
         </div>
     </div>
 
-    <!-- 管理者頁面 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10 text-slate-800">
         <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH 管理系統</span>
@@ -507,7 +499,6 @@
         </main>
     </div>
 
-    <!-- Modals -->
     <div id="wordEditModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-8">
             <h4 class="text-xl font-black mb-6 text-slate-800">修改單字內容</h4>
@@ -550,7 +541,6 @@
 
     <div id="notification" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 bg-slate-900 text-white px-8 py-4 rounded-[2rem] shadow-2xl z-[800] flex items-center gap-3 border border-white/10"><i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i><span id="notificationText" class="font-bold text-sm tracking-wide"></span></div>
 
-    <!-- Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -574,7 +564,7 @@
             openFolders: new Set(), foldersInitialized: false, allUnitsCache: [], isGuestMode: false,
             practiceMode: '', practiceQueue: [], 
             quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: [],
-            showAllNotesMode: false,
+            showAllNotesMode: false, showMistakesMode: false, // 🚀 錯題本模式
             isRevealed: false, savedAnswer: null, savedUsedIndexes: null, availableVoices: [], selectedVoiceIndex: 0
         };
 
@@ -644,6 +634,15 @@
 
         window.showAllNotes = () => {
             state.showAllNotesMode = true;
+            state.showMistakesMode = false;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            window.renderWords(true);
+        };
+
+        window.showMistakes = () => {
+            state.showMistakesMode = true;
+            state.showAllNotesMode = false;
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
             window.renderWords(true);
@@ -654,7 +653,44 @@
             const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
             const sortVal = document.getElementById('sortSelect').value;
             
-            if (state.showAllNotesMode) {
+            if (state.showMistakesMode) {
+                // 🚀 錯題本模式
+                if (forceSort || state.lastUnitId !== 'MISTAKES') {
+                    state.lastUnitId = 'MISTAKES';
+                    let mistakeWords = [];
+                    state.units.forEach(u => {
+                        (u.words || []).forEach(w => {
+                            if (w.mistakes && w.mistakes > 0) {
+                                mistakeWords.push({ ...w, _unitId: u.id, _unitName: u.name });
+                            }
+                        });
+                    });
+                    
+                    if (sortVal === 'az') mistakeWords.sort((a,b) => a.en.localeCompare(b.en));
+                    else if (sortVal === 'random') mistakeWords.sort(() => Math.random() - 0.5);
+                    else if (sortVal === 'rating') mistakeWords.sort((a,b) => b.rating - a.rating);
+                    else if (sortVal === 'starred') mistakeWords.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    else mistakeWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0)); // 預設依錯題次數
+                    
+                    state.baseSortedWords = mistakeWords;
+                } else {
+                    let updatedBase = state.baseSortedWords.map(dw => {
+                        const u = state.units.find(x => x.id === dw._unitId);
+                        const fresh = u ? u.words.find(fw => fw.id === dw.id) : null;
+                        return fresh ? { ...fresh, _unitId: dw._unitId, _unitName: dw._unitName } : null;
+                    }).filter(x => x !== null && x.mistakes && x.mistakes > 0);
+                    state.baseSortedWords = updatedBase;
+                }
+                
+                let displayNotes = state.baseSortedWords;
+                if (query) {
+                    displayNotes = displayNotes.filter(w => w.en.toLowerCase().includes(query) || w.zh.includes(query));
+                }
+                state.displayedWords = displayNotes;
+                document.getElementById('activeUnitTitle').innerText = `🚨 錯題本 (${displayNotes.length} 個單字)`;
+                document.getElementById('reviewTrackingArea').classList.add('hidden');
+
+            } else if (state.showAllNotesMode) {
                 if (forceSort || state.lastUnitId !== 'ALL_NOTES') {
                     state.lastUnitId = 'ALL_NOTES';
                     let allNotes = [];
@@ -670,6 +706,7 @@
                     else if (sortVal === 'random') allNotes.sort(() => Math.random() - 0.5);
                     else if (sortVal === 'rating') allNotes.sort((a,b) => b.rating - a.rating);
                     else if (sortVal === 'starred') allNotes.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    else if (sortVal === 'mistakes') allNotes.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
                     
                     state.baseSortedWords = allNotes;
                 } else {
@@ -705,6 +742,7 @@
                     else if (sortVal === 'random') allMatched.sort(() => Math.random() - 0.5);
                     else if (sortVal === 'rating') allMatched.sort((a,b) => b.rating - a.rating);
                     else if (sortVal === 'starred') allMatched.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    else if (sortVal === 'mistakes') allMatched.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
                     state.baseSortedWords = allMatched;
                 } else {
                     let updatedBase = state.baseSortedWords.map(dw => {
@@ -729,6 +767,7 @@
                     else if (sortVal === 'random') list.sort(() => Math.random() - 0.5);
                     else if (sortVal === 'rating') list.sort((a,b) => b.rating - a.rating);
                     else if (sortVal === 'starred') list.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+                    else if (sortVal === 'mistakes') list.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
                     state.baseSortedWords = list;
                 } else {
                     let updatedBase = state.baseSortedWords.map(dw => {
@@ -751,7 +790,7 @@
             if(!g) return;
             g.innerHTML = state.displayedWords.map((w, idx) => {
                 const mode = w.localMode || state.globalMode;
-                const unitBadge = (query || state.showAllNotesMode) ? `<span class="absolute top-4 left-4 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] rounded-md shadow-sm font-bold">${w._unitName}</span>` : '';
+                const unitBadge = (query || state.showAllNotesMode || state.showMistakesMode) ? `<span class="absolute top-4 left-4 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] rounded-md shadow-sm font-bold">${w._unitName}</span>` : '';
                 return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
                 <span style="position:absolute; top:-12px; right:-12px; width:36px; height:36px; background:#4f46e5; border:3px solid white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:white; box-shadow: 0 4px 8px rgba(0,0,0,0.15); z-index:20;">${idx+1}</span>
                 ${unitBadge}
@@ -760,6 +799,8 @@
                     <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}', '${w._unitId}')" class="card-mode-toggle font-bold"><span>切換</span></button>
                 </div>
                 
+                ${w.mistakes > 0 ? `<div class="absolute top-12 right-4 text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-md font-black border border-rose-200 shadow-sm flex items-center gap-1"><i data-lucide="x-circle" class="w-3 h-3"></i> 錯 ${w.mistakes} 次</div>` : ''}
+
                 <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
                 <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
                 
@@ -784,7 +825,7 @@
                 <textarea class="note-field mt-2 font-bold" placeholder="備註..." ${state.isGuestMode ? 'readonly' : `onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')"`} onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
             </div>`}).join(''); 
             lucide.createIcons(); 
-            if(!query && !state.showAllNotesMode) window.renderReviewTracking();
+            if(!query && !state.showAllNotesMode && !state.showMistakesMode) window.renderReviewTracking();
         };
 
         window.renderUnitList = () => {
@@ -809,7 +850,7 @@
                         <button onclick="event.stopPropagation(); window.deleteFolder('${f.id}')" class="opacity-40 hover:opacity-100 p-1 rounded hover:bg-rose-100"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i></button>
                     </div>` : ''}
                 </div>
-                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
+                ${open ? `<div class="folder-content">${uS.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode && !state.showMistakesMode ?'active':''} font-bold">
                         <span class="truncate flex-1">${u.name}</span>
                         ${!state.isGuestMode ? `
                         <div class="flex gap-1 items-center">
@@ -822,7 +863,7 @@
                     </div>`).join('')}</div>` : ''}</div>`;
             });
             const unc = state.units.filter(u => !u.folderId || !validFolderIds.has(u.folderId));
-            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode ?'active':''} font-bold">
+            html += unc.map(u => `<div onclick="window.setActiveUnit('${u.id}')" class="unit-item ${state.activeUnitId==u.id && !state.showAllNotesMode && !state.showMistakesMode ?'active':''} font-bold">
                 <span class="truncate flex-1">${u.name}</span>
                 ${!state.isGuestMode ? `
                 <div class="flex gap-1 items-center">
@@ -839,16 +880,9 @@
         // --- 🚀 重構驗證與連線初始化 ---
         const initAuth = async () => {
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (tokenErr) {
-                        console.warn("Custom Token rejected, falling back to anonymous", tokenErr);
-                        await signInAnonymously(auth);
-                    }
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // 因為使用自訂 Firebase 專案 (my-vocab-app...)，直接使用匿名登入，
+                // 捨棄 Canvas 預設注入的 Token 避免 auth/custom-token-mismatch 錯誤
+                await signInAnonymously(auth);
             } catch (error) {
                 console.error("Auth Error:", error);
                 showNotification("連線初始化失敗，請檢查網路");
@@ -975,135 +1009,11 @@
         window.setActiveUnit = (id) => { 
             state.activeUnitId = id; 
             state.showAllNotesMode = false;
+            state.showMistakesMode = false;
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = ''; 
             window.renderWords(true); 
             window.renderUnitList(); 
-        };
-
-        window.toggleStar = async (id, unitId) => {
-            if (state.isGuestMode) return;
-            const targetUnitId = unitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == id);
-            if (w) {
-                w.starred = !w.starred;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
-                window.renderWords(false);
-            }
-        };
-
-        window.updateRating = async (id, n, unitId) => {
-            if (state.isGuestMode) return;
-            const targetUnitId = unitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == id);
-            if (w) {
-                w.rating = n;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
-                window.renderWords(false);
-            }
-        };
-
-        window.updateNote = async (id, v, unitId) => {
-            if (state.isGuestMode) return;
-            const targetUnitId = unitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == id);
-            if (w) {
-                w.note = v;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
-            }
-        };
-
-        window.cycleWordMode = (id, unitId) => {
-            const targetUnitId = unitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == id);
-            if (w) {
-                const cur = w.localMode || state.globalMode;
-                if (cur === 'both') w.localMode = 'en';
-                else if (cur === 'en') w.localMode = 'zh';
-                else w.localMode = 'both';
-                window.renderWords(false);
-            }
-        };
-
-        window.openWordEdit = (id, unitId) => {
-            const targetUnitId = unitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == id);
-            if (!w) return;
-            state.editingWordId = id;
-            state.editingUnitId = targetUnitId;
-            document.getElementById('editWordEn').value = w.en;
-            document.getElementById('editWordZh').value = w.zh;
-            document.getElementById('wordEditModal').classList.remove('hidden');
-        };
-
-        window.saveWordEdit = async () => {
-            if (state.isGuestMode) return;
-            const en = document.getElementById('editWordEn').value.trim(), zh = document.getElementById('editWordZh').value.trim();
-            if (!en || !zh) return;
-            const targetUnitId = state.editingUnitId || state.activeUnitId;
-            const u = state.units.find(x => x.id == targetUnitId);
-            const w = u?.words.find(x => x.id == state.editingWordId);
-            if (w) {
-                w.en = en; w.zh = zh;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
-                window.renderWords(false);
-                window.closeWordEdit();
-            }
-        };
-        window.closeWordEdit = () => document.getElementById('wordEditModal').classList.add('hidden');
-
-        // 資料夾/單元 上下移動與編輯
-        window.moveFolder = async (id, dir) => {
-            if (state.isGuestMode) return;
-            const list = [...state.folders];
-            const idx = list.findIndex(f => f.id === id);
-            if (idx < 0) return;
-            const swapIdx = idx + dir;
-            if (swapIdx >= 0 && swapIdx < list.length) {
-                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
-                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
-                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[swapIdx].id), { order: currentOrder });
-            }
-        };
-        
-        window.moveUnit = async (id, dir) => {
-            if (state.isGuestMode) return;
-            const u = state.units.find(x => x.id === id);
-            if (!u) return;
-            const list = state.units.filter(x => x.folderId === u.folderId);
-            const idx = list.findIndex(x => x.id === id);
-            if (idx < 0) return;
-            const swapIdx = idx + dir;
-            if (swapIdx >= 0 && swapIdx < list.length) {
-                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
-                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
-                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[swapIdx].id), { order: currentOrder });
-            }
-        };
-
-        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
-        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
-        window.openMoveModal = (id) => {
-            if(state.isGuestMode) return;
-            state.movingUnitId = id;
-            const s = document.getElementById('targetFolderSelect');
-            s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-            document.getElementById('moveFolderModal').classList.remove('hidden');
-        };
-        window.confirmMoveUnit = async () => { 
-            const fid = document.getElementById('targetFolderSelect').value || null; 
-            if (fid) state.openFolders.add(fid); // 自動展開目標資料夾
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); 
-            document.getElementById('moveFolderModal').classList.add('hidden'); 
         };
 
         // --- 🖨️ 列印功能 ---
@@ -1114,6 +1024,10 @@
                 <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded-lg">
                     <input type="checkbox" value="ALL_NOTES" class="print-unit-cb w-4 h-4 text-indigo-600">
                     <span>📝 彙整筆記 (所有包含星號/筆記的單字)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-rose-50 rounded-lg">
+                    <input type="checkbox" value="MISTAKES" class="print-unit-cb w-4 h-4 text-rose-600">
+                    <span>🚨 錯題本 (錯誤次數 > 0)</span>
                 </label>
             `;
             
@@ -1159,6 +1073,16 @@
                 });
             }
 
+            if (selectedUnitIds.includes('MISTAKES')) {
+                state.units.forEach(u => {
+                    (u.words || []).forEach(w => {
+                        if (w.mistakes && w.mistakes > 0) {
+                            targetMap.set(w.id, { ...w, _unitName: u.name });
+                        }
+                    });
+                });
+            }
+
             state.units.forEach(u => {
                 if (selectedUnitIds.includes(u.id)) {
                     (u.words || []).forEach(w => {
@@ -1169,13 +1093,15 @@
 
             let targetWords = Array.from(targetMap.values());
 
-            if (selectedUnitIds.includes('ALL_NOTES') && selectedUnitIds.length === 1) {
-                printTitle = "📝 筆記與星號單字彙整";
-            } else if (!selectedUnitIds.includes('ALL_NOTES') && selectedUnitIds.length === 1) {
-                const u = state.units.find(x => x.id === selectedUnitIds[0]);
-                printTitle = u ? u.name : "單字本列印";
+            if (selectedUnitIds.length === 1) {
+                if (selectedUnitIds[0] === 'ALL_NOTES') printTitle = "📝 筆記與星號單字彙整";
+                else if (selectedUnitIds[0] === 'MISTAKES') printTitle = "🚨 錯題本";
+                else {
+                    const u = state.units.find(x => x.id === selectedUnitIds[0]);
+                    printTitle = u ? u.name : "單字本列印";
+                }
             } else {
-                printTitle = "🖨️ 自訂單字本列印";
+                printTitle = "🖨️ 自訂綜合單字本列印";
             }
 
             const allowedRatings = checks.map(v => parseInt(v)).filter(v => !isNaN(v));
@@ -1204,7 +1130,7 @@
                                 ${mode === 'both' || mode === 'en' ? `<th>英文 (English)</th>` : ''}
                                 ${mode === 'both' || mode === 'zh' ? `<th>中文 (Chinese)</th>` : ''}
                                 ${includeNote ? `<th>筆記 (Notes)</th>` : ''}
-                                ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.length > 1 ? `<th style="text-align: center;">來源單元</th>` : ''}
+                                ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.includes('MISTAKES') || selectedUnitIds.length > 1 ? `<th style="text-align: center;">來源單元</th>` : ''}
                                 <th style="width: 20%; text-align: center;">複習 (6次)</th>
                             </tr>
                         </thead>
@@ -1228,7 +1154,7 @@
                     ${mode === 'both' || mode === 'en' ? `<td class="print-row-en">${w.en} ${w.starred ? '⭐' : ''}</td>` : ''}
                     ${mode === 'both' || mode === 'zh' ? `<td>${w.zh}</td>` : ''}
                     ${includeNote ? `<td style="font-size: 0.85em; color: #444; white-space: pre-wrap; word-break: break-all;">${w.note || ''}</td>` : ''}
-                    ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.length > 1 ? `<td style="text-align: center; font-size: 12px; color: #666;">${w._unitName}</td>` : ''}
+                    ${selectedUnitIds.includes('ALL_NOTES') || selectedUnitIds.includes('MISTAKES') || selectedUnitIds.length > 1 ? `<td style="text-align: center; font-size: 12px; color: #666;">${w._unitName}</td>` : ''}
                     <td style="text-align: center;">${reviewBoxes}</td>
                 </tr>`;
             });
@@ -1253,6 +1179,10 @@
                 <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 rounded-lg">
                     <input type="checkbox" value="ALL_NOTES" class="practice-unit-cb w-4 h-4 text-indigo-600">
                     <span>📝 彙整筆記 (所有包含星號/筆記的單字)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-rose-50 rounded-lg">
+                    <input type="checkbox" value="MISTAKES" class="practice-unit-cb w-4 h-4 text-rose-600">
+                    <span>🚨 錯題本 (錯誤次數 > 0)</span>
                 </label>
             `;
             
@@ -1309,6 +1239,13 @@
                     });
                 });
             }
+            if (selectedUnitIds.includes('MISTAKES')) {
+                state.units.forEach(u => {
+                    (u.words || []).forEach(w => {
+                        if (w.mistakes && w.mistakes > 0) targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name });
+                    });
+                });
+            }
             state.units.forEach(u => {
                 if (selectedUnitIds.includes(u.id)) {
                     (u.words || []).forEach(w => targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name }));
@@ -1334,6 +1271,8 @@
                 targetWords.sort(() => Math.random() - 0.5);
             } else if (sortVal === 'rating') {
                 targetWords.sort((a,b) => b.rating - a.rating);
+            } else if (sortVal === 'mistakes') {
+                targetWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
             }
 
             if (limitVal !== 'all') {
@@ -1416,27 +1355,6 @@
             const progress = u.reviewProgress || {};
             progress[sid] = progress[sid] ? null : Date.now();
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
-        };
-
-        window.renderReviewTracking = () => {
-            const u = state.units.find(x => x.id == state.activeUnitId);
-            if (!u) return;
-            const container = document.getElementById('reviewNodes');
-            const baseTime = u.baseDate ? new Date(`${u.baseDate}T${u.baseTime || "09:00"}`).getTime() : 0;
-            const now = Date.now();
-            container.innerHTML = STAGES.map(s => {
-                const targetTime = baseTime + (s.offsetH * 3600000);
-                const isDone = !!u.reviewProgress?.[s.id];
-                const isOverdue = !isDone && baseTime > 0 && now > targetTime;
-                const statusClass = isDone ? 'done' : (isOverdue ? 'overdue' : 'upcoming');
-                return `<div class="review-node ${statusClass}" ${!state.isGuestMode ? `onclick="window.toggleReviewStage('${s.id}')"` : ''}>
-                    <span style="font-size:9px; font-weight:800;">${s.label}後</span>
-                    <span style="font-size:11px; font-weight:900;">${s.name}</span>
-                </div>`;
-            }).join('');
-            const doneCount = Object.values(u.reviewProgress || {}).filter(v => v).length;
-            const progressEl = document.getElementById('reviewProgressBar');
-            if (progressEl) progressEl.style.width = (doneCount / STAGES.length * 100) + '%';
         };
 
         // 🚀 測驗與聽寫核心邏輯
@@ -1624,9 +1542,10 @@
             }
         };
 
-        window.checkQuizAnswer = () => { 
+        window.checkQuizAnswer = async () => { 
             if (state.quizType !== 'dictation' || state.isRevealed) return;
-            const target = state.quizQueue[state.quizIndex].en.trim().toLowerCase();
+            const item = state.quizQueue[state.quizIndex];
+            const target = item.en.trim().toLowerCase();
             const inputEl = document.getElementById('quizInput');
             const feedbackEl = document.getElementById('dictationFeedback');
             const inputVal = inputEl.value.trim().toLowerCase();
@@ -1648,11 +1567,24 @@
                 nextBtn.focus();
             } else {
                 inputEl.classList.add('animate-shake', 'border-rose-500');
-                feedbackEl.innerText = "❌ 答錯囉，請再聽一次或檢視答案！";
+                feedbackEl.innerText = "❌ 答錯囉，已計入錯題本！";
                 feedbackEl.className = "text-sm font-black text-center h-5 transition-all text-rose-500";
                 setTimeout(() => inputEl.classList.remove('animate-shake', 'border-rose-500'), 400);
                 inputEl.select(); 
                 window.playQuizAudio(); 
+
+                // 🚀 自動記錄錯題機制
+                if (!state.isGuestMode) {
+                    const targetUnitId = item._unitId || state.activeUnitId;
+                    const u = state.units.find(x => x.id === targetUnitId);
+                    const w = u?.words.find(x => x.id === item.id);
+                    if (w) {
+                        w.mistakes = (w.mistakes || 0) + 1;
+                        item.mistakes = w.mistakes; // 同步佇列中的狀態
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
+                        window.renderWords(false);
+                    }
+                }
             }
         };
 
@@ -1679,43 +1611,6 @@
             document.getElementById('quizModal').classList.add('hidden');
             if (state.autoAdvanceTimer) clearTimeout(state.autoAdvanceTimer);
         };
-        
-        window.showAdminDashboard = () => { 
-            document.getElementById('appScreen').classList.add('hidden'); 
-            document.getElementById('adminScreen').classList.remove('hidden'); 
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), snap => {
-                document.getElementById('adminUserTable').innerHTML = snap.docs.map(d => `<tr class="border-b"><td>${d.id}</td><td class="text-right pr-12"><button onclick="window.adminDetail('${d.id}','${d.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">詳情</button></td></tr>`).join('');
-                document.getElementById('sourceAccountSelect').innerHTML = `<option value="yljh">管理者模板</option>` + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
-                window.updateSourceUnitList();
-            }); 
-        };
-        window.updateSourceUnitList = async () => { 
-            const src = document.getElementById('sourceAccountSelect').value; 
-            if(!src) return; 
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'units')); 
-            state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(u => u.ownerId === src); 
-            document.getElementById('masterUnitSelect').innerHTML = state.allUnitsCache.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); 
-        };
-        window.assignUnitToStudent = async () => { 
-            const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; 
-            if(!uid || !target) return; 
-            const src = state.allUnitsCache.find(u => u.id === uid); 
-            if(src){ 
-                const newUnit = { ...src, reviewProgress: {}, order: Date.now(), ownerId: target }; 
-                delete newUnit.id; 
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), newUnit); 
-                showNotification("✅ 成功分派給學生！"); 
-                window.adminDetail(target, target); 
-            } 
-        };
-        window.adminDetail = async (uid, n) => { 
-            state.currentAdminViewUid = uid; 
-            document.getElementById('adminDetailModal').classList.remove('hidden'); 
-            document.getElementById('detailUserTitle').innerText = n; 
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'units')); 
-            const fil = snap.docs.map(d => d.data()).filter(u => u.ownerId === uid);
-            document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${u.name}</h6></div>`).join('') || '無資料'; 
-        };
 
         // --- 🚀 重置與救援遺失功能的底部指令區 ---
         window.importWords = async () => { 
@@ -1725,7 +1620,7 @@
             if(!n || !t) return; 
             const words = t.split('\n').map(l => { 
                 const p = l.split(/[,，]/); 
-                return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substring(2,7), en: p[0].trim(), zh: p[1].trim(), rating: 3 } : null; 
+                return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substring(2,7), en: p[0].trim(), zh: p[1].trim(), rating: 3, mistakes: 0 } : null; 
             }).filter(x => x); 
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
             showNotification("✅ 單元已儲存");
