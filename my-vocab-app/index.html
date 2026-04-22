@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 18.3 (互動極速更新版)</title>
+    <title>單字大師 - Eternal Edition 18.4 (路徑全域校準版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -53,6 +53,16 @@
             border-color: #4f46e5 !important; 
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); 
         }
+
+        .card-mode-toggle {
+            position: absolute; top: 15px; right: 15px;
+            padding: 5px 12px; background: #f8fafc;
+            border-radius: 99px; display: flex; align-items: center;
+            justify-content: center; gap: 4px;
+            color: #6366f1; transition: all 0.2s;
+            border: 1.5px solid #e2e8f0; z-index: 30;
+        }
+        .card-mode-toggle:hover { background: #eff6ff; border-color: #3b82f6; }
 
         .rate-btn { transition: all 0.2s; width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 900; }
         .rate-1 { background-color: #059669 !important; color: white; border-color: #059669 !important; }
@@ -150,7 +160,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.3</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.4</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -923,9 +933,10 @@
             if (!auth.currentUser) return;
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'users', state.userLabel, 'folders'), 
+                collection(db, 'artifacts', appId, 'public', 'data', 'folders'), 
                 snap => {
                     state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                        .filter(f => f.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     
                     if (!state.foldersInitialized) {
@@ -938,9 +949,10 @@
             );
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'users', state.userLabel, 'units'), 
+                collection(db, 'artifacts', appId, 'public', 'data', 'units'), 
                 snap => {
                     state.units = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                        .filter(u => u.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     if (!state.activeUnitId && state.units.length) state.activeUnitId = state.units[0].id;
                     window.renderWords(false);
@@ -1028,7 +1040,7 @@
             if (w) {
                 w.rating = n;
                 window.renderWords(false); // 🔥 瞬間重繪
-                try { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words }); } 
+                try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words }); } 
                 catch(e) { console.error(e); showNotification("雲端同步失敗"); }
             }
         };
@@ -1042,7 +1054,7 @@
             if (w) {
                 w.starred = !w.starred;
                 window.renderWords(false); // 🔥 瞬間重繪
-                try { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words }); } 
+                try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words }); } 
                 catch(e) { console.error(e); showNotification("雲端同步失敗"); }
             }
         };
@@ -1055,7 +1067,7 @@
             const w = u.words.find(x => String(x.id) === String(id));
             if (w) {
                 w.note = v;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
             }
         };
 
@@ -1081,7 +1093,7 @@
             const w = u?.words.find(x => x.id == state.editingWordId);
             if (w) {
                 w.en = en; w.zh = zh;
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 window.renderWords(false);
                 window.closeWordEdit();
             }
@@ -1099,8 +1111,8 @@
                 let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
                 let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
                 if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[swapIdx].id), { order: currentOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', list[swapIdx].id), { order: currentOrder });
             }
         };
         
@@ -1116,13 +1128,13 @@
                 let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
                 let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
                 if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[idx].id), { order: swapOrder });
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[swapIdx].id), { order: currentOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', list[swapIdx].id), { order: currentOrder });
             }
         };
 
-        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id), { name: n }); };
-        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', id), { name: n }); };
+        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id), { name: n }); };
+        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id), { name: n }); };
         window.openMoveModal = (id) => {
             if(state.isGuestMode) return;
             state.movingUnitId = id;
@@ -1130,7 +1142,7 @@
             s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             document.getElementById('moveFolderModal').classList.remove('hidden');
         };
-        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; if (fid) state.openFolders.add(fid); await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
+        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; if (fid) state.openFolders.add(fid); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
 
         window.openPrintModal = () => {
             const container = document.getElementById('printUnitSelectContainer');
@@ -1369,7 +1381,7 @@
             if (!u) return;
             const progress = u.reviewProgress || {};
             progress[sid] = progress[sid] ? null : Date.now();
-            await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { reviewProgress: progress });
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
         };
 
         // 🚀 測驗與聽寫核心邏輯
@@ -1497,7 +1509,7 @@
             if (w) {
                 w.starred = !w.starred; 
                 item.starred = w.starred; 
-                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                 
                 const btnMark = document.getElementById('btnMarkUnfam');
                 if (btnMark) {
@@ -1591,7 +1603,7 @@
                     if (w) {
                         w.mistakes = (w.mistakes || 0) + 1;
                         item.mistakes = w.mistakes; 
-                        await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
                         window.renderWords(false);
                     }
                 }
@@ -1628,22 +1640,22 @@
                 const p = l.split(/[,，]/); 
                 return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substring(2,7), en: p[0].trim(), zh: p[1].trim(), rating: 3, mistakes: 0 } : null; 
             }).filter(x => x); 
-            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
             showNotification("✅ 單元已儲存");
             document.getElementById('unitNameInput').value = '';
             document.getElementById('wordsInput').value = '';
         };
         
-        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); };
+        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
         
-        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', id)); };
+        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
         
         window.createNewFolder = async () => { 
             if(state.isGuestMode) return; 
             const n = prompt("資料夾名稱："); 
             if(n) { 
                 const fid = 'f'+Date.now();
-                await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', fid), { name: n, ownerId: state.userLabel, order: Date.now() }); 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', fid), { name: n, ownerId: state.userLabel, order: Date.now() }); 
                 state.openFolders.add(fid);
                 showNotification("✅ 資料夾已建立"); 
                 window.renderUnitList();
@@ -1659,7 +1671,7 @@
         
         window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); window.open(url, '_blank'); showNotification("訪客連結已複製"); };
         
-        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
+        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
         
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
         window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
@@ -1688,7 +1700,7 @@
             if(src){ 
                 const newUnit = { ...src, reviewProgress: {}, order: Date.now(), ownerId: target }; 
                 delete newUnit.id; 
-                await setDoc(doc(db, 'artifacts', appId, 'users', target, 'units', 'u'+Date.now()), newUnit); 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), newUnit); 
                 showNotification("✅ 成功分派給學生！"); 
                 window.adminDetail(target, target); 
             } 
