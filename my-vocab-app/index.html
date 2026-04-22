@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 18.2 (智能錯題追蹤版)</title>
+    <title>單字大師 - Eternal Edition 18.3 (互動極速更新版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -54,22 +54,12 @@
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); 
         }
 
-        .card-mode-toggle {
-            position: absolute; top: 15px; right: 15px;
-            padding: 5px 12px; background: #f8fafc;
-            border-radius: 99px; display: flex; align-items: center;
-            justify-content: center; gap: 4px;
-            color: #6366f1; transition: all 0.2s;
-            border: 1.5px solid #e2e8f0; z-index: 30;
-        }
-        .card-mode-toggle:hover { background: #eff6ff; border-color: #3b82f6; }
-
         .rate-btn { transition: all 0.2s; width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 900; }
-        .rate-1 { background-color: #059669 !important; color: white; }
-        .rate-2 { background-color: #10b981 !important; color: white; }
-        .rate-3 { background-color: #f59e0b !important; color: white; }
-        .rate-4 { background-color: #f97316 !important; color: white; }
-        .rate-5 { background-color: #ef4444 !important; color: white; }
+        .rate-1 { background-color: #059669 !important; color: white; border-color: #059669 !important; }
+        .rate-2 { background-color: #10b981 !important; color: white; border-color: #10b981 !important; }
+        .rate-3 { background-color: #f59e0b !important; color: white; border-color: #f59e0b !important; }
+        .rate-4 { background-color: #f97316 !important; color: white; border-color: #f97316 !important; }
+        .rate-5 { background-color: #ef4444 !important; color: white; border-color: #ef4444 !important; }
 
         .review-node {
             flex: 0 0 auto; width: 110px; text-align: center; padding: 14px 8px;
@@ -135,8 +125,10 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-bold">
 
+    <!-- 🖨️ 隱藏的列印容器 -->
     <div id="printContainer"></div>
 
+    <!-- 英聽狀態條 -->
     <div id="floatingAudioBar" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-lg bg-white/95 backdrop-blur-xl border border-indigo-100 shadow-2xl rounded-full p-4 flex items-center justify-between opacity-0 pointer-events-none transition-all duration-500">
         <div class="flex items-center gap-4 pl-2">
             <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg text-white"><i data-lucide="headphones" class="w-5 h-5"></i></div>
@@ -151,13 +143,14 @@
         </div>
     </div>
 
+    <!-- 1. 登入畫面 -->
     <div id="authScreen" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-slate-100">
             <div id="loginMainView">
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.2</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.3</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -188,6 +181,7 @@
         </div>
     </div>
 
+    <!-- 2. 主介面 -->
     <div id="appScreen" class="hidden">
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-40 h-20 flex items-center justify-between px-6 shadow-sm">
             <div class="flex items-center gap-3">
@@ -203,6 +197,7 @@
         </nav>
 
         <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- 側邊欄 -->
             <aside class="lg:col-span-4 space-y-6">
                 <div id="addUnitSection" class="settings-card bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
@@ -231,6 +226,7 @@
                 </div>
             </aside>
             
+            <!-- 主內容 -->
             <section class="lg:col-span-8 space-y-6">
                 <div class="settings-card bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-6">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -309,6 +305,7 @@
         </main>
     </div>
 
+    <!-- 🚀 全域練習設定 Modal -->
     <div id="practiceModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto scrollbar-thin">
             <h4 id="practiceModalTitle" class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2"></h4>
@@ -386,6 +383,7 @@
         </div>
     </div>
 
+    <!-- 🖨️ 列印彈窗 -->
     <div id="printModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto scrollbar-thin">
             <h4 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2"><i data-lucide="printer" class="text-indigo-600"></i> 列印選項設定</h4>
@@ -432,6 +430,7 @@
         </div>
     </div>
 
+    <!-- 🚀 測驗彈窗 -->
     <div id="quizModal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl">
         <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 md:p-10 text-center relative overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-thin">
             <button onclick="window.closeQuiz()" class="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -469,6 +468,7 @@
         </div>
     </div>
 
+    <!-- 管理者頁面 -->
     <div id="adminScreen" class="hidden bg-slate-50 min-h-screen pb-10 text-slate-800">
         <nav class="bg-slate-900 text-white h-20 flex items-center justify-between px-8 sticky top-0 z-50 shadow-lg">
             <span class="font-black tracking-widest uppercase text-xl text-indigo-400">YLJH 管理系統</span>
@@ -499,6 +499,7 @@
         </main>
     </div>
 
+    <!-- Modals -->
     <div id="wordEditModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-8">
             <h4 class="text-xl font-black mb-6 text-slate-800">修改單字內容</h4>
@@ -564,11 +565,10 @@
             openFolders: new Set(), foldersInitialized: false, allUnitsCache: [], isGuestMode: false,
             practiceMode: '', practiceQueue: [], 
             quizQueue: [], quizIndex: 0, currentAnswer: [], usedIndexes: [],
-            showAllNotesMode: false, showMistakesMode: false, // 🚀 錯題本模式
+            showAllNotesMode: false, showMistakesMode: false,
             isRevealed: false, savedAnswer: null, savedUsedIndexes: null, availableVoices: [], selectedVoiceIndex: 0
         };
 
-        // --- 語音功能設定 ---
         const initVoices = () => {
             const v = window.speechSynthesis.getVoices();
             state.availableVoices = v.filter(i => i.lang.startsWith('en'));
@@ -628,7 +628,6 @@
             setTimeout(() => el.classList.add('translate-y-20', 'opacity-0'), 3000);
         };
 
-        // --- 核心渲染與搜尋過濾 ---
         window.handleSearch = () => { window.renderWords(false); };
         window.handleSortChange = () => { window.renderWords(true); };
 
@@ -654,7 +653,6 @@
             const sortVal = document.getElementById('sortSelect').value;
             
             if (state.showMistakesMode) {
-                // 🚀 錯題本模式
                 if (forceSort || state.lastUnitId !== 'MISTAKES') {
                     state.lastUnitId = 'MISTAKES';
                     let mistakeWords = [];
@@ -665,13 +663,11 @@
                             }
                         });
                     });
-                    
                     if (sortVal === 'az') mistakeWords.sort((a,b) => a.en.localeCompare(b.en));
                     else if (sortVal === 'random') mistakeWords.sort(() => Math.random() - 0.5);
                     else if (sortVal === 'rating') mistakeWords.sort((a,b) => b.rating - a.rating);
                     else if (sortVal === 'starred') mistakeWords.sort((a,b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
-                    else mistakeWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0)); // 預設依錯題次數
-                    
+                    else mistakeWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
                     state.baseSortedWords = mistakeWords;
                 } else {
                     let updatedBase = state.baseSortedWords.map(dw => {
@@ -790,39 +786,41 @@
             if(!g) return;
             g.innerHTML = state.displayedWords.map((w, idx) => {
                 const mode = w.localMode || state.globalMode;
-                const unitBadge = (query || state.showAllNotesMode || state.showMistakesMode) ? `<span class="absolute top-4 left-4 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] rounded-md shadow-sm font-bold">${w._unitName}</span>` : '';
-                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative">
-                <span style="position:absolute; top:-12px; right:-12px; width:36px; height:36px; background:#4f46e5; border:3px solid white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:white; box-shadow: 0 4px 8px rgba(0,0,0,0.15); z-index:20;">${idx+1}</span>
+                const unitBadge = (query || state.showAllNotesMode || state.showMistakesMode) ? `<span class="absolute top-4 left-4 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] rounded-md shadow-sm font-bold z-30">${w._unitName}</span>` : '';
+                return `<div data-word-id="${w.id}" onclick="window.speak('${w.en.replace(/'/g, "\\'")}')" class="word-card card-${mode} hover:shadow-xl transition-all relative overflow-hidden">
+                <span class="absolute top-0 right-0 bg-indigo-500 text-white font-black text-sm px-3 py-1 rounded-bl-2xl z-20 shadow-sm">${idx+1}</span>
                 ${unitBadge}
                 
-                <div class="absolute top-4 right-10">
-                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}', '${w._unitId}')" class="card-mode-toggle font-bold"><span>切換</span></button>
+                <div class="absolute top-3 right-12 z-30">
+                    <button onclick="event.stopPropagation(); window.cycleWordMode('${w.id}', '${w._unitId}')" class="px-3 py-1 bg-white text-indigo-600 rounded-full text-xs font-bold shadow-sm border border-slate-200 hover:bg-indigo-50 transition-all active:scale-95 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i>切換</button>
                 </div>
                 
-                ${w.mistakes > 0 ? `<div class="absolute top-12 right-4 text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-md font-black border border-rose-200 shadow-sm flex items-center gap-1"><i data-lucide="x-circle" class="w-3 h-3"></i> 錯 ${w.mistakes} 次</div>` : ''}
+                ${w.mistakes > 0 ? `<div class="absolute top-10 right-12 text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-md font-black border border-rose-200 shadow-sm flex items-center gap-1 z-30"><i data-lucide="x-circle" class="w-3 h-3"></i> 錯 ${w.mistakes} 次</div>` : ''}
 
-                <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
-                <p class="word-zh text-indigo-600 font-bold text-xl mt-1">${w.zh}</p>
+                <div class="pt-6">
+                    <h4 class="word-en text-4xl font-black mt-2">${window.highlightText(w.en)}</h4>
+                    <p class="word-zh text-indigo-600 font-bold text-xl mt-2">${w.zh}</p>
+                </div>
                 
-                <div class="absolute bottom-4 right-4 flex gap-2">
+                <div class="absolute bottom-4 right-4 flex gap-2 z-30">
                     ${state.showSpellingMastery ? (
                         !state.isGuestMode ? `
-                        <button onclick="event.stopPropagation(); window.toggleStar('${w.id}', '${w._unitId}')" class="p-1.5 ${w.starred ? 'bg-amber-50 text-amber-500' : 'bg-slate-100 text-slate-400'} rounded-lg hover:bg-amber-50 hover:text-amber-500 transition-all"><i data-lucide="star" class="w-4 h-4 ${w.starred ? 'fill-current' : ''}"></i></button>
-                        ` : (w.starred ? `<span class="p-1.5 bg-amber-50 text-amber-500 rounded-lg"><i data-lucide="star" class="w-4 h-4 fill-current"></i></span>` : '')
+                        <button onclick="event.stopPropagation(); window.toggleStar('${w.id}', '${w._unitId}')" class="p-1.5 ${w.starred ? 'bg-amber-50 text-amber-500 border border-amber-200' : 'bg-slate-50 text-slate-400 border border-slate-200'} rounded-lg hover:bg-amber-50 hover:text-amber-500 transition-all active:scale-95"><i data-lucide="star" class="w-4 h-4 ${w.starred ? 'fill-current' : ''}"></i></button>
+                        ` : (w.starred ? `<span class="p-1.5 bg-amber-50 text-amber-500 rounded-lg border border-amber-200"><i data-lucide="star" class="w-4 h-4 fill-current"></i></span>` : '')
                     ) : ''}
                     
                     ${!state.isGuestMode ? `
-                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-100 rounded-lg hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                    <button onclick="event.stopPropagation(); window.openWordEdit('${w.id}', '${w._unitId}')" class="p-1.5 bg-slate-50 border border-slate-200 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-all active:scale-95"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                     ` : ''}
                 </div>
 
                 ${state.showRating ? `
-                <div class="flex gap-1 mt-auto pt-4 pr-20">
-                    ${[1,2,3,4,5].map(n => `<button ${state.isGuestMode ? 'disabled' : `onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')"`} class="rate-btn ${w.rating==n?'rate-'+n:'bg-slate-100 text-slate-400'} ${state.isGuestMode ? 'cursor-default opacity-80' : ''}">${n}</button>`).join('')}
+                <div class="flex gap-1 mt-auto pt-6 pr-24 z-30 relative">
+                    ${[1,2,3,4,5].map(n => `<button ${state.isGuestMode ? 'disabled' : `onclick="event.stopPropagation(); window.updateRating('${w.id}', ${n}, '${w._unitId}')"`} class="rate-btn ${w.rating==n?'rate-'+n+' shadow-md scale-110':'bg-slate-50 border border-slate-200 text-slate-400 hover:border-indigo-300'} ${state.isGuestMode ? 'cursor-default opacity-80' : 'active:scale-95'}">${n}</button>`).join('')}
                 </div>` : ''}
                 
                 ${state.showNote ? `
-                <textarea class="note-field mt-2 font-bold" placeholder="備註..." ${state.isGuestMode ? 'readonly' : `onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')"`} onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
+                <textarea class="note-field mt-4 font-bold relative z-30" placeholder="備註..." ${state.isGuestMode ? 'readonly' : `onblur="window.updateNote('${w.id}', this.value, '${w._unitId}')"`} onclick="event.stopPropagation()">${w.note || ''}</textarea>` : ''}
             </div>`}).join(''); 
             lucide.createIcons(); 
             if(!query && !state.showAllNotesMode && !state.showMistakesMode) window.renderReviewTracking();
@@ -877,15 +875,21 @@
             container.innerHTML = html; lucide.createIcons();
         };
 
-        // --- 🚀 重構驗證與連線初始化 ---
         const initAuth = async () => {
             try {
-                // 因為使用自訂 Firebase 專案 (my-vocab-app...)，直接使用匿名登入，
-                // 捨棄 Canvas 預設注入的 Token 避免 auth/custom-token-mismatch 錯誤
-                await signInAnonymously(auth);
+                let envProjectId = null;
+                if (typeof __firebase_config !== 'undefined') {
+                    try { envProjectId = JSON.parse(__firebase_config).projectId; } catch(e) {}
+                }
+                
+                if (envProjectId === firebaseConfig.projectId && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("Auth Error:", error);
-                showNotification("連線初始化失敗，請檢查網路");
+                showNotification("驗證初始化失敗，請重新整理");
             }
         };
 
@@ -919,10 +923,9 @@
             if (!auth.currentUser) return;
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'public', 'data', 'folders'), 
+                collection(db, 'artifacts', appId, 'users', state.userLabel, 'folders'), 
                 snap => {
                     state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}))
-                        .filter(f => f.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     
                     if (!state.foldersInitialized) {
@@ -931,79 +934,64 @@
                     }
                     window.renderUnitList();
                 },
-                err => {
-                    console.error("Folder Sync Error:", err);
-                }
+                err => console.error("Folder Sync Error:", err)
             );
 
             onSnapshot(
-                collection(db, 'artifacts', appId, 'public', 'data', 'units'), 
+                collection(db, 'artifacts', appId, 'users', state.userLabel, 'units'), 
                 snap => {
                     state.units = snap.docs.map(d => ({id: d.id, ...d.data()}))
-                        .filter(u => u.ownerId === state.userLabel)
                         .sort((a,b) => (a.order || 0) - (b.order || 0));
                     if (!state.activeUnitId && state.units.length) state.activeUnitId = state.units[0].id;
                     window.renderWords(false);
                     window.renderUnitList();
                 },
-                err => {
-                    console.error("Unit Sync Error:", err);
-                }
+                err => console.error("Unit Sync Error:", err)
             );
         }
 
-        // --- 登入掛載 ---
         window.loginWithCustom = async () => {
             const u = document.getElementById('customUser').value.trim(), p = document.getElementById('customPass').value.trim();
             if (!u || !p) return showNotification("請輸入帳號與密碼");
             document.getElementById('loadingIndicator').classList.remove('hidden');
             try {
-                if (!auth.currentUser) {
-                    await initAuth();
-                }
+                if (!auth.currentUser) await initAuth();
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u));
                 if (snap.exists() && snap.data().password === p) {
                     sessionStorage.setItem('custom_user_session', u); location.reload();
                 } else {
                     showNotification("帳號或密碼錯誤");
                 }
-            } catch(e) { 
-                console.error(e);
-                showNotification("連線失敗，請檢查網路或權限"); 
-            } finally { 
-                document.getElementById('loadingIndicator').classList.add('hidden'); 
-            }
+            } catch(e) { showNotification("連線失敗，請檢查網路或權限"); } 
+            finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
         };
 
         window.adminLogin = () => {
             const u = document.getElementById('adminUser').value.trim(), p = document.getElementById('adminPass').value.trim();
-            if (u === 'yljh' && p === 'yljh8320873') { 
-                sessionStorage.setItem('admin_session', 'true'); location.reload(); 
-            } else {
-                showNotification("驗證失敗：管理員帳號或密碼錯誤");
-            }
+            if (u === 'yljh' && p === 'yljh8320873') { sessionStorage.setItem('admin_session', 'true'); location.reload(); } 
+            else showNotification("驗證失敗：管理員帳號或密碼錯誤");
         };
 
         window.createAccount = async () => {
-            const u = document.getElementById('newAccountUser').value.trim();
-            const p = document.getElementById('newAccountPass').value.trim();
+            const u = document.getElementById('newAccountUser').value.trim(), p = document.getElementById('newAccountPass').value.trim();
             if (!u || !p) return showNotification("請輸入欲建立的帳號與密碼");
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_accounts', u), { password: p });
                 showNotification("✅ 學生帳號已成功建立！");
                 document.getElementById('newAccountUser').value = '';
                 document.getElementById('newAccountPass').value = '';
-            } catch(e) {
-                console.error("Create account error:", e);
-                showNotification("連線失敗，無法建立帳號");
-            }
+            } catch(e) { showNotification("連線失敗，無法建立帳號"); }
         };
 
         window.toggleAuthView = (m) => { ['loginMainView', 'customLoginView', 'adminLoginView'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(m + (m==='main'?'':'LoginView')).classList.remove('hidden'); lucide.createIcons(); };
         window.logout = () => { signOut(auth); sessionStorage.clear(); location.href = location.pathname; };
         window.showAppUI = (n) => { document.getElementById('authScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userNameDisplay').innerText = n; };
         
-        window.setGlobalMode = (m) => { state.globalMode = m; const u = state.units.find(x => x.id == state.activeUnitId); if (u && u.words) u.words.forEach(w => delete w.localMode); window.renderWords(false); };
+        window.setGlobalMode = (m) => { 
+            state.globalMode = m; 
+            state.units.forEach(u => (u.words || []).forEach(w => delete w.localMode)); 
+            window.renderWords(false); 
+        };
         window.toggleFeature = (f) => { state['show'+f.charAt(0).toUpperCase()+f.slice(1)] = !state['show'+f.charAt(0).toUpperCase()+f.slice(1)]; window.renderWords(false); };
         
         window.setActiveUnit = (id) => { 
@@ -1016,7 +1004,134 @@
             window.renderUnitList(); 
         };
 
-        // --- 🖨️ 列印功能 ---
+        // 🔥 樂觀更新 (Optimistic UI) 機制，確保即使網路延遲畫面也能瞬間反應
+        window.cycleWordMode = (id, unitId) => {
+            const targetUnitId = (!unitId || unitId === 'undefined') ? state.activeUnitId : unitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            if (!u) return;
+            const w = u.words.find(x => String(x.id) === String(id));
+            if (w) {
+                const cur = w.localMode || state.globalMode;
+                if (cur === 'both') w.localMode = 'en';
+                else if (cur === 'en') w.localMode = 'zh';
+                else w.localMode = 'both';
+                window.renderWords(false); // 🔥 瞬間重繪
+            }
+        };
+
+        window.updateRating = async (id, n, unitId) => {
+            if (state.isGuestMode) return;
+            const targetUnitId = (!unitId || unitId === 'undefined') ? state.activeUnitId : unitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            if (!u) return;
+            const w = u.words.find(x => String(x.id) === String(id));
+            if (w) {
+                w.rating = n;
+                window.renderWords(false); // 🔥 瞬間重繪
+                try { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words }); } 
+                catch(e) { console.error(e); showNotification("雲端同步失敗"); }
+            }
+        };
+
+        window.toggleStar = async (id, unitId) => {
+            if (state.isGuestMode) return;
+            const targetUnitId = (!unitId || unitId === 'undefined') ? state.activeUnitId : unitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            if (!u) return;
+            const w = u.words.find(x => String(x.id) === String(id));
+            if (w) {
+                w.starred = !w.starred;
+                window.renderWords(false); // 🔥 瞬間重繪
+                try { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words }); } 
+                catch(e) { console.error(e); showNotification("雲端同步失敗"); }
+            }
+        };
+
+        window.updateNote = async (id, v, unitId) => {
+            if (state.isGuestMode) return;
+            const targetUnitId = (!unitId || unitId === 'undefined') ? state.activeUnitId : unitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            if (!u) return;
+            const w = u.words.find(x => String(x.id) === String(id));
+            if (w) {
+                w.note = v;
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+            }
+        };
+
+        window.openWordEdit = (id, unitId) => {
+            const targetUnitId = (!unitId || unitId === 'undefined') ? state.activeUnitId : unitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            if (!u) return;
+            const w = u.words.find(x => String(x.id) === String(id));
+            if (!w) return;
+            state.editingWordId = id;
+            state.editingUnitId = targetUnitId;
+            document.getElementById('editWordEn').value = w.en;
+            document.getElementById('editWordZh').value = w.zh;
+            document.getElementById('wordEditModal').classList.remove('hidden');
+        };
+
+        window.saveWordEdit = async () => {
+            if (state.isGuestMode) return;
+            const en = document.getElementById('editWordEn').value.trim(), zh = document.getElementById('editWordZh').value.trim();
+            if (!en || !zh) return;
+            const targetUnitId = state.editingUnitId || state.activeUnitId;
+            const u = state.units.find(x => x.id == targetUnitId);
+            const w = u?.words.find(x => x.id == state.editingWordId);
+            if (w) {
+                w.en = en; w.zh = zh;
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
+                window.renderWords(false);
+                window.closeWordEdit();
+            }
+        };
+        window.closeWordEdit = () => document.getElementById('wordEditModal').classList.add('hidden');
+
+        // 資料夾/單元 上下移動與編輯
+        window.moveFolder = async (id, dir) => {
+            if (state.isGuestMode) return;
+            const list = [...state.folders];
+            const idx = list.findIndex(f => f.id === id);
+            if (idx < 0) return;
+            const swapIdx = idx + dir;
+            if (swapIdx >= 0 && swapIdx < list.length) {
+                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
+                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
+                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', list[swapIdx].id), { order: currentOrder });
+            }
+        };
+        
+        window.moveUnit = async (id, dir) => {
+            if (state.isGuestMode) return;
+            const u = state.units.find(x => x.id === id);
+            if (!u) return;
+            const list = state.units.filter(x => x.folderId === u.folderId);
+            const idx = list.findIndex(x => x.id === id);
+            if (idx < 0) return;
+            const swapIdx = idx + dir;
+            if (swapIdx >= 0 && swapIdx < list.length) {
+                let currentOrder = list[idx].order !== undefined ? list[idx].order : idx * 100;
+                let swapOrder = list[swapIdx].order !== undefined ? list[swapIdx].order : swapIdx * 100;
+                if (currentOrder === swapOrder) { currentOrder = idx * 100; swapOrder = swapIdx * 100; }
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[idx].id), { order: swapOrder });
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', list[swapIdx].id), { order: currentOrder });
+            }
+        };
+
+        window.renameUnit = async (id) => { if(state.isGuestMode) return; const n = prompt("新單元名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id), { name: n }); };
+        window.renameFolder = async (id) => { if(state.isGuestMode) return; const n = prompt("修改資料夾名稱："); if (n) await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', id), { name: n }); };
+        window.openMoveModal = (id) => {
+            if(state.isGuestMode) return;
+            state.movingUnitId = id;
+            const s = document.getElementById('targetFolderSelect');
+            s.innerHTML = `<option value="">(不屬於資料夾)</option>` + state.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            document.getElementById('moveFolderModal').classList.remove('hidden');
+        };
+        window.confirmMoveUnit = async () => { const fid = document.getElementById('targetFolderSelect').value || null; if (fid) state.openFolders.add(fid); await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.movingUnitId), { folderId: fid }); document.getElementById('moveFolderModal').classList.add('hidden'); };
+
         window.openPrintModal = () => {
             const container = document.getElementById('printUnitSelectContainer');
             
@@ -1055,40 +1170,19 @@
             const checks = Array.from(document.querySelectorAll('#printRatingFilters input:checked')).map(i => i.value);
             const includeNote = document.getElementById('printIncludeNote')?.checked;
 
-            if (selectedUnitIds.length === 0) {
-                showNotification("⚠️ 請至少選擇一個列印範圍！", "alert");
-                return;
-            }
+            if (selectedUnitIds.length === 0) { showNotification("⚠️ 請至少選擇一個列印範圍！"); return; }
 
             let targetMap = new Map();
             let printTitle = "";
 
             if (selectedUnitIds.includes('ALL_NOTES')) {
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if ((w.note && w.note.trim()) || w.starred) {
-                            targetMap.set(w.id, { ...w, _unitName: u.name });
-                        }
-                    });
-                });
+                state.units.forEach(u => { (u.words || []).forEach(w => { if ((w.note && w.note.trim()) || w.starred) { targetMap.set(w.id, { ...w, _unitName: u.name }); } }); });
             }
-
             if (selectedUnitIds.includes('MISTAKES')) {
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if (w.mistakes && w.mistakes > 0) {
-                            targetMap.set(w.id, { ...w, _unitName: u.name });
-                        }
-                    });
-                });
+                state.units.forEach(u => { (u.words || []).forEach(w => { if (w.mistakes && w.mistakes > 0) { targetMap.set(w.id, { ...w, _unitName: u.name }); } }); });
             }
-
             state.units.forEach(u => {
-                if (selectedUnitIds.includes(u.id)) {
-                    (u.words || []).forEach(w => {
-                        targetMap.set(w.id, { ...w, _unitName: u.name });
-                    });
-                }
+                if (selectedUnitIds.includes(u.id)) { (u.words || []).forEach(w => { targetMap.set(w.id, { ...w, _unitName: u.name }); }); }
             });
 
             let targetWords = Array.from(targetMap.values());
@@ -1096,28 +1190,15 @@
             if (selectedUnitIds.length === 1) {
                 if (selectedUnitIds[0] === 'ALL_NOTES') printTitle = "📝 筆記與星號單字彙整";
                 else if (selectedUnitIds[0] === 'MISTAKES') printTitle = "🚨 錯題本";
-                else {
-                    const u = state.units.find(x => x.id === selectedUnitIds[0]);
-                    printTitle = u ? u.name : "單字本列印";
-                }
-            } else {
-                printTitle = "🖨️ 自訂綜合單字本列印";
-            }
+                else { const u = state.units.find(x => x.id === selectedUnitIds[0]); printTitle = u ? u.name : "單字本列印"; }
+            } else { printTitle = "🖨️ 自訂綜合單字本列印"; }
 
             const allowedRatings = checks.map(v => parseInt(v)).filter(v => !isNaN(v));
             const allowStarred = checks.includes('starred');
             
-            targetWords = targetWords.filter(w => {
-                if (allowStarred && w.starred) return true;
-                if (allowedRatings.includes(w.rating)) return true;
-                return false;
-            });
+            targetWords = targetWords.filter(w => { if (allowStarred && w.starred) return true; if (allowedRatings.includes(w.rating)) return true; return false; });
 
-            if (targetWords.length === 0) {
-                showNotification("⚠️ 沒有符合條件的單字可供列印！", "alert");
-                return;
-            }
-
+            if (targetWords.length === 0) { showNotification("⚠️ 沒有符合條件的單字可供列印！"); return; }
             targetWords.sort((a, b) => a.en.localeCompare(b.en));
 
             let html = `
@@ -1137,16 +1218,7 @@
                         <tbody>
             `;
             
-            const reviewBoxes = `
-                <div style="display: flex; gap: 4px; justify-content: center;">
-                    <div class="review-box"></div>
-                    <div class="review-box"></div>
-                    <div class="review-box"></div>
-                    <div class="review-box"></div>
-                    <div class="review-box"></div>
-                    <div class="review-box"></div>
-                </div>
-            `;
+            const reviewBoxes = `<div style="display: flex; gap: 4px; justify-content: center;"><div class="review-box"></div><div class="review-box"></div><div class="review-box"></div><div class="review-box"></div><div class="review-box"></div><div class="review-box"></div></div>`;
             
             targetWords.forEach((w, idx) => {
                 html += `<tr>
@@ -1158,19 +1230,12 @@
                     <td style="text-align: center;">${reviewBoxes}</td>
                 </tr>`;
             });
-            
             html += `</tbody></table></div>`;
-
-            const container = document.getElementById('printContainer');
-            container.innerHTML = html;
+            document.getElementById('printContainer').innerHTML = html;
             window.closePrintModal();
-            
-            setTimeout(() => {
-                window.print();
-            }, 100);
+            setTimeout(() => { window.print(); }, 100);
         };
 
-        // 🚀 全域進階練習邏輯 
         window.openPracticeModal = (mode) => {
             state.practiceMode = mode;
             const container = document.getElementById('practiceUnitSelectContainer');
@@ -1200,25 +1265,16 @@
             let titleHtml = "";
             const audioSettings = document.getElementById('practiceAudioSettings');
             
-            if (mode === 'audio') {
-                titleHtml = `<i data-lucide="play" class="text-indigo-600"></i> 英聽朗讀設定`;
-                audioSettings.classList.remove('hidden');
-            } else if (mode === 'block') {
-                titleHtml = `<i data-lucide="layout-grid" class="text-amber-500"></i> 積木挑戰設定`;
-                audioSettings.classList.add('hidden');
-            } else if (mode === 'dictation') {
-                titleHtml = `<i data-lucide="keyboard" class="text-rose-500"></i> 聽寫挑戰設定`;
-                audioSettings.classList.add('hidden');
-            }
+            if (mode === 'audio') { titleHtml = `<i data-lucide="play" class="text-indigo-600"></i> 英聽朗讀設定`; audioSettings.classList.remove('hidden'); } 
+            else if (mode === 'block') { titleHtml = `<i data-lucide="layout-grid" class="text-amber-500"></i> 積木挑戰設定`; audioSettings.classList.add('hidden'); } 
+            else if (mode === 'dictation') { titleHtml = `<i data-lucide="keyboard" class="text-rose-500"></i> 聽寫挑戰設定`; audioSettings.classList.add('hidden'); }
             
             document.getElementById('practiceModalTitle').innerHTML = titleHtml;
             document.getElementById('practiceModal').classList.remove('hidden');
             lucide.createIcons();
         };
 
-        window.closePracticeModal = () => {
-            document.getElementById('practiceModal').classList.add('hidden');
-        };
+        window.closePracticeModal = () => { document.getElementById('practiceModal').classList.add('hidden'); };
 
         window.executePractice = () => {
             const selectedUnitIds = Array.from(document.querySelectorAll('.practice-unit-cb:checked')).map(cb => cb.value);
@@ -1226,71 +1282,32 @@
             const limitVal = document.getElementById('practiceLimit').value;
             const sortVal = document.getElementById('practiceSort').value;
 
-            if (selectedUnitIds.length === 0) {
-                showNotification("⚠️ 請至少選擇一個練習範圍！");
-                return;
-            }
+            if (selectedUnitIds.length === 0) return showNotification("⚠️ 請至少選擇一個練習範圍！");
 
             let targetMap = new Map();
-            if (selectedUnitIds.includes('ALL_NOTES')) {
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if ((w.note && w.note.trim()) || w.starred) targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name });
-                    });
-                });
-            }
-            if (selectedUnitIds.includes('MISTAKES')) {
-                state.units.forEach(u => {
-                    (u.words || []).forEach(w => {
-                        if (w.mistakes && w.mistakes > 0) targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name });
-                    });
-                });
-            }
-            state.units.forEach(u => {
-                if (selectedUnitIds.includes(u.id)) {
-                    (u.words || []).forEach(w => targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name }));
-                }
-            });
+            if (selectedUnitIds.includes('ALL_NOTES')) { state.units.forEach(u => { (u.words || []).forEach(w => { if ((w.note && w.note.trim()) || w.starred) targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name }); }); }); }
+            if (selectedUnitIds.includes('MISTAKES')) { state.units.forEach(u => { (u.words || []).forEach(w => { if (w.mistakes && w.mistakes > 0) targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name }); }); }); }
+            state.units.forEach(u => { if (selectedUnitIds.includes(u.id)) { (u.words || []).forEach(w => targetMap.set(w.id, { ...w, _unitId: u.id, _unitName: u.name })); } });
 
             let targetWords = Array.from(targetMap.values());
             const allowedRatings = checks.map(v => parseInt(v)).filter(v => !isNaN(v));
             const allowStarred = checks.includes('starred');
             
-            targetWords = targetWords.filter(w => {
-                if (allowStarred && w.starred) return true;
-                if (allowedRatings.includes(w.rating)) return true;
-                return false;
-            });
+            targetWords = targetWords.filter(w => { if (allowStarred && w.starred) return true; if (allowedRatings.includes(w.rating)) return true; return false; });
 
-            if (targetWords.length === 0) {
-                showNotification("⚠️ 沒有符合篩選條件的單字可供練習！");
-                return;
-            }
+            if (targetWords.length === 0) return showNotification("⚠️ 沒有符合篩選條件的單字可供練習！");
 
-            if (sortVal === 'random') {
-                targetWords.sort(() => Math.random() - 0.5);
-            } else if (sortVal === 'rating') {
-                targetWords.sort((a,b) => b.rating - a.rating);
-            } else if (sortVal === 'mistakes') {
-                targetWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0));
-            }
+            if (sortVal === 'random') { targetWords.sort(() => Math.random() - 0.5); } 
+            else if (sortVal === 'rating') { targetWords.sort((a,b) => b.rating - a.rating); } 
+            else if (sortVal === 'mistakes') { targetWords.sort((a,b) => (b.mistakes || 0) - (a.mistakes || 0)); }
 
-            if (limitVal !== 'all') {
-                targetWords = targetWords.slice(0, parseInt(limitVal));
-            }
+            if (limitVal !== 'all') { targetWords = targetWords.slice(0, parseInt(limitVal)); }
 
             state.practiceQueue = targetWords;
             window.closePracticeModal();
 
-            if (state.practiceMode === 'audio') {
-                window.startAutoPlay();
-            } else {
-                state.quizQueue = targetWords;
-                state.quizType = state.practiceMode;
-                state.quizIndex = 0;
-                document.getElementById('quizModal').classList.remove('hidden'); 
-                window.setupQuiz();
-            }
+            if (state.practiceMode === 'audio') { window.startAutoPlay(); } 
+            else { state.quizQueue = targetWords; state.quizType = state.practiceMode; state.quizIndex = 0; document.getElementById('quizModal').classList.remove('hidden'); window.setupQuiz(); }
         };
 
         window.startAutoPlay = async () => {
@@ -1306,9 +1323,7 @@
             document.getElementById('floatingAudioBar').classList.replace('opacity-0', 'opacity-100');
             document.getElementById('floatingAudioBar').classList.remove('pointer-events-none');
             
-            if (mode === 'blind') {
-                document.getElementById('wordGrid').classList.add('blind-mode');
-            }
+            if (mode === 'blind') { document.getElementById('wordGrid').classList.add('blind-mode'); }
 
             for (let i = 0; i < playList.length; i++) {
                 if (!state.isAudioPlaying) break;
@@ -1354,7 +1369,7 @@
             if (!u) return;
             const progress = u.reviewProgress || {};
             progress[sid] = progress[sid] ? null : Date.now();
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
+            await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { reviewProgress: progress });
         };
 
         // 🚀 測驗與聽寫核心邏輯
@@ -1378,15 +1393,12 @@
             if (state.autoAdvanceTimer) clearTimeout(state.autoAdvanceTimer);
             
             const btnReveal = document.getElementById('btnRevealWord');
-            if (btnReveal) {
-                btnReveal.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> 檢視答案`;
-            }
+            if (btnReveal) { btnReveal.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> 檢視答案`; }
 
             const btnMark = document.getElementById('btnMarkUnfam');
             if (btnMark) {
-                if (state.isGuestMode) {
-                    btnMark.classList.add('hidden');
-                } else {
+                if (state.isGuestMode) { btnMark.classList.add('hidden'); } 
+                else {
                     btnMark.classList.remove('hidden');
                     if (item.starred) {
                         btnMark.innerHTML = `<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500"></i> 取消標註`;
@@ -1485,7 +1497,7 @@
             if (w) {
                 w.starred = !w.starred; 
                 item.starred = w.starred; 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
+                await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
                 
                 const btnMark = document.getElementById('btnMarkUnfam');
                 if (btnMark) {
@@ -1532,9 +1544,7 @@
                 const poolBtns = document.getElementById('blockPoolArea').children;
                 if(poolBtns[i]) {
                     poolBtns[i].classList.add('animate-shake', 'border-rose-500', 'text-rose-500');
-                    setTimeout(() => {
-                        poolBtns[i].classList.remove('animate-shake', 'border-rose-500', 'text-rose-500');
-                    }, 400);
+                    setTimeout(() => { poolBtns[i].classList.remove('animate-shake', 'border-rose-500', 'text-rose-500'); }, 400);
                 }
                 document.getElementById('blockFeedback').innerText = "❌ 順序不對哦，請再試一次！";
                 document.getElementById('blockFeedback').className = "text-sm font-black text-center h-5 mb-3 transition-all text-rose-500";
@@ -1580,8 +1590,8 @@
                     const w = u?.words.find(x => x.id === item.id);
                     if (w) {
                         w.mistakes = (w.mistakes || 0) + 1;
-                        item.mistakes = w.mistakes; // 同步佇列中的狀態
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', targetUnitId), { words: u.words });
+                        item.mistakes = w.mistakes; 
+                        await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', targetUnitId), { words: u.words });
                         window.renderWords(false);
                     }
                 }
@@ -1589,17 +1599,13 @@
         };
 
         window.handleQuizEnter = () => {
-            if (!document.getElementById('btnNextQuiz').classList.contains('hidden')) {
-                window.nextQuizItem();
-            } else {
-                window.checkQuizAnswer();
-            }
+            if (!document.getElementById('btnNextQuiz').classList.contains('hidden')) { window.nextQuizItem(); } 
+            else { window.checkQuizAnswer(); }
         };
 
         window.nextQuizItem = () => { 
-            if (state.quizIndex >= state.quizQueue.length - 1) {
-                window.closeQuiz();
-            } else {
+            if (state.quizIndex >= state.quizQueue.length - 1) { window.closeQuiz(); } 
+            else {
                 state.quizIndex++; 
                 const inputEl = document.getElementById('quizInput');
                 if (inputEl) inputEl.classList.remove('border-emerald-500', 'text-emerald-600', 'text-indigo-500');
@@ -1622,22 +1628,22 @@
                 const p = l.split(/[,，]/); 
                 return p.length >= 2 ? { id: 'w'+Date.now()+Math.random().toString(36).substring(2,7), en: p[0].trim(), zh: p[1].trim(), rating: 3, mistakes: 0 } : null; 
             }).filter(x => x); 
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
+            await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', 'u'+Date.now()), { name: n, words, ownerId: state.userLabel, baseDate: new Date().toISOString().split('T')[0], baseTime: "09:00", reviewProgress: {}, order: Date.now() }); 
             showNotification("✅ 單元已儲存");
             document.getElementById('unitNameInput').value = '';
             document.getElementById('wordsInput').value = '';
         };
         
-        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', id)); };
+        window.deleteUnit = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', id)); };
         
-        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', id)); };
+        window.deleteFolder = async (id) => { if(state.isGuestMode) return; if(confirm("確定刪除資料夾？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', id)); };
         
         window.createNewFolder = async () => { 
             if(state.isGuestMode) return; 
             const n = prompt("資料夾名稱："); 
             if(n) { 
                 const fid = 'f'+Date.now();
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'folders', fid), { name: n, ownerId: state.userLabel, order: Date.now() }); 
+                await setDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'folders', fid), { name: n, ownerId: state.userLabel, order: Date.now() }); 
                 state.openFolders.add(fid);
                 showNotification("✅ 資料夾已建立"); 
                 window.renderUnitList();
@@ -1653,10 +1659,47 @@
         
         window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); window.open(url, '_blank'); showNotification("訪客連結已複製"); };
         
-        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
+        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'users', state.userLabel, 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
         
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
         window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
+        
+        window.showAdminDashboard = () => { 
+            document.getElementById('appScreen').classList.add('hidden'); 
+            document.getElementById('adminScreen').classList.remove('hidden'); 
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_accounts'), snap => {
+                document.getElementById('adminUserTable').innerHTML = snap.docs.map(d => `<tr class="border-b"><td>${d.id}</td><td class="text-right pr-12"><button onclick="window.adminDetail('${d.id}','${d.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">詳情</button></td></tr>`).join('');
+                document.getElementById('sourceAccountSelect').innerHTML = `<option value="yljh">管理者模板</option>` + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
+                window.updateSourceUnitList();
+            }); 
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'units'), snap => { 
+                state.allUnitsCache = snap.docs.map(d => ({id: d.id, ...d.data()})); 
+            }); 
+        };
+        window.updateSourceUnitList = () => { 
+            const src = document.getElementById('sourceAccountSelect').value; 
+            const fil = state.allUnitsCache.filter(u => u.ownerId === src); 
+            document.getElementById('masterUnitSelect').innerHTML = fil.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); 
+        };
+        window.assignUnitToStudent = async () => { 
+            const uid = document.getElementById('masterUnitSelect').value, target = state.currentAdminViewUid; 
+            if(!uid || !target) return; 
+            const src = state.allUnitsCache.find(u => u.id === uid); 
+            if(src){ 
+                const newUnit = { ...src, reviewProgress: {}, order: Date.now(), ownerId: target }; 
+                delete newUnit.id; 
+                await setDoc(doc(db, 'artifacts', appId, 'users', target, 'units', 'u'+Date.now()), newUnit); 
+                showNotification("✅ 成功分派給學生！"); 
+                window.adminDetail(target, target); 
+            } 
+        };
+        window.adminDetail = (uid, n) => { 
+            state.currentAdminViewUid = uid; 
+            document.getElementById('adminDetailModal').classList.remove('hidden'); 
+            document.getElementById('detailUserTitle').innerText = n; 
+            const fil = state.allUnitsCache.filter(u => u.ownerId === uid); 
+            document.getElementById('detailContent').innerHTML = fil.map(u => `<div class="p-3 bg-white border rounded-lg shadow-sm font-bold"><h6>${u.name}</h6></div>`).join('') || '無資料'; 
+        };
     </script>
 </body>
 </html>
