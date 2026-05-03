@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字大師 - Eternal Edition 18.4 (路徑全域校準版)</title>
+    <title>單字大師 - Eternal Edition 18.5 (記憶曲線修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -160,7 +160,7 @@
                 <div class="mb-8">
                     <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><i data-lucide="graduation-cap" class="text-white w-10 h-10"></i></div>
                     <h1 class="text-3xl font-black text-slate-800 mb-1">單字大師</h1>
-                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.4</p>
+                    <p class="text-slate-400 font-medium italic text-xs">Eternal Edition 18.5</p>
                 </div>
                 <div class="space-y-4">
                     <button onclick="window.toggleAuthView('custom')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95"><i data-lucide="user" class="w-5 h-5 text-white"></i> 使用帳號登入</button>
@@ -416,6 +416,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">包含的掌握度與標註 (可複選)</label>
                     <div class="flex flex-wrap gap-2" id="printRatingFilters">
+                        <!-- Filters will be loaded identical to practiceModal -->
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="1" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">1分</span></label>
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="2" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">2分</span></label>
                         <label class="flex items-center gap-1.5 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer border border-slate-200 hover:bg-slate-100"><input type="checkbox" value="3" checked class="w-4 h-4 text-indigo-600"> <span class="text-sm font-bold text-slate-600">3分</span></label>
@@ -1381,7 +1382,39 @@
             if (!u) return;
             const progress = u.reviewProgress || {};
             progress[sid] = progress[sid] ? null : Date.now();
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
+            u.reviewProgress = progress;
+            window.renderReviewTracking(); // 🔥 樂觀更新，瞬間反應
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { reviewProgress: progress });
+            } catch (e) { console.error(e); showNotification("同步失敗"); }
+        };
+
+        window.renderReviewTracking = () => {
+            const u = state.units.find(x => x.id == state.activeUnitId);
+            if (!u) return;
+
+            // 確保輸入框的日期時間與當前選取的單元同步
+            const dInput = document.getElementById('baseDateInput');
+            const tInput = document.getElementById('baseTimeInput');
+            if (dInput && u.baseDate) dInput.value = u.baseDate;
+            if (tInput && u.baseTime) tInput.value = u.baseTime;
+
+            const container = document.getElementById('reviewNodes');
+            const baseTime = u.baseDate ? new Date(`${u.baseDate}T${u.baseTime || "09:00"}`).getTime() : 0;
+            const now = Date.now();
+            container.innerHTML = STAGES.map(s => {
+                const targetTime = baseTime + (s.offsetH * 3600000);
+                const isDone = !!u.reviewProgress?.[s.id];
+                const isOverdue = !isDone && baseTime > 0 && now > targetTime;
+                const statusClass = isDone ? 'done' : (isOverdue ? 'overdue' : 'upcoming');
+                return `<div class="review-node ${statusClass}" ${!state.isGuestMode ? `onclick="window.toggleReviewStage('${s.id}')"` : ''}>
+                    <span style="font-size:9px; font-weight:800;">${s.label}後</span>
+                    <span style="font-size:11px; font-weight:900;">${s.name}</span>
+                </div>`;
+            }).join('');
+            const doneCount = Object.values(u.reviewProgress || {}).filter(v => v).length;
+            const progressEl = document.getElementById('reviewProgressBar');
+            if (progressEl) progressEl.style.width = (doneCount / STAGES.length * 100) + '%';
         };
 
         // 🚀 測驗與聽寫核心邏輯
@@ -1671,7 +1704,21 @@
         
         window.publishGuestLink = () => { const url = `${window.location.origin}${window.location.pathname}?view=guest&id=${state.userLabel}`; const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); window.open(url, '_blank'); showNotification("訪客連結已複製"); };
         
-        window.updateBaseDateTime = async () => { if(state.isGuestMode) return; const d = document.getElementById('baseDateInput').value, t = document.getElementById('baseTimeInput').value || "09:00"; if(state.activeUnitId && d) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); showNotification("時間設定已儲存"); } };
+        window.updateBaseDateTime = async () => { 
+            if (state.isGuestMode) return; 
+            const d = document.getElementById('baseDateInput').value;
+            const t = document.getElementById('baseTimeInput').value || "09:00"; 
+            if (state.activeUnitId && d) { 
+                const u = state.units.find(x => x.id == state.activeUnitId);
+                if (u) {
+                    u.baseDate = d;
+                    u.baseTime = t;
+                    window.renderReviewTracking(); // 🔥 樂觀更新，瞬間反應
+                }
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'units', state.activeUnitId), { baseDate: d, baseTime: t }); 
+                showNotification("時間設定已儲存"); 
+            } 
+        };
         
         window.closeAdminDetail = () => document.getElementById('adminDetailModal').classList.add('hidden');
         window.closeMoveModal = () => document.getElementById('moveFolderModal').classList.add('hidden');
